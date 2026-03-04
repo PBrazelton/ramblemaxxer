@@ -14,10 +14,14 @@
 const express = require("express");
 const db = require("../db/connection");
 const { requireAuth } = require("./auth");
-const { solve, getSuggestions } = require("../../shared/solver");
-const courses = require("../../data/courses.json");
+const { solve, getSuggestions, buildCourseMap, buildProgramMap } = require("../../shared/solver");
+const coursesArray = require("../../data/courses.json");
+const supplementalArray = require("../../data/courses-supplemental.json");
 const degreeRequirements = require("../../data/degree_requirements.json");
-const programTags = require("../../data/course_program_tags.json");
+
+// Build lookup maps once at startup
+const courseMap = buildCourseMap(coursesArray, supplementalArray);
+const programMap = buildProgramMap(degreeRequirements);
 
 const router = express.Router();
 router.use(requireAuth);
@@ -54,17 +58,26 @@ router.post("/me/courses", (req, res) => {
 
 // ── PUT /api/students/me/courses/:code ────────────────────────────────────
 router.put("/me/courses/:code", (req, res) => {
-  const { semester, status, creditsOverride, note } = req.body;
+  const { semester, status, creditsOverride, note, pinnedProgram } = req.body;
   const code = req.params.code.toUpperCase().replace("-", " ");
+
+  const current = db.prepare(
+    "SELECT pinned_program FROM student_courses WHERE user_id = ? AND course_code = ?"
+  ).get(req.session.userId, code);
 
   db.prepare(`
     UPDATE student_courses
     SET semester = COALESCE(?, semester),
         status = COALESCE(?, status),
         credits_override = COALESCE(?, credits_override),
-        note = COALESCE(?, note)
+        note = COALESCE(?, note),
+        pinned_program = ?
     WHERE user_id = ? AND course_code = ?
-  `).run(semester ?? null, status ?? null, creditsOverride ?? null, note ?? null, req.session.userId, code);
+  `).run(
+    semester ?? null, status ?? null, creditsOverride ?? null, note ?? null,
+    pinnedProgram !== undefined ? pinnedProgram : (current?.pinned_program ?? null),
+    req.session.userId, code
+  );
 
   res.json({ ok: true });
 });
@@ -80,7 +93,9 @@ router.delete("/me/courses/:code", (req, res) => {
 // ── GET /api/students/me/solve ────────────────────────────────────────────
 router.get("/me/solve", (req, res) => {
   const courseRows = db.prepare(`
-    SELECT course_code as code, semester, status, credits_override as creditsOverride
+    SELECT course_code as code, semester, status,
+           credits_override as creditsOverride,
+           pinned_program as pinnedProgram
     FROM student_courses WHERE user_id = ?
   `).all(req.session.userId);
 
@@ -90,8 +105,8 @@ router.get("/me/solve", (req, res) => {
 
   const declaredPrograms = programRows.map((r) => r.program_id);
 
-  const result = solve(courseRows, declaredPrograms, courses, degreeRequirements, programTags);
-  const suggestions = getSuggestions(result, courses, programTags, declaredPrograms);
+  const result = solve(courseRows, declaredPrograms, courseMap, programMap, degreeRequirements);
+  const suggestions = getSuggestions(result, courseMap, programMap, declaredPrograms);
 
   res.json({ ...result, suggestions });
 });

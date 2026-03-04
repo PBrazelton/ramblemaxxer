@@ -1,176 +1,284 @@
 /**
- * shared/solver.js
- *
- * The constraint solver for Ramblemaxxer.
- * Framework-agnostic — works in Node (server) or browser (client).
- *
- * Given a student's course list + declared programs + the degree requirements,
- * returns a complete picture of:
- *   - Which requirement slots are filled
- *   - Which courses are double-counted (overlaps) and against which budget
- *   - Remaining requirements per program
- *   - High-efficiency course suggestions
- *   - Credit totals
+ * shared/solver.js — Complete rewrite against real data schemas.
+ * Framework-agnostic: works in Node or browser via bundler.
  */
 
-// ── Types (JSDoc) ──────────────────────────────────────────────────────────
-/**
- * @typedef {Object} StudentCourse
- * @property {string} code         - e.g. "PLSC 102"
- * @property {number} semester     - 0=transfer, 1-N relative semesters
- * @property {string} status       - 'transfer'|'complete'|'enrolled'|'planned'
- * @property {number} [creditsOverride]
- */
-
-/**
- * @typedef {Object} SolverResult
- * @property {Object} programs     - per-program slot fill status
- * @property {Object} overlaps     - overlap budget usage
- * @property {Object} credits      - total, complete, enrolled, planned
- * @property {string[]} remaining  - human-readable list of unfilled requirements
- * @property {Object[]} suggestions - high-efficiency untaken courses
- */
-
-// ── Overlap rules (hardcoded from Loyola catalog) ─────────────────────────
-const OVERLAP_RULES = {
-  // Max courses that can double-count between GLST and ALL other majors/minors combined
-  glstMajorOverlapMax: 4,
-  // Max courses from any single dept in GLST elective slots (required core exempt)
-  glstElectiveDeptMax: 3,
-  // CAS default: each major needs min 21 unique credits
-  casUniqueCreditsPerMajor: 21,
+const CORE_KA_MAP = {
+  "Artistic Knowledge and Inquiry":                  ["Artistic Knowledge"],
+  "College Writing Seminar":                         ["College Writing Seminar"],
+  "Ethical Knowledge and Inquiry":                   ["Ethical Knowledge"],
+  "Quantitative Knowledge and Inquiry":              ["Quantitative Knowledge"],
+  "Historical Knowledge and Inquiry":                ["Foundational Historical Knowledge","Tier 2 Historical Knowledge"],
+  "Literary Knowledge and Inquiry":                  ["Foundational Literary Knowledge","Tier 2 Literary Knowledge"],
+  "Philosophical Knowledge and Inquiry":             ["Foundational Philosophical Knowledge","Tier 2 Philosophical Knowledge"],
+  "Scientific Knowledge and Inquiry":                ["Scientific Knowledge"],
+  "Societal and Cultural Knowledge and Inquiry":     ["Foundational Societal Knowledge","Tier 2 Societal Knowledge"],
+  "Theological and Religious Knowledge and Inquiry": ["Foundational Theological Knowledge","Tier 2 Theological Knowledge"],
 };
 
-/**
- * Core solver function.
- *
- * @param {StudentCourse[]} studentCourses
- * @param {string[]} declaredPrograms  - e.g. ['PLSC-BA', 'GLST-BA', 'CORE']
- * @param {Object} coursesDb           - the courses.json catalog
- * @param {Object} degreeRequirements  - the degree_requirements.json
- * @param {Object} programTags         - the course_program_tags.json
- * @returns {SolverResult}
- */
-function solve(studentCourses, declaredPrograms, coursesDb, degreeRequirements, programTags) {
-  // Build a lookup: code → student course record + catalog data
+function buildCourseMap(catalogArray, supplementalArray) {
+  const map = new Map();
+  for (const c of catalogArray) map.set(c.code, c);
+  for (const c of supplementalArray) { if (!map.has(c.code)) map.set(c.code, c); }
+  return map;
+}
+
+function buildProgramMap(degreeReqs) {
+  const map = new Map();
+  for (const p of degreeReqs.programs) map.set(p.code, p);
+  return map;
+}
+
+function _addSlotAssignment(assignments, code, programCode, categoryName) {
+  if (!assignments[code]) assignments[code] = [];
+  assignments[code].push({ programCode, categoryName });
+}
+
+/** Build set of all courses in GLST elective_pool_by_region */
+function buildGlstElectivePool(programDef) {
+  const pool = new Set();
+  if (programDef?.elective_pool_by_region) {
+    for (const courses of Object.values(programDef.elective_pool_by_region)) {
+      for (const code of courses) pool.add(code);
+    }
+  }
+  return pool;
+}
+
+function courseMatchesEligible(code, course, category, assignedInProgram, glstPool) {
+  const ec = category.eligible_courses;
+  const ecf = category.eligible_courses_fixed;
+  if (ecf) return ecf.some(e => e.course === code);
+  if (Array.isArray(ec)) return ec.includes(code);
+  if (ec === "ANY_PLSC_200_PLUS")
+    return course?.department === "PLSC" && course?.number >= 200 && !assignedInProgram.has(code);
+  if (ec === "ANY_GLST_TAGGED")
+    return (course?.interdisciplinary_options?.includes("Global Studies") || glstPool?.has(code)) ?? false;
+  return false;
+}
+
+function solve(studentCourses, declaredPrograms, courseMap, programMap, degreeReqs) {
   const taken = new Map();
   for (const sc of studentCourses) {
-    const catalog = coursesDb[sc.code] || {};
-    taken.set(sc.code, { ...sc, ...catalog, credits: sc.creditsOverride ?? catalog.credits ?? 3 });
+    const cat = courseMap.get(sc.code) || {};
+    taken.set(sc.code, { ...cat, ...sc, credits: sc.creditsOverride ?? cat.credits ?? 3, pinnedProgram: sc.pinnedProgram || null });
   }
 
-  // Build a lookup: code → which programs/slots it can fill
-  // programTags format: { "PLSC 102": { "PLSC-BA": ["foundation"], "GLST-BA": ["core"] }, ... }
-  const tags = programTags || {};
+  const waivedCore = new Set();
+  for (const pc of declaredPrograms) {
+    for (const w of (degreeReqs.core_waivers_by_program?.[pc] || [])) waivedCore.add(w);
+  }
 
   const result = {
     programs: {},
-    overlaps: {
-      glstMajorUsed: 0,
-      glstMajorMax: OVERLAP_RULES.glstMajorOverlapMax,
-      glstElectiveDeptUsage: {},
-      glstElectiveDeptMax: OVERLAP_RULES.glstElectiveDeptMax,
-    },
+    overlaps: { glstMajorUsed: 0, glstMajorMax: 4, glstElectiveDeptUsage: {}, glstElectiveDeptMax: 3 },
     credits: { total: 0, complete: 0, enrolled: 0, planned: 0 },
-    slotAssignments: {},  // code → { programId, slotId }[]
+    waivedCoreCategories: [...waivedCore],
+    slotAssignments: {},
     remaining: [],
-    suggestions: [],
   };
 
-  // ── Credit totals ────────────────────────────────────────────────────────
-  for (const [code, course] of taken) {
+  for (const [, course] of taken) {
     result.credits.total += course.credits;
-    if (course.status === "complete" || course.status === "transfer") {
-      result.credits.complete += course.credits;
-    } else if (course.status === "enrolled") {
-      result.credits.enrolled += course.credits;
-    } else {
-      result.credits.planned += course.credits;
-    }
+    if (course.status === "complete" || course.status === "transfer") result.credits.complete += course.credits;
+    else if (course.status === "enrolled") result.credits.enrolled += course.credits;
+    else result.credits.planned += course.credits;
   }
 
-  // ── Per-program slot filling ─────────────────────────────────────────────
-  for (const programId of declaredPrograms) {
-    const programDef = degreeRequirements[programId];
-    if (!programDef) continue;
+  const isPinBlocked = (code, progCode) => {
+    const c = taken.get(code);
+    return c?.pinnedProgram && c.pinnedProgram !== progCode;
+  };
 
-    result.programs[programId] = {
-      name: programDef.name,
-      totalCredits: programDef.totalCredits,
-      categories: [],
-      filledSlots: 0,
-      totalSlots: 0,
-      creditsApplied: 0,
-    };
+  for (const progCode of declaredPrograms) {
+    const pd = programMap.get(progCode);
+    if (!pd) continue;
 
-    for (const category of programDef.categories) {
-      const catResult = {
-        id: category.id,
-        name: category.name,
-        slotsNeeded: category.slotsNeeded,
-        slots: [],
-        isSatisfied: false,
-      };
+    const glstPool = progCode === "GLST-BA" ? buildGlstElectivePool(pd) : new Set();
+    const progResult = { code: progCode, name: pd.name, type: pd.type,
+      totalCredits: pd.total_credits || null, categories: [], creditsApplied: 0, isComplete: true };
+    const assignedInProgram = new Set();
 
-      let filled = 0;
-      const eligibleCourses = [];
+    // First pass: specific (non-wildcard) categories
+    for (const category of pd.categories) {
+      const catResult = { name: category.name, description: category.description || null,
+        slotsNeeded: category.slots, slots: [], isSatisfied: false, isWaived: false };
 
+      if (pd.type === "core") {
+        if (waivedCore.has(category.name)) {
+          catResult.isWaived = true; catResult.isSatisfied = true;
+          catResult.slots = [{ code: "WAIVED", title: "Waived by major", status: "waived" }];
+          progResult.categories.push(catResult); continue;
+        }
+        const keywords = CORE_KA_MAP[category.name] || [];
+        const isTwoTier = category.tier_structure === "foundation_plus_tier2";
+
+        if (isTwoTier) {
+          let t1 = null, t2 = null;
+          for (const [code, course] of taken) {
+            if (assignedInProgram.has(code) || isPinBlocked(code, progCode)) continue;
+            const ka = course.knowledge_area;
+            if (!ka || !keywords.includes(ka)) continue;
+            if (ka === "Scientific Knowledge") {
+              // AP Bio covers both tiers — single entry marked as covering both
+              catResult.slots.push({ code, title: course.title, status: course.status, coversBothTiers: true });
+              assignedInProgram.add(code);
+              _addSlotAssignment(result.slotAssignments, code, progCode, category.name);
+              t1 = true; t2 = true;
+              break;
+            }
+            if (!t1 && ka.startsWith("Foundational")) {
+              t1 = { code, title: course.title, status: course.status };
+              assignedInProgram.add(code);
+              _addSlotAssignment(result.slotAssignments, code, progCode, category.name);
+            } else if (!t2 && ka.startsWith("Tier 2")) {
+              t2 = { code, title: course.title, status: course.status };
+              assignedInProgram.add(code);
+              _addSlotAssignment(result.slotAssignments, code, progCode, category.name);
+            }
+            if (t1 && t2) break;
+          }
+          if (t1 && typeof t1 === "object") catResult.slots.push(t1);
+          if (t2 && typeof t2 === "object") catResult.slots.push(t2);
+        } else {
+          for (const [code, course] of taken) {
+            if (assignedInProgram.has(code) || isPinBlocked(code, progCode)) continue;
+            const ka = course.knowledge_area;
+            if (Array.isArray(category.eligible_courses)) {
+              if (!category.eligible_courses.includes(code)) continue;
+            } else {
+              if (!ka || !keywords.includes(ka)) continue;
+            }
+            catResult.slots.push({ code, title: course.title, status: course.status });
+            assignedInProgram.add(code);
+            _addSlotAssignment(result.slotAssignments, code, progCode, category.name);
+            break;
+          }
+        }
+
+      } else if (pd.type === "college") {
+        if (category.name === "Writing Intensive") {
+          for (const [code, course] of taken) {
+            if (catResult.slots.length >= category.slots) break;
+            if (isPinBlocked(code, progCode)) continue;
+            if (course.writing_intensive) {
+              catResult.slots.push({ code, title: course.title, status: course.status });
+              _addSlotAssignment(result.slotAssignments, code, progCode, category.name);
+            }
+          }
+        } else if (category.name === "Foreign Language") {
+          for (const [code, course] of taken) {
+            if (isPinBlocked(code, progCode)) continue;
+            if (course.department === "SPAN" && course.number >= 102) {
+              catResult.slots.push({ code, title: course.title, status: course.status });
+              _addSlotAssignment(result.slotAssignments, code, progCode, category.name); break;
+            }
+          }
+        } else if (category.name === "Engaged Learning") {
+          for (const [code, course] of taken) {
+            if (isPinBlocked(code, progCode)) continue;
+            if (course.engaged_learning) {
+              catResult.slots.push({ code, title: course.title, status: course.status });
+              _addSlotAssignment(result.slotAssignments, code, progCode, category.name); break;
+            }
+          }
+        } else if (category.name === "UNIV 101" && taken.has("UNIV 101")) {
+          const c = taken.get("UNIV 101");
+          catResult.slots.push({ code: "UNIV 101", title: c.title, status: c.status });
+          _addSlotAssignment(result.slotAssignments, "UNIV 101", progCode, category.name);
+        }
+
+      } else if (pd.type === "requirement") {
+        for (const code of (category.eligible_courses || [])) {
+          if (taken.has(code)) {
+            const c = taken.get(code);
+            catResult.slots.push({ code, title: c.title, status: c.status });
+            _addSlotAssignment(result.slotAssignments, code, progCode, category.name);
+          }
+        }
+
+      } else {
+        // major — skip wildcards for now
+        const isWildcard = typeof category.eligible_courses === "string";
+        if (isWildcard) { catResult._isWildcard = true; catResult._glstPool = glstPool; progResult.categories.push(catResult); continue; }
+        for (const [code, course] of taken) {
+          if (catResult.slots.length >= category.slots) break;
+          if (assignedInProgram.has(code) || isPinBlocked(code, progCode)) continue;
+          if (courseMatchesEligible(code, course, category, assignedInProgram, glstPool)) {
+            catResult.slots.push({ code, title: course.title, status: course.status });
+            assignedInProgram.add(code);
+            _addSlotAssignment(result.slotAssignments, code, progCode, category.name);
+          }
+        }
+      }
+
+      // Count filled slots (coversBothTiers counts as 2)
+      catResult.filledCount = catResult.slots.reduce((n, s) => n + (s.coversBothTiers ? 2 : 1), 0);
+      catResult.isSatisfied = catResult.isWaived || catResult.filledCount >= category.slots;
+
+      // Accumulate credits for all filled slots
+      for (const slot of catResult.slots) {
+        if (slot.code !== "WAIVED") {
+          const c = taken.get(slot.code);
+          if (c) progResult.creditsApplied += c.credits;
+        }
+      }
+
+      progResult.categories.push(catResult);
+    }
+
+    // Second pass: wildcard elective categories
+    for (const catResult of progResult.categories) {
+      if (!catResult._isWildcard) continue;
+      const wcGlstPool = catResult._glstPool || new Set();
+      delete catResult._isWildcard;
+      delete catResult._glstPool;
+      const category = pd.categories.find(c => c.name === catResult.name);
+      if (!category) continue;
       for (const [code, course] of taken) {
-        const courseTags = tags[code]?.[programId] || [];
-        if (courseTags.includes(category.id)) {
-          eligibleCourses.push({ code, course, tags: courseTags });
+        if (catResult.slots.length >= category.slots) break;
+        if (assignedInProgram.has(code) || isPinBlocked(code, progCode)) continue;
+        if (courseMatchesEligible(code, course, category, assignedInProgram, wcGlstPool)) {
+          catResult.slots.push({ code, title: course.title, status: course.status });
+          assignedInProgram.add(code);
+          _addSlotAssignment(result.slotAssignments, code, progCode, category.name);
         }
       }
-
-      // Greedy fill: assign courses to slots up to slotsNeeded
-      for (const { code, course } of eligibleCourses) {
-        if (filled >= category.slotsNeeded) break;
-        catResult.slots.push({ code, title: course.title, status: course.status });
-
-        // Track slot assignments
-        if (!result.slotAssignments[code]) result.slotAssignments[code] = [];
-        result.slotAssignments[code].push({ programId, slotId: category.id });
-
-        filled++;
-        result.programs[programId].creditsApplied += course.credits;
+      catResult.filledCount = catResult.slots.length;
+      catResult.isSatisfied = catResult.filledCount >= category.slots;
+      for (const slot of catResult.slots) {
+        if (slot.code !== "WAIVED") {
+          const c = taken.get(slot.code);
+          if (c) progResult.creditsApplied += c.credits;
+        }
       }
+    }
 
-      catResult.isSatisfied = filled >= category.slotsNeeded;
-      catResult.filledCount = filled;
-      result.programs[programId].filledSlots += filled;
-      result.programs[programId].totalSlots += category.slotsNeeded;
-      result.programs[programId].categories.push(catResult);
+    progResult.isComplete = progResult.categories.every(c => c.isSatisfied);
+    result.programs[progCode] = progResult;
+  }
 
-      if (!catResult.isSatisfied) {
-        const remaining = category.slotsNeeded - filled;
-        result.remaining.push(
-          `${programId}: ${category.name} — needs ${remaining} more course${remaining > 1 ? "s" : ""}`
-        );
-      }
+  // Overlap tracking
+  for (const [, assignments] of Object.entries(result.slotAssignments)) {
+    const progs = new Set(assignments.map(a => a.programCode));
+    if (progs.has("GLST-BA") && progs.has("PLSC-BA")) result.overlaps.glstMajorUsed++;
+  }
+  const glstElectives = result.programs["GLST-BA"]?.categories.find(c => c.name === "GLST Electives");
+  if (glstElectives) {
+    for (const slot of glstElectives.slots) {
+      const dept = slot.code.split(" ")[0];
+      result.overlaps.glstElectiveDeptUsage[dept] = (result.overlaps.glstElectiveDeptUsage[dept] || 0) + 1;
     }
   }
 
-  // ── Overlap tracking ─────────────────────────────────────────────────────
-  for (const [code, assignments] of Object.entries(result.slotAssignments)) {
-    if (assignments.length > 1) {
-      // Check if one of the programs is GLST
-      const glstAssignment = assignments.find((a) => a.programId === "GLST-BA");
-      const otherAssignment = assignments.find((a) => a.programId !== "GLST-BA");
-      if (glstAssignment && otherAssignment) {
-        result.overlaps.glstMajorUsed++;
-      }
-    }
-  }
-
-  // GLST elective dept usage
-  if (result.programs["GLST-BA"]) {
-    for (const cat of result.programs["GLST-BA"].categories) {
-      if (cat.id === "elective") {
-        for (const slot of cat.slots) {
-          const dept = slot.code.split(" ")[0];
-          result.overlaps.glstElectiveDeptUsage[dept] =
-            (result.overlaps.glstElectiveDeptUsage[dept] || 0) + 1;
-        }
+  // Remaining
+  for (const [, prog] of Object.entries(result.programs)) {
+    for (const cat of prog.categories) {
+      if (!cat.isSatisfied && !cat.isWaived) {
+        const need = cat.slotsNeeded - (cat.filledCount || 0);
+        result.remaining.push({ program: prog.code, programName: prog.name,
+          category: cat.name, needed: need,
+          label: `${prog.name}: ${cat.name} — needs ${need} more course${need !== 1 ? "s" : ""}` });
       }
     }
   }
@@ -178,50 +286,40 @@ function solve(studentCourses, declaredPrograms, coursesDb, degreeRequirements, 
   return result;
 }
 
-/**
- * Given a solver result and the full course catalog, return courses not yet
- * taken that would fill 2+ requirement slots (high-efficiency suggestions).
- *
- * @param {SolverResult} solverResult
- * @param {Object} coursesDb
- * @param {Object} programTags
- * @param {string[]} declaredPrograms
- * @returns {Object[]}
- */
-function getSuggestions(solverResult, coursesDb, programTags, declaredPrograms) {
-  const takenCodes = new Set(
-    Object.keys(solverResult.slotAssignments)
-  );
+function getSuggestions(solverResult, courseMap, programMap, declaredPrograms) {
+  const takenCodes = new Set();
+  for (const prog of Object.values(solverResult.programs))
+    for (const cat of prog.categories)
+      for (const slot of cat.slots) takenCodes.add(slot.code);
 
-  const suggestions = [];
-
-  for (const [code, catalog] of Object.entries(coursesDb)) {
-    if (takenCodes.has(code)) continue;
-
-    const tags = programTags[code] || {};
-    let boxCount = 0;
-    const fills = [];
-
-    for (const programId of declaredPrograms) {
-      const programSlots = tags[programId] || [];
-      for (const slotId of programSlots) {
-        const cat = solverResult.programs[programId]?.categories.find((c) => c.id === slotId);
-        if (cat && !cat.isSatisfied) {
-          boxCount++;
-          fills.push(`${programId}: ${cat.name}`);
-        }
+  const unsatisfied = [];
+  for (const progCode of declaredPrograms) {
+    const prog = solverResult.programs[progCode];
+    if (!prog) continue;
+    const pd = programMap.get(progCode);
+    for (const cat of prog.categories) {
+      if (!cat.isSatisfied && !cat.isWaived) {
+        const catDef = pd?.categories.find(c => c.name === cat.name);
+        if (catDef) unsatisfied.push({ progCode, cat: catDef, progName: prog.name });
       }
-    }
-
-    if (boxCount >= 2) {
-      suggestions.push({ code, ...catalog, boxCount, fills });
     }
   }
 
+  const suggestions = [];
+  for (const [code, course] of courseMap) {
+    if (takenCodes.has(code) || code.startsWith("AP ")) continue;
+    const fills = [];
+    for (const { progCode: pc, cat, progName } of unsatisfied) {
+      const sgPool = pc === "GLST-BA" ? buildGlstElectivePool(programMap.get(pc)) : new Set();
+      if (courseMatchesEligible(code, course, cat, takenCodes, sgPool)) fills.push(`${progName}: ${cat.name}`);
+    }
+    if (fills.length >= 2) suggestions.push({ code, title: course.title, credits: course.credits,
+      department: course.department, fills, boxCount: fills.length,
+      engaged_learning: course.engaged_learning, writing_intensive: course.writing_intensive });
+  }
   return suggestions.sort((a, b) => b.boxCount - a.boxCount);
 }
 
-// ── Export (works in both Node and browser via bundler) ───────────────────
 if (typeof module !== "undefined") {
-  module.exports = { solve, getSuggestions, OVERLAP_RULES };
+  module.exports = { solve, getSuggestions, buildCourseMap, buildProgramMap };
 }

@@ -6,40 +6,37 @@
  */
 
 const express = require("express");
-const courses = require("../../data/courses.json");
-const programTags = require("../../data/course_program_tags.json");
+const coursesArray = require("../../data/courses.json");
+const supplemental = require("../../data/courses-supplemental.json");
+
+// Merge into a single map for lookups
+const allCourses = new Map();
+for (const c of coursesArray) allCourses.set(c.code, c);
+for (const c of supplemental) { if (!allCourses.has(c.code)) allCourses.set(c.code, c); }
 
 const router = express.Router();
 
 router.get("/", (req, res) => {
-  res.json(courses);
+  res.json([...allCourses.values()]);
 });
 
 router.get("/search", (req, res) => {
   const { q, dept, glstOnly } = req.query;
-  let results = Object.entries(courses).map(([code, data]) => ({ code, ...data }));
-
+  let results = [...allCourses.values()];
   if (q) {
     const term = q.toLowerCase();
-    results = results.filter(
-      (c) => c.code.toLowerCase().includes(term) || (c.title || "").toLowerCase().includes(term)
-    );
+    results = results.filter(c => c.code.toLowerCase().includes(term) || (c.title||"").toLowerCase().includes(term));
   }
-  if (dept) {
-    results = results.filter((c) => c.dept === dept.toUpperCase());
-  }
-  if (glstOnly === "true") {
-    results = results.filter((c) => c.glstTag === true);
-  }
-
+  if (dept) results = results.filter(c => c.department === dept.toUpperCase());
+  if (glstOnly === "true") results = results.filter(c => c.interdisciplinary_options?.includes("Global Studies"));
   res.json(results.slice(0, 50));
 });
 
 router.get("/:code", (req, res) => {
   const code = req.params.code.toUpperCase().replace("-", " ");
-  const course = courses[code];
+  const course = allCourses.get(code);
   if (!course) return res.status(404).json({ error: "Course not found" });
-  res.json({ code, ...course, tags: programTags[code] || {} });
+  res.json(course);
 });
 
 module.exports = router;

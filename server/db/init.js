@@ -23,5 +23,13 @@ db.pragma("foreign_keys = ON");
 // Execute the schema file (exec handles multiple statements and comments natively)
 db.exec(schema);
 
+// Migration: add pinned_program column if it doesn't exist
+try {
+  db.prepare("ALTER TABLE student_courses ADD COLUMN pinned_program TEXT").run();
+  console.log("  Migrated: added pinned_program column");
+} catch (e) {
+  // Column already exists — fine
+}
+
 db.close();
 console.log(`✓ Database initialized at ${DB_PATH}`);

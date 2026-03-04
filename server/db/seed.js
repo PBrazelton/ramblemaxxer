@@ -68,7 +68,7 @@ const PENELOPE_COURSES = [
   { code: "SPAN 104", semester: 6, status: "planned" },
 ];
 
-const PENELOPE_PROGRAMS = ["PLSC-BA", "GLST-BA", "CORE"];
+const PENELOPE_PROGRAMS = ["PLSC-BA", "GLST-BA", "CORE", "CAS-GRAD", "SPAN-LANG"];
 
 // ── Seed ──────────────────────────────────────────────────────────────────
 const run = db.transaction(() => {
