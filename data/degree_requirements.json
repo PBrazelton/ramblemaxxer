@@ -1,0 +1,644 @@
+{
+  "programs": [
+    {
+      "code": "PLSC-BA",
+      "name": "Political Science (BA)",
+      "type": "major",
+      "department": "PLSC",
+      "total_credits": 33,
+      "unique_credits_required": 21,
+      "double_dip_policy": "CAS_DEFAULT",
+      "core_waivers": [
+        "Societal/Cultural"
+      ],
+      "notes": [
+        "At least 17 credit hours of PLSC courses must be completed at Loyola.",
+        "PLSC 395 Honors Seminar does not count toward major.",
+        "PLSC 216 counts as elective only (also fulfills core quantitative).",
+        "PLSC 396 Directed Readings counts as elective only.",
+        "Only 3 credits of PLSC 370 may count toward major."
+      ],
+      "categories": [
+        {
+          "name": "Foundation Courses",
+          "description": "Select three of the following four",
+          "slots": 3,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "PLSC 100",
+            "PLSC 101",
+            "PLSC 102",
+            "PLSC 103"
+          ],
+          "notes": "If taking PLSC 100, 101, or 102 as the three, PLSC 103 can count as elective"
+        },
+        {
+          "name": "American Politics Subfield",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "PLSC 202",
+            "PLSC 203",
+            "PLSC 208",
+            "PLSC 215",
+            "PLSC 218",
+            "PLSC 236",
+            "PLSC 238",
+            "PLSC 251",
+            "PLSC 300A",
+            "PLSC 318",
+            "PLSC 319",
+            "PLSC 320",
+            "PLSC 321",
+            "PLSC 322",
+            "PLSC 323",
+            "PLSC 324",
+            "PLSC 326",
+            "PLSC 327",
+            "PLSC 328",
+            "PLSC 329",
+            "PLSC 332",
+            "PLSC 334",
+            "PLSC 335",
+            "PLSC 357",
+            "PLSC 372",
+            "PLSC 376",
+            "PLSC 377",
+            "PLSC 378",
+            "PLSC 379",
+            "PLSC 380",
+            "PLSC 381",
+            "PLSC 384",
+            "PLSC 385",
+            "PLSC 386",
+            "PLSC 387",
+            "PLSC 389",
+            "PLSC 390",
+            "PLSC 391",
+            "PLSC 392",
+            "PLSC 393",
+            "PLSC 398"
+          ]
+        },
+        {
+          "name": "Political Theory Subfield",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "PLSC 300B",
+            "PLSC 301",
+            "PLSC 302",
+            "PLSC 303",
+            "PLSC 304",
+            "PLSC 306",
+            "PLSC 307",
+            "PLSC 308",
+            "PLSC 309",
+            "PLSC 310B",
+            "PLSC 312",
+            "PLSC 313",
+            "PLSC 314",
+            "PLSC 330",
+            "PLSC 331",
+            "PLSC 339",
+            "PLSC 371",
+            "PLSC 373",
+            "PLSC 388"
+          ]
+        },
+        {
+          "name": "Comparative Politics Subfield",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "PLSC 232",
+            "PLSC 300C",
+            "PLSC 336",
+            "PLSC 337",
+            "PLSC 339",
+            "PLSC 342",
+            "PLSC 343",
+            "PLSC 344",
+            "PLSC 345",
+            "PLSC 346",
+            "PLSC 347",
+            "PLSC 348",
+            "PLSC 349",
+            "PLSC 352",
+            "PLSC 355C",
+            "PLSC 359",
+            "PLSC 360",
+            "PLSC 362",
+            "PLSC 365",
+            "PLSC 366",
+            "PLSC 368",
+            "PLSC 374",
+            "GLST 303"
+          ]
+        },
+        {
+          "name": "International Relations Subfield",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "PLSC 204",
+            "PLSC 213",
+            "PLSC 252",
+            "PLSC 300D",
+            "PLSC 316",
+            "PLSC 317",
+            "PLSC 325",
+            "PLSC 333",
+            "PLSC 340",
+            "PLSC 350",
+            "PLSC 351",
+            "PLSC 353",
+            "PLSC 354",
+            "PLSC 356",
+            "PLSC 358",
+            "PLSC 358D",
+            "PLSC 363",
+            "PLSC 364",
+            "PLSC 367",
+            "PLSC 369",
+            "GLST 302"
+          ]
+        },
+        {
+          "name": "PLSC Electives",
+          "description": "Four additional PLSC courses",
+          "slots": 4,
+          "credits_per_slot": 3,
+          "eligible_courses": "ANY_PLSC_200_PLUS",
+          "notes": "Any PLSC course 200+ not already used. PLSC 370 max 3cr toward major."
+        }
+      ]
+    },
+    {
+      "code": "GLST-BA",
+      "name": "Global Studies (BA)",
+      "type": "major",
+      "department": "GLST",
+      "total_credits": 33,
+      "unique_credits_required": 21,
+      "double_dip_policy": "GLST_STRICT",
+      "core_waivers": [
+        "Societal/Cultural"
+      ],
+      "notes": [
+        "Max 4 courses total can overlap between GLST and all other declared majors/minors.",
+        "No more than 3 courses from any single department can count for GLST.",
+        "Electives must include at least 2 courses from different world areas.",
+        "Elective coursework must be from at least 3 departments.",
+        "Language proficiency at 104-level required (does not count toward 33 credits).",
+        "Portfolio submission required in final semester.",
+        "Only 3 credits of GLST 370 count toward major."
+      ],
+      "categories": [
+        {
+          "name": "Core Requirements",
+          "slots": 3,
+          "credits_per_slot": 3,
+          "eligible_courses_fixed": [
+            {
+              "course": "GLST 101",
+              "required": true
+            },
+            {
+              "course": "ANTH 100",
+              "required": true
+            },
+            {
+              "course": "PLSC 102",
+              "required": true
+            }
+          ]
+        },
+        {
+          "name": "300-Level GLST Courses",
+          "description": "Select two of the following",
+          "slots": 2,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "GLST 301",
+            "GLST 302",
+            "GLST 303",
+            "GLST 304",
+            "GLST 305",
+            "GLST 306",
+            "GLST 398"
+          ]
+        },
+        {
+          "name": "Internship",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "GLST 370"
+          ]
+        },
+        {
+          "name": "GLST Electives",
+          "description": "Six elective courses tagged with GLST interdisciplinary option",
+          "slots": 6,
+          "credits_per_slot": 3,
+          "eligible_courses": "ANY_GLST_TAGGED",
+          "constraints": {
+            "min_world_areas": 2,
+            "min_departments": 3,
+            "max_from_single_dept": 3,
+            "dept_cap_note": "The 3-per-dept cap counts ONLY electives. Required core courses (GLST 101, ANTH 100, PLSC 102) are excluded from this count."
+          },
+          "notes": "Must be from at least 2 world areas and 3 departments. A PLSC elective here does NOT consume a major-overlap slot unless it also counts toward the PLSC major."
+        }
+      ],
+      "elective_pool_by_region": {
+        "Africa": [
+          "ANTH 213",
+          "FNAR 355",
+          "HIST 213",
+          "HIST 342B",
+          "HIST 342M",
+          "HONR 210A",
+          "HONR 210B",
+          "HONR 210C",
+          "LITR 219",
+          "PLSC 340",
+          "PLSC 342"
+        ],
+        "Asia": [
+          "ANTH 215",
+          "ASIA 101",
+          "CHIN 341",
+          "COMM 269",
+          "COMM 301",
+          "ENGL 292",
+          "ENGL 315",
+          "ENGL 315C",
+          "FNAR 357",
+          "FNAR 358",
+          "FNAR 359",
+          "HIST 208",
+          "HIST 208Z",
+          "HIST 343",
+          "HIST 346B",
+          "HIST 346C",
+          "HIST 347A",
+          "HIST 347C",
+          "HIST 347D",
+          "HIST 349A",
+          "HIST 388A",
+          "HONR 209B",
+          "HONR 209C",
+          "LITR 243",
+          "LITR 244",
+          "LITR 245",
+          "LITR 287",
+          "LITR 290",
+          "LITR 292",
+          "PHIL 192",
+          "PHIL 193",
+          "PHIL 335",
+          "PLSC 345",
+          "PLSC 346",
+          "SOCL 251",
+          "SOCL 263",
+          "SOCL 266",
+          "THEO 299",
+          "THEO 352"
+        ],
+        "Europe": [
+          "ANTH 222",
+          "FREN 271",
+          "FREN 309",
+          "FREN 311",
+          "FREN 390",
+          "GERM 270",
+          "GERM 271",
+          "GERM 370",
+          "HIST 267A",
+          "HIST 267B",
+          "HIST 322",
+          "HIST 324",
+          "HIST 325A",
+          "HIST 326",
+          "HIST 327A",
+          "HIST 329C",
+          "HIST 329N",
+          "HIST 330",
+          "HIST 330F",
+          "HIST 331A",
+          "HIST 334B",
+          "HIST 335",
+          "HIST 336",
+          "HIST 337",
+          "HIST 337A",
+          "HIST 338A",
+          "HIST 339C",
+          "HIST 359C",
+          "HONR 216A",
+          "HONR 216B",
+          "HONR 216C",
+          "ITAL 271",
+          "ITAL 284",
+          "ITAL 319",
+          "ITAL 320",
+          "ITAL 390",
+          "LITR 161",
+          "LITR 200",
+          "LITR 202",
+          "LITR 203",
+          "LITR 204",
+          "LITR 221",
+          "LITR 225",
+          "LITR 230",
+          "LITR 260",
+          "LITR 262",
+          "LITR 264",
+          "LITR 267",
+          "LITR 268",
+          "LITR 268R",
+          "LITR 283",
+          "LITR 291",
+          "PLSC 232",
+          "PLSC 347",
+          "PLSC 348",
+          "PLSC 349",
+          "PLSC 352",
+          "PLSC 360",
+          "PLSC 365",
+          "ROST 382",
+          "SOCL 267",
+          "SPAN 271",
+          "SPAN 311",
+          "SPAN 321",
+          "SPAN 331",
+          "SPAN 341",
+          "SPAN 349",
+          "SPAN 362",
+          "SPAN 363",
+          "SPAN 366",
+          "SPAN 390",
+          "UNIV 301"
+        ],
+        "Latin America": [
+          "ANTH 211",
+          "ANTH 217",
+          "ANTH 321",
+          "ENGL 316C",
+          "ENVS 340",
+          "HIST 210",
+          "HIST 278A",
+          "HIST 353",
+          "HIST 355",
+          "HIST 356",
+          "HIST 357",
+          "HIST 358",
+          "HONR 208A",
+          "HONR 208B",
+          "LASP 395",
+          "LITR 211",
+          "PLSC 343",
+          "PLSC 344",
+          "PLSC 351",
+          "SPAN 271",
+          "SPAN 363",
+          "SPAN 370",
+          "SPAN 380",
+          "SPAN 381",
+          "SPAN 385",
+          "SPAN 389",
+          "SPAN 390"
+        ],
+        "Middle East": [
+          "ANTH 220",
+          "HIST 209",
+          "HIST 300",
+          "HIST 341",
+          "HIST 341B",
+          "HONR 212B",
+          "LITR 238",
+          "PLSC 368",
+          "PLSC 331"
+        ]
+      }
+    },
+    {
+      "code": "CORE",
+      "name": "University Core Curriculum",
+      "type": "core",
+      "total_credits": 48,
+      "notes": [
+        "16 required courses across 10 Core Areas.",
+        "Some areas waived by declaring certain majors/minors.",
+        "All Core classes must be taken at Loyola.",
+        "6 areas require 2 courses (Foundational + Tier 2), 4 areas require 1 course."
+      ],
+      "categories": [
+        {
+          "name": "Artistic Knowledge and Inquiry",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "tier_structure": "single"
+        },
+        {
+          "name": "College Writing Seminar",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "tier_structure": "single",
+          "eligible_courses": [
+            "UCWR 110"
+          ]
+        },
+        {
+          "name": "Ethical Knowledge and Inquiry",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "tier_structure": "single"
+        },
+        {
+          "name": "Quantitative Knowledge and Inquiry",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "tier_structure": "single"
+        },
+        {
+          "name": "Historical Knowledge and Inquiry",
+          "slots": 2,
+          "credits_per_slot": 3,
+          "tier_structure": "foundation_plus_tier2",
+          "notes": "Tier 1 (Foundational) + Tier 2"
+        },
+        {
+          "name": "Literary Knowledge and Inquiry",
+          "slots": 2,
+          "credits_per_slot": 3,
+          "tier_structure": "foundation_plus_tier2"
+        },
+        {
+          "name": "Philosophical Knowledge and Inquiry",
+          "slots": 2,
+          "credits_per_slot": 3,
+          "tier_structure": "foundation_plus_tier2"
+        },
+        {
+          "name": "Scientific Knowledge and Inquiry",
+          "slots": 2,
+          "credits_per_slot": 3,
+          "tier_structure": "foundation_plus_tier2"
+        },
+        {
+          "name": "Societal and Cultural Knowledge and Inquiry",
+          "slots": 2,
+          "credits_per_slot": 3,
+          "tier_structure": "foundation_plus_tier2"
+        },
+        {
+          "name": "Theological and Religious Knowledge and Inquiry",
+          "slots": 2,
+          "credits_per_slot": 3,
+          "tier_structure": "foundation_plus_tier2"
+        }
+      ]
+    },
+    {
+      "code": "CAS-GRAD",
+      "name": "College of Arts & Sciences Graduation Requirements",
+      "type": "college",
+      "notes": [
+        "120 total credit hours required for graduation.",
+        "Minimum 2.00 cumulative GPA.",
+        "Minimum 2.00 GPA in Core Curriculum.",
+        "Final 45 hours must be at Loyola.",
+        "UNIV 101 required.",
+        "At least 1 Engaged Learning course required."
+      ],
+      "categories": [
+        {
+          "name": "Writing Intensive",
+          "slots": 2,
+          "credits_per_slot": 3,
+          "notes": "Two Writing Intensive courses required (6 credit hours)"
+        },
+        {
+          "name": "Foreign Language",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "notes": "Language at 102-level or higher, or language competency test"
+        },
+        {
+          "name": "Engaged Learning",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "notes": "At least one Engaged Learning course"
+        },
+        {
+          "name": "UNIV 101",
+          "slots": 1,
+          "credits_per_slot": 1,
+          "eligible_courses": [
+            "UNIV 101"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "SPAN-LANG",
+      "name": "Spanish Language Requirement (for GLST + CAS)",
+      "type": "requirement",
+      "notes": [
+        "CAS requires foreign language at 102-level or higher.",
+        "GLST requires foreign language proficiency at 104-level.",
+        "GLST language courses do NOT count toward the 33 GLST credit hours.",
+        "These courses DO count toward the 120 total graduation credits."
+      ],
+      "categories": [
+        {
+          "name": "Spanish Sequence",
+          "slots": 3,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "SPAN 102",
+            "SPAN 103",
+            "SPAN 104"
+          ],
+          "notes": "SPAN 102 satisfies CAS requirement; SPAN 104 satisfies GLST requirement"
+        }
+      ]
+    }
+  ],
+  "overlap_rules": {
+    "cas_default": {
+      "description": "College of Arts & Sciences Double Dipping Policy",
+      "major_unique_credits": 21,
+      "minor_unique_credits": 8,
+      "notes": "Departments may enforce stricter policies."
+    },
+    "pairs": [
+      {
+        "programs": [
+          "PLSC-BA",
+          "GLST-BA"
+        ],
+        "max_shared_courses": 4,
+        "constraint_source": "GLST",
+        "notes": [
+          "GLST is the binding constraint. PLSC uses CAS default (21 unique).",
+          "The 3-from-single-dept cap applies to GLST ELECTIVES only, not required core courses.",
+          "PLSC 102 is a required GLST core course and does NOT count against the 3-PLSC-elective cap.",
+          "A PLSC course used as a GLST elective only burns an overlap slot if it ALSO counts toward the PLSC major.",
+          "A PLSC elective in GLST that is NOT fulfilling a PLSC major requirement = no overlap consumed."
+        ]
+      },
+      {
+        "programs": [
+          "PLSC-BA",
+          "CORE"
+        ],
+        "overlap_type": "waiver",
+        "details": "PLSC BA waives Core Societal/Cultural Knowledge (both tiers = 6 credits). Core courses with PLSC Knowledge Area tags can satisfy both Core and contribute to major understanding, but the PLSC credit hours still count toward the PLSC 33.",
+        "notes": "This is a WAIVER not double-counting. Student does not need separate Societal/Cultural courses."
+      },
+      {
+        "programs": [
+          "GLST-BA",
+          "CORE"
+        ],
+        "overlap_type": "waiver",
+        "details": "GLST BA waives Core Societal/Cultural Knowledge (both tiers = 6 credits).",
+        "notes": "Same waiver as PLSC. Student with both majors benefits once (not twice)."
+      }
+    ]
+  },
+  "core_waivers_by_program": {
+    "PLSC-BA": [
+      "Societal and Cultural Knowledge and Inquiry"
+    ],
+    "GLST-BA": [
+      "Societal and Cultural Knowledge and Inquiry"
+    ],
+    "HIST-BA": [
+      "Historical Knowledge and Inquiry"
+    ],
+    "ENGL-BA": [
+      "Literary Knowledge and Inquiry"
+    ],
+    "PHIL-BA": [
+      "Philosophical Knowledge and Inquiry",
+      "Ethical Knowledge and Inquiry"
+    ],
+    "SPAN-BA": [
+      "Literary Knowledge and Inquiry"
+    ],
+    "THEO-BA": [
+      "Theological and Religious Knowledge and Inquiry"
+    ],
+    "ANTH-BA": [
+      "Scientific Knowledge and Inquiry",
+      "Societal and Cultural Knowledge and Inquiry"
+    ],
+    "FNAR-BA": [
+      "Artistic Knowledge and Inquiry"
+    ]
+  }
+}

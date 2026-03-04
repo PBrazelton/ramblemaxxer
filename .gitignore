@@ -1,0 +1,8 @@
+node_modules/
+server/db/ramblemaxxer.db
+server/db/ramblemaxxer.db-wal
+server/db/ramblemaxxer.db-shm
+server/public/
+.env
+*.log
+.DS_Store

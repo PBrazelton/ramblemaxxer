@@ -1,0 +1,508 @@
+{
+  "ANTH 100": [
+    "African Studies and the African Diaspora",
+    "Latin American Studies",
+    "European Studies",
+    "Global Studies",
+    "Asian Studies"
+  ],
+  "ANTH 211": [
+    "Latin American Studies",
+    "Global Studies"
+  ],
+  "ANTH 213": [
+    "African Studies and the African Diaspora",
+    "Global Studies"
+  ],
+  "ANTH 215": [
+    "Japanese Language and Culture",
+    "Global Studies",
+    "Asian Studies"
+  ],
+  "ANTH 217": [
+    "Latin American Studies",
+    "Global Studies"
+  ],
+  "ANTH 220": [
+    "Arabic Language and Culture",
+    "Islamic World Studies",
+    "Global Studies"
+  ],
+  "ANTH 222": [
+    "European Studies",
+    "Global Studies"
+  ],
+  "ANTH 321": [
+    "Latin American Studies",
+    "Global Studies"
+  ],
+  "GLST 101": [
+    "African Studies and the African Diaspora",
+    "Latin American Studies",
+    "Islamic World Studies",
+    "European Studies",
+    "Global Studies",
+    "Asian Studies"
+  ],
+  "GLST 301": [
+    "Global Studies"
+  ],
+  "GLST 302": [
+    "Global Studies"
+  ],
+  "GLST 303": [
+    "Global Studies"
+  ],
+  "GLST 304": [
+    "Global Studies"
+  ],
+  "GLST 305": [
+    "Global Studies"
+  ],
+  "GLST 306": [
+    "Global Studies"
+  ],
+  "GLST 370": [
+    "African Studies and the African Diaspora",
+    "Latin American Studies",
+    "Islamic World Studies",
+    "European Studies",
+    "Global Studies",
+    "Asian Studies"
+  ],
+  "GLST 398": [
+    "Global Studies"
+  ],
+  "HIST 101": [
+    "Catholic Studies"
+  ],
+  "HIST 102": [
+    "European Studies"
+  ],
+  "HIST 104": [
+    "Global Studies"
+  ],
+  "HIST 208": [
+    "Japanese Language and Culture",
+    "Global Studies",
+    "Asian Studies"
+  ],
+  "HIST 208Z": [
+    "Chinese Language & Culture",
+    "Asian Studies"
+  ],
+  "HIST 209": [
+    "African Studies and the African Diaspora",
+    "Arabic Language and Culture",
+    "Islamic World Studies",
+    "Global Studies",
+    "Asian Studies"
+  ],
+  "HIST 210": [
+    "African Studies and the African Diaspora",
+    "Latin American Studies",
+    "Global Studies"
+  ],
+  "HIST 213": [
+    "African Studies and the African Diaspora",
+    "Islamic World Studies",
+    "Global Studies"
+  ],
+  "HIST 267A": [
+    "European Studies",
+    "German Studies"
+  ],
+  "HIST 267B": [
+    "European Studies",
+    "German Studies",
+    "Global Studies"
+  ],
+  "HIST 275A": [
+    "Global Studies",
+    "Asian Studies"
+  ],
+  "HIST 278A": [
+    "Latin American Studies",
+    "Global Studies"
+  ],
+  "HIST 322": [
+    "European Studies",
+    "Global Studies"
+  ],
+  "HIST 324": [
+    "European Studies",
+    "Italian Studies",
+    "Global Studies"
+  ],
+  "HIST 325A": [
+    "European Studies",
+    "Global Studies"
+  ],
+  "HIST 326": [
+    "European Studies",
+    "Global Studies"
+  ],
+  "HIST 327A": [
+    "European Studies",
+    "Global Studies"
+  ],
+  "HIST 329C": [
+    "European Studies",
+    "Global Studies"
+  ],
+  "HIST 329N": [
+    "European Studies",
+    "Global Studies"
+  ],
+  "HIST 330": [
+    "European Studies",
+    "Global Studies"
+  ],
+  "HIST 330F": [
+    "European Studies",
+    "Global Studies"
+  ],
+  "HIST 331A": [
+    "European Studies",
+    "Global Studies"
+  ],
+  "HIST 334B": [
+    "European Studies",
+    "Global Studies"
+  ],
+  "HIST 335": [
+    "European Studies",
+    "Global Studies"
+  ],
+  "HIST 336": [
+    "European Studies",
+    "Global Studies"
+  ],
+  "HIST 337": [
+    "European Studies",
+    "Global Studies"
+  ],
+  "HIST 337A": [
+    "European Studies",
+    "Global Studies"
+  ],
+  "HIST 338A": [
+    "European Studies",
+    "Global Studies"
+  ],
+  "HIST 339C": [
+    "European Studies",
+    "Global Studies"
+  ],
+  "HIST 341": [
+    "Islamic World Studies",
+    "Global Studies"
+  ],
+  "HIST 341B": [
+    "Islamic World Studies",
+    "Global Studies"
+  ],
+  "HIST 342B": [
+    "African Studies and the African Diaspora",
+    "Global Studies"
+  ],
+  "HIST 342M": [
+    "African Studies and the African Diaspora",
+    "Global Studies"
+  ],
+  "HIST 343": [
+    "Global Studies",
+    "Asian Studies"
+  ],
+  "HIST 346B": [
+    "Global Studies",
+    "Asian Studies"
+  ],
+  "HIST 346C": [
+    "Global Studies",
+    "Asian Studies"
+  ],
+  "HIST 347A": [
+    "Global Studies",
+    "Asian Studies"
+  ],
+  "HIST 347C": [
+    "Global Studies",
+    "Asian Studies"
+  ],
+  "HIST 347D": [
+    "Global Studies",
+    "Asian Studies"
+  ],
+  "HIST 349A": [
+    "Global Studies",
+    "Asian Studies"
+  ],
+  "HIST 353": [
+    "Latin American Studies",
+    "Global Studies"
+  ],
+  "HIST 355": [
+    "Latin American Studies",
+    "Global Studies"
+  ],
+  "HIST 356": [
+    "Latin American Studies",
+    "Global Studies"
+  ],
+  "HIST 357": [
+    "Latin American Studies",
+    "Global Studies"
+  ],
+  "HIST 358": [
+    "Latin American Studies",
+    "Global Studies"
+  ],
+  "HIST 359C": [
+    "European Studies",
+    "Global Studies"
+  ],
+  "HIST 388A": [
+    "Global Studies",
+    "Asian Studies"
+  ],
+  "PLSC 102": [
+    "African Studies and the African Diaspora",
+    "Peace, Justice, and Conflict Studies",
+    "Global Studies"
+  ],
+  "PLSC 103": [
+    "Global Studies",
+    "Global Studies"
+  ],
+  "PLSC 204": [
+    "Global Studies"
+  ],
+  "PLSC 213": [
+    "Global Studies"
+  ],
+  "PLSC 218": [
+    "African Studies and the African Diaspora",
+    "Race and Ethnicity",
+    "Human Services"
+  ],
+  "PLSC 232": [
+    "European Studies",
+    "Global Studies"
+  ],
+  "PLSC 251": [
+    "Women and Gender Studies"
+  ],
+  "PLSC 252": [
+    "Global Studies"
+  ],
+  "PLSC 316": [
+    "Global Studies"
+  ],
+  "PLSC 317": [
+    "Global Studies"
+  ],
+  "PLSC 331": [
+    "Islamic World Studies",
+    "Global Studies"
+  ],
+  "PLSC 333": [
+    "Global Studies"
+  ],
+  "PLSC 336": [
+    "Global and International Studies",
+    "Global Studies",
+    "Asian Studies",
+    "Peace Studies"
+  ],
+  "PLSC 337": [
+    "Global Studies"
+  ],
+  "PLSC 340": [
+    "African Studies and the African Diaspora",
+    "Global Studies"
+  ],
+  "PLSC 342": [
+    "African Studies and the African Diaspora",
+    "Global Studies"
+  ],
+  "PLSC 343": [
+    "Latin American Studies",
+    "Global Studies"
+  ],
+  "PLSC 344": [
+    "Latin American Studies",
+    "Global Studies"
+  ],
+  "PLSC 345": [
+    "Global Studies",
+    "Asian Studies"
+  ],
+  "PLSC 346": [
+    "Global Studies",
+    "Asian Studies"
+  ],
+  "PLSC 347": [
+    "European Studies",
+    "Global Studies"
+  ],
+  "PLSC 348": [
+    "European Studies",
+    "Global Studies"
+  ],
+  "PLSC 349": [
+    "European Studies",
+    "Global Studies"
+  ],
+  "PLSC 350": [
+    "Global Studies"
+  ],
+  "PLSC 351": [
+    "Latin American Studies",
+    "Global Studies"
+  ],
+  "PLSC 352": [
+    "Global Studies"
+  ],
+  "PLSC 353": [
+    "Global Studies"
+  ],
+  "PLSC 354": [
+    "Global Studies"
+  ],
+  "PLSC 355C": [
+    "Women and Gender Studies",
+    "Global Studies"
+  ],
+  "PLSC 356": [
+    "Global Studies"
+  ],
+  "PLSC 358": [
+    "Global Studies",
+    "Peace Studies"
+  ],
+  "PLSC 358D": [
+    "Global Studies",
+    "Peace Studies"
+  ],
+  "PLSC 359": [
+    "Global Studies"
+  ],
+  "PLSC 360": [
+    "European Studies",
+    "Global Studies"
+  ],
+  "PLSC 362": [
+    "Global Studies"
+  ],
+  "PLSC 363": [
+    "Global Studies"
+  ],
+  "PLSC 364": [
+    "Global Studies"
+  ],
+  "PLSC 365": [
+    "European Studies",
+    "Global Studies"
+  ],
+  "PLSC 366": [
+    "Global Studies"
+  ],
+  "PLSC 367": [
+    "Global Studies"
+  ],
+  "PLSC 368": [
+    "Islamic World Studies",
+    "Global Studies"
+  ],
+  "PLSC 369": [
+    "Global Studies"
+  ],
+  "PLSC 374": [
+    "Global Studies"
+  ],
+  "PLSC 388": [
+    "Peace Studies"
+  ],
+  "SPAN 102": [
+    "Latin American Studies"
+  ],
+  "SPAN 270": [
+    "European Studies"
+  ],
+  "SPAN 271": [
+    "European Studies",
+    "Global Studies"
+  ],
+  "SPAN 311": [
+    "European Studies",
+    "Global Studies"
+  ],
+  "SPAN 314": [
+    "European Studies",
+    "Medieval Studies"
+  ],
+  "SPAN 319": [
+    "European Studies"
+  ],
+  "SPAN 321": [
+    "Global Studies"
+  ],
+  "SPAN 326": [
+    "European Studies"
+  ],
+  "SPAN 331": [
+    "European Studies",
+    "Global Studies"
+  ],
+  "SPAN 340": [
+    "European Studies"
+  ],
+  "SPAN 341": [
+    "European Studies",
+    "Global Studies"
+  ],
+  "SPAN 346": [
+    "European Studies"
+  ],
+  "SPAN 347": [
+    "European Studies"
+  ],
+  "SPAN 349": [
+    "European Studies",
+    "Global Studies"
+  ],
+  "SPAN 352": [
+    "Latin American Studies"
+  ],
+  "SPAN 361": [
+    "Women & Gender Studies"
+  ],
+  "SPAN 362": [
+    "Global Studies"
+  ],
+  "SPAN 363": [
+    "Global Studies"
+  ],
+  "SPAN 366": [
+    "Global Studies"
+  ],
+  "SPAN 370": [
+    "Global Studies"
+  ],
+  "SPAN 380": [
+    "Global Studies"
+  ],
+  "SPAN 381": [
+    "Global Studies"
+  ],
+  "SPAN 385": [
+    "Global Studies"
+  ],
+  "SPAN 389": [
+    "Global Studies"
+  ],
+  "SPAN 390": [
+    "Global Studies"
+  ]
+}

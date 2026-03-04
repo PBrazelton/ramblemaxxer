@@ -1,0 +1,115 @@
+/**
+ * server/routes/students.js
+ *
+ * GET  /api/students/me/courses        - get my course list
+ * POST /api/students/me/courses        - add a course
+ * PUT  /api/students/me/courses/:code  - update a course (status, semester)
+ * DELETE /api/students/me/courses/:code
+ *
+ * GET  /api/students/me/solve          - run the constraint solver, return full result
+ * GET  /api/students/me/programs       - get declared programs
+ * POST /api/students/me/programs       - add a program
+ */
+
+const express = require("express");
+const db = require("../db/connection");
+const { requireAuth } = require("./auth");
+const { solve, getSuggestions } = require("../../shared/solver");
+const courses = require("../../data/courses.json");
+const degreeRequirements = require("../../data/degree_requirements.json");
+const programTags = require("../../data/course_program_tags.json");
+
+const router = express.Router();
+router.use(requireAuth);
+
+// ── GET /api/students/me/courses ──────────────────────────────────────────
+router.get("/me/courses", (req, res) => {
+  const rows = db.prepare(`
+    SELECT course_code as code, semester, status, credits_override, note
+    FROM student_courses WHERE user_id = ? ORDER BY semester, course_code
+  `).all(req.session.userId);
+  res.json(rows);
+});
+
+// ── POST /api/students/me/courses ─────────────────────────────────────────
+router.post("/me/courses", (req, res) => {
+  const { code, semester, status, creditsOverride, note } = req.body;
+  if (!code || semester === undefined || !status) {
+    return res.status(400).json({ error: "code, semester, and status are required" });
+  }
+
+  try {
+    db.prepare(`
+      INSERT INTO student_courses (user_id, course_code, semester, status, credits_override, note)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).run(req.session.userId, code.toUpperCase(), semester, status, creditsOverride || null, note || null);
+    res.status(201).json({ ok: true });
+  } catch (e) {
+    if (e.message.includes("UNIQUE")) {
+      return res.status(409).json({ error: "Course already in your list" });
+    }
+    throw e;
+  }
+});
+
+// ── PUT /api/students/me/courses/:code ────────────────────────────────────
+router.put("/me/courses/:code", (req, res) => {
+  const { semester, status, creditsOverride, note } = req.body;
+  const code = req.params.code.toUpperCase().replace("-", " ");
+
+  db.prepare(`
+    UPDATE student_courses
+    SET semester = COALESCE(?, semester),
+        status = COALESCE(?, status),
+        credits_override = COALESCE(?, credits_override),
+        note = COALESCE(?, note)
+    WHERE user_id = ? AND course_code = ?
+  `).run(semester ?? null, status ?? null, creditsOverride ?? null, note ?? null, req.session.userId, code);
+
+  res.json({ ok: true });
+});
+
+// ── DELETE /api/students/me/courses/:code ─────────────────────────────────
+router.delete("/me/courses/:code", (req, res) => {
+  const code = req.params.code.toUpperCase().replace("-", " ");
+  db.prepare("DELETE FROM student_courses WHERE user_id = ? AND course_code = ?")
+    .run(req.session.userId, code);
+  res.json({ ok: true });
+});
+
+// ── GET /api/students/me/solve ────────────────────────────────────────────
+router.get("/me/solve", (req, res) => {
+  const courseRows = db.prepare(`
+    SELECT course_code as code, semester, status, credits_override as creditsOverride
+    FROM student_courses WHERE user_id = ?
+  `).all(req.session.userId);
+
+  const programRows = db.prepare(`
+    SELECT program_id FROM student_programs WHERE user_id = ?
+  `).all(req.session.userId);
+
+  const declaredPrograms = programRows.map((r) => r.program_id);
+
+  const result = solve(courseRows, declaredPrograms, courses, degreeRequirements, programTags);
+  const suggestions = getSuggestions(result, courses, programTags, declaredPrograms);
+
+  res.json({ ...result, suggestions });
+});
+
+// ── GET /api/students/me/programs ─────────────────────────────────────────
+router.get("/me/programs", (req, res) => {
+  const rows = db.prepare("SELECT program_id FROM student_programs WHERE user_id = ?")
+    .all(req.session.userId);
+  res.json(rows.map((r) => r.program_id));
+});
+
+// ── POST /api/students/me/programs ────────────────────────────────────────
+router.post("/me/programs", (req, res) => {
+  const { programId } = req.body;
+  if (!programId) return res.status(400).json({ error: "programId required" });
+  db.prepare("INSERT OR IGNORE INTO student_programs (user_id, program_id) VALUES (?, ?)")
+    .run(req.session.userId, programId);
+  res.status(201).json({ ok: true });
+});
+
+module.exports = router;

@@ -1,0 +1,3569 @@
+[
+  {
+    "code": "ANTH 100",
+    "department": "ANTH",
+    "number": 100,
+    "title": "Globalization and Local Cultures",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": "Foundational Societal Knowledge",
+    "interdisciplinary_options": [
+      "African Studies and the African Diaspora",
+      "Latin American Studies",
+      "European Studies",
+      "Global Studies",
+      "Asian Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "This course introduces students to how diverse cultural groups are shaped by and respond to global processes such as economic integration, political change, migration, and digital technology. Students will understand globalization from an anthropological perspective."
+  },
+  {
+    "code": "ANTH 211",
+    "department": "ANTH",
+    "number": 211,
+    "title": "Peoples of Latin America",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Latin American Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "The culture of different groups in Latin America with special attention to indigenous cultures and contemporary problems."
+  },
+  {
+    "code": "ANTH 213",
+    "department": "ANTH",
+    "number": 213,
+    "title": "Culture in Africa",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "African Studies and the African Diaspora",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Culture in Africa."
+  },
+  {
+    "code": "ANTH 215",
+    "department": "ANTH",
+    "number": 215,
+    "title": "Contemporary Japanese Culture",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Japanese Language and Culture",
+      "Global Studies",
+      "Asian Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Contemporary Japanese culture."
+  },
+  {
+    "code": "ANTH 217",
+    "department": "ANTH",
+    "number": 217,
+    "title": "Mexican Culture & Heritage",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Latin American Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Mexican culture and heritage."
+  },
+  {
+    "code": "ANTH 220",
+    "department": "ANTH",
+    "number": 220,
+    "title": "Contemporary Cultures of the Middle East",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Arabic Language and Culture",
+      "Islamic World Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Contemporary cultures of the Middle East."
+  },
+  {
+    "code": "ANTH 222",
+    "department": "ANTH",
+    "number": 222,
+    "title": "Culture in Contemporary Europe",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Culture in contemporary Europe."
+  },
+  {
+    "code": "ANTH 321",
+    "department": "ANTH",
+    "number": 321,
+    "title": "Human Rights in Latin America",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Latin American Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Human rights in Latin America."
+  },
+  {
+    "code": "GLST 101",
+    "department": "GLST",
+    "number": 101,
+    "title": "Introduction to Global Studies",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "African Studies and the African Diaspora",
+      "Latin American Studies",
+      "Islamic World Studies",
+      "European Studies",
+      "Global Studies",
+      "Asian Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "This course serves as an introduction to the interdisciplinary field of global studies. It provides an overview of the major disciplines represented in the program, introduces the main regions covered in the program, and discusses important global issues."
+  },
+  {
+    "code": "GLST 301",
+    "department": "GLST",
+    "number": 301,
+    "title": "Capstone in Global Studies: Directed Readings",
+    "credits": 3,
+    "prerequisites": "Course requires permission of instructor; GLST will enroll approved students directly (no self-enrollment or non-GLST advisors); Course is open only to junior and senior majors and minors",
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": ""
+  },
+  {
+    "code": "GLST 302",
+    "department": "GLST",
+    "number": 302,
+    "title": "States and Firms",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "This course focuses on the relationship between multinational corporations and the state. It explores the origin of firms, as well as issues such as corruption, tax policy, bailouts, and economic development."
+  },
+  {
+    "code": "GLST 303",
+    "department": "GLST",
+    "number": 303,
+    "title": "Technological Change and Society",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "This course explores how changes in technology affect society in four broad areas: its impact on how we communicate, on the workplace, on regulatory issues surrounding technology firms, and on humanity itself."
+  },
+  {
+    "code": "GLST 304",
+    "department": "GLST",
+    "number": 304,
+    "title": "Global Civil Society and Social Movements",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [
+      "GLST 304",
+      "SOCL 304"
+    ],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "This course focuses on global civil society groups (both advocacy groups or apolitical) and on social movements that seek to fight injustices."
+  },
+  {
+    "code": "GLST 305",
+    "department": "GLST",
+    "number": 305,
+    "title": "Globalization and Environmental Sustainability",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "This course introduces students to social, political and economic factors that have contributed to globalization, development and their impact on the environment."
+  },
+  {
+    "code": "GLST 306",
+    "department": "GLST",
+    "number": 306,
+    "title": "International Development",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [
+      "GLST 306",
+      "SOCL 306"
+    ],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "This course provides an interdisciplinary overview of the international development system and issues related to development in those countries variously referred to as third world, developing, underdeveloped, or peripheral countries."
+  },
+  {
+    "code": "GLST 370",
+    "department": "GLST",
+    "number": 370,
+    "title": "Internship in Global Studies",
+    "credits": {
+      "min": 3,
+      "max": 6
+    },
+    "prerequisites": "Open to all GLST major and minors but requires instructor permission to enroll",
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "African Studies and the African Diaspora",
+      "Latin American Studies",
+      "Islamic World Studies",
+      "European Studies",
+      "Global Studies",
+      "Asian Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": true,
+    "writing_intensive": false,
+    "description": ""
+  },
+  {
+    "code": "GLST 398",
+    "department": "GLST",
+    "number": 398,
+    "title": "Topics in Global Studies",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "This is a variable topics course. Specific topics vary from semester to semester."
+  },
+  {
+    "code": "HIST 101",
+    "department": "HIST",
+    "number": 101,
+    "title": "Culture, Power and Identity: Western Ideas & Institutions to 17th Century",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": "Foundational Historical Knowledge",
+    "interdisciplinary_options": [
+      "Catholic Studies"
+    ],
+    "cross_listings": [
+      "CATH101",
+      "ACHIS101"
+    ],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "This course traces the early development of Western ideas and institutions from the ancient Near East; Greece and Rome; the medieval civilization(s); to the European Renaissance and Reformation."
+  },
+  {
+    "code": "HIST 102",
+    "department": "HIST",
+    "number": 102,
+    "title": "Culture, Power and Identity: Western Ideas & Institutions from 17th Century",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": "Foundational Historical Knowledge",
+    "interdisciplinary_options": [
+      "European Studies"
+    ],
+    "cross_listings": [
+      "ACHIS 102",
+      "HIST 102"
+    ],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "This course traces the development of Western ideas and institutions and their global impact from the seventeenth century to the present."
+  },
+  {
+    "code": "HIST 103",
+    "department": "HIST",
+    "number": 103,
+    "title": "American Pluralism",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": "Foundational Historical Knowledge",
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "This course is an introduction to the origins, development and structure of the United States as a pluralistic and multiracial society from 1609 to the present."
+  },
+  {
+    "code": "HIST 104",
+    "department": "HIST",
+    "number": 104,
+    "title": "Global History Since 1500",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": "Foundational Historical Knowledge",
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [
+      "HIST",
+      "ACHIS 104"
+    ],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "This course deals with the emergence of the modern world, including such topics as the expansion and intensification of cross-cultural interaction; imperialism, colonialism, and nationalism."
+  },
+  {
+    "code": "HIST 208",
+    "department": "HIST",
+    "number": 208,
+    "title": "East Asian History: Themes & Issues",
+    "credits": 3,
+    "prerequisites": "HIST 101, HIST 102, HIST 103, HIST 104, or equivalent",
+    "knowledge_area": "Tier 2 Historical Knowledge",
+    "interdisciplinary_options": [
+      "Japanese Language and Culture",
+      "Global Studies",
+      "Asian Studies"
+    ],
+    "cross_listings": [
+      "HIST108",
+      "ASIA108",
+      "INTS108"
+    ],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": ""
+  },
+  {
+    "code": "HIST 208Z",
+    "department": "HIST",
+    "number": 208,
+    "title": "Modern Chinese History",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": "Tier 2 Historical Knowledge",
+    "interdisciplinary_options": [
+      "Chinese Language & Culture",
+      "Asian Studies"
+    ],
+    "cross_listings": [
+      "HIST346A",
+      "ASIA346A",
+      "INTS346A"
+    ],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "The course is specifically designed for foreign students studying in Beijing."
+  },
+  {
+    "code": "HIST 209",
+    "department": "HIST",
+    "number": 209,
+    "title": "Survey of Islamic History",
+    "credits": 3,
+    "prerequisites": "HIST 101, HIST 102, HIST 103, HIST 104, or equivalent",
+    "knowledge_area": "Tier 2 Historical Knowledge",
+    "interdisciplinary_options": [
+      "African Studies and the African Diaspora",
+      "Arabic Language and Culture",
+      "Islamic World Studies",
+      "Global Studies",
+      "Asian Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": ""
+  },
+  {
+    "code": "HIST 210",
+    "department": "HIST",
+    "number": 210,
+    "title": "Latin American History: Themes & Issues",
+    "credits": 3,
+    "prerequisites": "HIST 101, HIST 102, HIST 103, HIST 104, or equivalent",
+    "knowledge_area": "Tier 2 Historical Knowledge",
+    "interdisciplinary_options": [
+      "African Studies and the African Diaspora",
+      "Latin American Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": ""
+  },
+  {
+    "code": "HIST 211",
+    "department": "HIST",
+    "number": 211,
+    "title": "US History to 1865: Themes & Issues",
+    "credits": 3,
+    "prerequisites": "HIST 101, HIST 102, HIST 103, HIST 104, or equivalent",
+    "knowledge_area": "Tier 2 Historical Knowledge",
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": ""
+  },
+  {
+    "code": "HIST 212",
+    "department": "HIST",
+    "number": 212,
+    "title": "US History since 1865: Themes & Issues",
+    "credits": 3,
+    "prerequisites": "HIST 101, HIST 102, HIST 103, HIST 104, or equivalent",
+    "knowledge_area": "Tier 2 Historical Knowledge",
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": ""
+  },
+  {
+    "code": "HIST 213",
+    "department": "HIST",
+    "number": 213,
+    "title": "African History: Themes & Issues",
+    "credits": 3,
+    "prerequisites": "HIST 101, HIST 102, HIST 103, HIST 104, or equivalent",
+    "knowledge_area": "Tier 2 Historical Knowledge",
+    "interdisciplinary_options": [
+      "African Studies and the African Diaspora",
+      "Islamic World Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": ""
+  },
+  {
+    "code": "HIST 267A",
+    "department": "HIST",
+    "number": 267,
+    "title": "Modern German Culture and Ideas I",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies",
+      "German Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "This course will investigate intellectual and cultural responses to major events of nineteenth-century German history."
+  },
+  {
+    "code": "HIST 267B",
+    "department": "HIST",
+    "number": 267,
+    "title": "Modern German Culture and Ideas II",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies",
+      "German Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "This course will cover the major phases of modern German history."
+  },
+  {
+    "code": "HIST 275A",
+    "department": "HIST",
+    "number": 275,
+    "title": "The Silk Roads: Global Trade, Culture, & Politics",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies",
+      "Asian Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "The course covers exchanges between nomad and sedentary populations in East Asia and the flourishing of information routes."
+  },
+  {
+    "code": "HIST 278A",
+    "department": "HIST",
+    "number": 278,
+    "title": "Violence Drug Trafficking & Crime in Latin America",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Latin American Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "The aim of this course is to examine the historical factors behind Latin America's contemporary security crisis."
+  },
+  {
+    "code": "HIST 300",
+    "department": "HIST",
+    "number": 300,
+    "title": "Topics in History",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Special topics or new approaches of current interest to the instructor."
+  },
+  {
+    "code": "HIST 322",
+    "department": "HIST",
+    "number": 322,
+    "title": "Modern France: From Empire to Postcolonial Nation",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Modern France from the Revolution to the present."
+  },
+  {
+    "code": "HIST 324",
+    "department": "HIST",
+    "number": 324,
+    "title": "Italy 19th & 20th Centuries",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies",
+      "Italian Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Italy in the 19th and 20th centuries."
+  },
+  {
+    "code": "HIST 325A",
+    "department": "HIST",
+    "number": 325,
+    "title": "The British Empire: From Barbados to Brexit",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "History of the British Empire."
+  },
+  {
+    "code": "HIST 326",
+    "department": "HIST",
+    "number": 326,
+    "title": "Ireland: Colony to Nation State",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Ireland from colony to nation state."
+  },
+  {
+    "code": "HIST 327A",
+    "department": "HIST",
+    "number": 327,
+    "title": "The Balkans: History, Fiction, Film",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "History of the Balkans."
+  },
+  {
+    "code": "HIST 329C",
+    "department": "HIST",
+    "number": 329,
+    "title": "Empire, Sex, Violence: European Colonial History",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "European colonial history."
+  },
+  {
+    "code": "HIST 329N",
+    "department": "HIST",
+    "number": 329,
+    "title": "Modern European Nationalism: Myth and Reality",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Modern European nationalism."
+  },
+  {
+    "code": "HIST 330",
+    "department": "HIST",
+    "number": 330,
+    "title": "Europe in the Age of Catastrophe, 1900-1945",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Europe 1900-1945."
+  },
+  {
+    "code": "HIST 330F",
+    "department": "HIST",
+    "number": 330,
+    "title": "Fascinating Fascism: 1919 to the Present",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "History of fascism."
+  },
+  {
+    "code": "HIST 331A",
+    "department": "HIST",
+    "number": 331,
+    "title": "Food, Hunger and Power in the Modern World",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Food and power in the modern world."
+  },
+  {
+    "code": "HIST 334B",
+    "department": "HIST",
+    "number": 334,
+    "title": "The Holocaust: History and Memory",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "History and memory of the Holocaust."
+  },
+  {
+    "code": "HIST 335",
+    "department": "HIST",
+    "number": 335,
+    "title": "The Second World War",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "History of World War II."
+  },
+  {
+    "code": "HIST 336",
+    "department": "HIST",
+    "number": 336,
+    "title": "Contemporary Europe 1945 to Present",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Contemporary Europe since 1945."
+  },
+  {
+    "code": "HIST 337",
+    "department": "HIST",
+    "number": 337,
+    "title": "Rise & Fall of Soviet Union",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Rise and fall of the Soviet Union."
+  },
+  {
+    "code": "HIST 337A",
+    "department": "HIST",
+    "number": 337,
+    "title": "Women in Russia and Eurasia, 1860-Present",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Women in Russia and Eurasia."
+  },
+  {
+    "code": "HIST 338A",
+    "department": "HIST",
+    "number": 338,
+    "title": "History of European Communism",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "European communism."
+  },
+  {
+    "code": "HIST 339C",
+    "department": "HIST",
+    "number": 339,
+    "title": "Modern Europe and the Arts",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Modern Europe and arts."
+  },
+  {
+    "code": "HIST 341",
+    "department": "HIST",
+    "number": 341,
+    "title": "Modern Middle East",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Islamic World Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Modern Middle East."
+  },
+  {
+    "code": "HIST 341B",
+    "department": "HIST",
+    "number": 341,
+    "title": "Arab-Israeli Conflict",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Islamic World Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Arab-Israeli conflict."
+  },
+  {
+    "code": "HIST 342B",
+    "department": "HIST",
+    "number": 342,
+    "title": "African History Post-1600",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "African Studies and the African Diaspora",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "African history post 1600."
+  },
+  {
+    "code": "HIST 342M",
+    "department": "HIST",
+    "number": 342,
+    "title": "African Music's Influence on American Music",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "African Studies and the African Diaspora",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "African music's influence on American music."
+  },
+  {
+    "code": "HIST 343",
+    "department": "HIST",
+    "number": 343,
+    "title": "Modern South Asia",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies",
+      "Asian Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Modern South Asia."
+  },
+  {
+    "code": "HIST 346B",
+    "department": "HIST",
+    "number": 346,
+    "title": "Reform & Revolution in China, 1800-1949",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies",
+      "Asian Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Reform and revolution in China."
+  },
+  {
+    "code": "HIST 346C",
+    "department": "HIST",
+    "number": 346,
+    "title": "History of Christianity in China",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies",
+      "Asian Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "History of Christianity in China."
+  },
+  {
+    "code": "HIST 347A",
+    "department": "HIST",
+    "number": 347,
+    "title": "China Since 1949: The People's Republic",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies",
+      "Asian Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "China since 1949."
+  },
+  {
+    "code": "HIST 347C",
+    "department": "HIST",
+    "number": 347,
+    "title": "Cultural Revolution-China",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies",
+      "Asian Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Chinese Cultural Revolution."
+  },
+  {
+    "code": "HIST 347D",
+    "department": "HIST",
+    "number": 347,
+    "title": "Modern Chinese History through Film",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies",
+      "Asian Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Modern Chinese history through film."
+  },
+  {
+    "code": "HIST 349A",
+    "department": "HIST",
+    "number": 349,
+    "title": "Women in East Asia",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies",
+      "Asian Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Women in East Asia."
+  },
+  {
+    "code": "HIST 353",
+    "department": "HIST",
+    "number": 353,
+    "title": "Latin America in Recent Times",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Latin American Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Latin America in recent times."
+  },
+  {
+    "code": "HIST 355",
+    "department": "HIST",
+    "number": 355,
+    "title": "The Caribbean & Central America in Colonial/Modern Times",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Latin American Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "The Caribbean and Central America."
+  },
+  {
+    "code": "HIST 356",
+    "department": "HIST",
+    "number": 356,
+    "title": "Mexican History-Ancient to Modern Times",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Latin American Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Mexican history."
+  },
+  {
+    "code": "HIST 357",
+    "department": "HIST",
+    "number": 357,
+    "title": "The Mexican Revolution in Popular Imagination",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Latin American Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "The Mexican Revolution."
+  },
+  {
+    "code": "HIST 358",
+    "department": "HIST",
+    "number": 358,
+    "title": "Women in Latin American History",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Latin American Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Women in Latin American history."
+  },
+  {
+    "code": "HIST 359C",
+    "department": "HIST",
+    "number": 359,
+    "title": "Nationalist Politics: A Global Perspective",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Nationalist politics globally."
+  },
+  {
+    "code": "HIST 388A",
+    "department": "HIST",
+    "number": 388,
+    "title": "Vietnam War",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies",
+      "Asian Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "The Vietnam War."
+  },
+  {
+    "code": "PLSC 100",
+    "department": "PLSC",
+    "number": 100,
+    "title": "Political Theory",
+    "credits": 3,
+    "prerequisites": "PHIL 130 or equivalent; please check requirements for",
+    "knowledge_area": "Tier 2 Philosophical Knowledge",
+    "interdisciplinary_options": [],
+    "cross_listings": [
+      "ACPOL 200",
+      "PLSC 100"
+    ],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": ""
+  },
+  {
+    "code": "PLSC 101",
+    "department": "PLSC",
+    "number": 101,
+    "title": "American Politics",
+    "credits": 3,
+    "prerequisites": "ANTH 100, PLSC 102, PSYC 100, SOCL 101, WSGS 101, or",
+    "knowledge_area": "Tier 2 Societal Knowledge",
+    "interdisciplinary_options": [],
+    "cross_listings": [
+      "ACPOL 101",
+      "PLSC 101"
+    ],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": ""
+  },
+  {
+    "code": "PLSC 102",
+    "department": "PLSC",
+    "number": 102,
+    "title": "International Relations in an Age of Globalization",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": "Foundational Societal Knowledge",
+    "interdisciplinary_options": [
+      "African Studies and the African Diaspora",
+      "Peace, Justice, and Conflict Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [
+      "PLSC",
+      "PAX",
+      "ACPOL102",
+      "AFR110",
+      "INTS2"
+    ],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": ""
+  },
+  {
+    "code": "PLSC 103",
+    "department": "PLSC",
+    "number": 103,
+    "title": "Comparative Politics",
+    "credits": 3,
+    "prerequisites": "ANTH 100, PLSC 102, PSYC 100, SOCL 101, WSGS 101, or",
+    "knowledge_area": "Tier 2 Societal Knowledge",
+    "interdisciplinary_options": [
+      "Global Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": ""
+  },
+  {
+    "code": "PLSC 123",
+    "department": "PLSC",
+    "number": 123,
+    "title": "Speak Up Democracy",
+    "credits": {
+      "min": 0,
+      "max": 3
+    },
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "\"Speak Up Democracy\" is a course on perennial questions about the workings of democracies. Participating students will investigate the connection between speech and political power, ruminating on whose voices are heard (and silenced) in a democracy. This summer program is animated by a central question: how should we speak to one another in a democracy? The course is open to high school students participating in the summer program."
+  },
+  {
+    "code": "PLSC 195",
+    "department": "PLSC",
+    "number": 195,
+    "title": "Law and Civil Rights",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "The course focuses on the political processes surrounding laws and civil rights."
+  },
+  {
+    "code": "PLSC 202",
+    "department": "PLSC",
+    "number": 202,
+    "title": "Mock Trial",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": true,
+    "writing_intensive": false,
+    "description": "Students will study the trial as a process for finding truth and administering justice by learning the dynamics of the trial, by developing trial strategy, by learning how to conduct and respond to direct and cross examination and by delivering effective opening and closing arguments. Mock trial is an engaged learning course. Prior Permission is required."
+  },
+  {
+    "code": "PLSC 203",
+    "department": "PLSC",
+    "number": 203,
+    "title": "Moot Court",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": true,
+    "writing_intensive": false,
+    "description": "Students will study the appeal as a process for finding truth and administering justice by learning the dynamics of appellate advocacy, by developing oral argument strategies, by learning how to respond to questions posed by judges in competition, and by delivering effective summations and rebuttal arguments. Moot court is an engaged learning course."
+  },
+  {
+    "code": "PLSC 204",
+    "department": "PLSC",
+    "number": 204,
+    "title": "Conflict Management",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "This course considers a variety of different approaches to international conflict management: direct bargaining, mediation, military intervention, economic sanctions, arbitration, adjudication, and peacekeeping. In addition to learning about the differences among these various conflict resolution techniques."
+  },
+  {
+    "code": "PLSC 208",
+    "department": "PLSC",
+    "number": 208,
+    "title": "Representation in the United States",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Considers what \"political representation\" means and how scholars study how well representation works in the contemporary United States."
+  },
+  {
+    "code": "PLSC 213",
+    "department": "PLSC",
+    "number": 213,
+    "title": "International Human Rights",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "This course focuses on the theoretical foundations of such international human rights as well as their practical implications. It discusses the roles of states, intergovernmental organizations, and nongovernmental organizations in shaping human rights norms and practices. They will also understand practical causes and consequences of human rights policies."
+  },
+  {
+    "code": "PLSC 215",
+    "department": "PLSC",
+    "number": 215,
+    "title": "Politics of Marginalized Groups",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "This course focuses on the role that race, ethnicity, and marginalized status plays in American politics and public policy. It will provide a general overview of several groups, including Blacks, Latinxs, Asian and Muslim Americans, Women, LGBTQ, immigrants and refugees, indigenous peoples and other groups."
+  },
+  {
+    "code": "PLSC 216",
+    "department": "PLSC",
+    "number": 216,
+    "title": "Political Numbers",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": "Quantitative Knowledge",
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "This course will train participants to be critical consumers of political arguments that cite quantitative evidence. The course will take a handson approach where students learn how to conduct, interpret, and critique quantitative analysis using common statistical software packages."
+  },
+  {
+    "code": "PLSC 218",
+    "department": "PLSC",
+    "number": 218,
+    "title": "African-American Politics",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "African Studies and the African Diaspora",
+      "Race and Ethnicity",
+      "Human Services"
+    ],
+    "cross_listings": [
+      "BWS 218"
+    ],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "The political goals, behavior, voting patterns, group structures, values, and attitudes of various segments of the African-American population, and how these affect the political system."
+  },
+  {
+    "code": "PLSC 232",
+    "department": "PLSC",
+    "number": 232,
+    "title": "Politics of the United Kingdom",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "This course offers an introduction to politics in the United Kingdom (officially known as the United Kingdom of Great Britain and Northern Ireland, and unofficially referred to as Britain)."
+  },
+  {
+    "code": "PLSC 236",
+    "department": "PLSC",
+    "number": 236,
+    "title": "Political Communication",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "The purpose of this course is to explore and examine how elected officials and institutions communicate to the public - and the role journalists and PR professionals play in the process--through readings, seminar, and practicum. The class will challenge students to grapple with questions like - What is the meaning of the \"truth\" in today's media environment?"
+  },
+  {
+    "code": "PLSC 238",
+    "department": "PLSC",
+    "number": 238,
+    "title": "Political Advocacy",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Policy-making and implementation in the United States is a complicated process. In any given year laws are passed by elected officials, decisions that guide our implementation of the law are made by government agencies, and rulings handed down by the courts shape our interpretation of those laws."
+  },
+  {
+    "code": "PLSC 251",
+    "department": "PLSC",
+    "number": 251,
+    "title": "Women in American Politics",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Women and Gender Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "This course focuses on Women and Politics in the United States. It looks at women's movements both historical and current, how women and men in the United States act differently in politics in terms of voting behavior, as political candidates, and as elected leaders. Students will gain a better understanding of the U.S. political system and how and when women are treated equally and unequally when compared with men."
+  },
+  {
+    "code": "PLSC 252",
+    "department": "PLSC",
+    "number": 252,
+    "title": "Capitalism and Its Discontents",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "This course analyzes the intersection of capitalist economics and politics from a critical perspective. Capitalism and Marxism will be reviewed, followed by a critical examination of how capitalism has played out in economic/political practice in the world today."
+  },
+  {
+    "code": "PLSC 300",
+    "department": "PLSC",
+    "number": 300,
+    "title": "Contemporary Political Issues",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Variable titles. Investigation of selected topics or methods in politics. This course may apply to any of the four areas of the department, and may be repeated depending on subject matter."
+  },
+  {
+    "code": "PLSC 300A",
+    "department": "PLSC",
+    "number": 300,
+    "title": "Contemporary Political Issues: American Politics",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Investigation of selected topics or methods in American Politics. This course may be repeated depending on subject matter."
+  },
+  {
+    "code": "PLSC 300B",
+    "department": "PLSC",
+    "number": 300,
+    "title": "Contemporary Political Issues: Political Theory",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Investigation of selected topics or methods in Political Theory. This course may be repeated depending on subject matter."
+  },
+  {
+    "code": "PLSC 300C",
+    "department": "PLSC",
+    "number": 300,
+    "title": "Contemporary Political Issues: Comparative Politics",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Investigation of selected topics or methods in Comparative Politics. This course may be repeated depending on subject matter."
+  },
+  {
+    "code": "PLSC 300D",
+    "department": "PLSC",
+    "number": 300,
+    "title": "Contemporary Political issues in International Relations",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Investigation of selected topics or methods in International Relations. This course may be repeated depending on subject matter."
+  },
+  {
+    "code": "PLSC 301",
+    "department": "PLSC",
+    "number": 301,
+    "title": "Political Justice",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "A study of alternative conceptions of political justice and the attempts to institutionalize them in various political systems."
+  },
+  {
+    "code": "PLSC 302",
+    "department": "PLSC",
+    "number": 302,
+    "title": "American Political Thought",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Major political themes from the founding era to the present."
+  },
+  {
+    "code": "PLSC 303",
+    "department": "PLSC",
+    "number": 303,
+    "title": "Conservatism",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "A survey of modern conservative thought. Attention will be devoted to the theoretical and political cleavages within the Right."
+  },
+  {
+    "code": "PLSC 304",
+    "department": "PLSC",
+    "number": 304,
+    "title": "Ancient Political Thought",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Ancient political thought."
+  },
+  {
+    "code": "PLSC 306",
+    "department": "PLSC",
+    "number": 306,
+    "title": "Modern Political Thought",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Modern political thought."
+  },
+  {
+    "code": "PLSC 307",
+    "department": "PLSC",
+    "number": 307,
+    "title": "Democratic Theory",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "This course examines normative arguments for and against popular rule."
+  },
+  {
+    "code": "PLSC 308",
+    "department": "PLSC",
+    "number": 308,
+    "title": "Contemporary Political Thought",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Contemporary political thought."
+  },
+  {
+    "code": "PLSC 309",
+    "department": "PLSC",
+    "number": 309,
+    "title": "Socialism",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "A survey of Marxist and post-Marxist socialist thought."
+  },
+  {
+    "code": "PLSC 310B",
+    "department": "PLSC",
+    "number": 310,
+    "title": "Catholic Political Thought",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "A survey of classic and contemporary political thinkers in the Roman Catholic tradition."
+  },
+  {
+    "code": "PLSC 311",
+    "department": "PLSC",
+    "number": 311,
+    "title": "Social Science Research Practicum: Cook County Community Survey",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": true,
+    "writing_intensive": false,
+    "description": "Familiarity with R, Stata, SAS, or SPSS necessary. Students will analyze this year's iteration of the annual Cook County Community Survey."
+  },
+  {
+    "code": "PLSC 312",
+    "department": "PLSC",
+    "number": 312,
+    "title": "Feminist Theory",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Feminist theory."
+  },
+  {
+    "code": "PLSC 313",
+    "department": "PLSC",
+    "number": 313,
+    "title": "Resistance and Obligation",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Resistance and obligation."
+  },
+  {
+    "code": "PLSC 314",
+    "department": "PLSC",
+    "number": 314,
+    "title": "Liberalism",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Liberalism."
+  },
+  {
+    "code": "PLSC 316",
+    "department": "PLSC",
+    "number": 316,
+    "title": "Politics of Genocide",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Politics of genocide."
+  },
+  {
+    "code": "PLSC 317",
+    "department": "PLSC",
+    "number": 317,
+    "title": "Politics of International Health",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Politics of international health."
+  },
+  {
+    "code": "PLSC 318",
+    "department": "PLSC",
+    "number": 318,
+    "title": "Politics & the Economy",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "This course examines how and why the U.S. government influences the economy."
+  },
+  {
+    "code": "PLSC 319",
+    "department": "PLSC",
+    "number": 319,
+    "title": "Women, Law & Public Policy",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Women, law and public policy."
+  },
+  {
+    "code": "PLSC 320",
+    "department": "PLSC",
+    "number": 320,
+    "title": "Constitutional Law-Due Process",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Constitutional law due process."
+  },
+  {
+    "code": "PLSC 321",
+    "department": "PLSC",
+    "number": 321,
+    "title": "Constitutional Law-Powers of Government",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Constitutional law powers of government."
+  },
+  {
+    "code": "PLSC 322",
+    "department": "PLSC",
+    "number": 322,
+    "title": "Constitutional Law-Rights and Liberties",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Constitutional law rights and liberties."
+  },
+  {
+    "code": "PLSC 323",
+    "department": "PLSC",
+    "number": 323,
+    "title": "Children, Law & Public Policy",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Children, law and public policy."
+  },
+  {
+    "code": "PLSC 324",
+    "department": "PLSC",
+    "number": 324,
+    "title": "Civil-Military Relations",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Civil-military relations."
+  },
+  {
+    "code": "PLSC 325",
+    "department": "PLSC",
+    "number": 325,
+    "title": "American Foreign Policy",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "American foreign policy."
+  },
+  {
+    "code": "PLSC 326",
+    "department": "PLSC",
+    "number": 326,
+    "title": "American National Security",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "American national security."
+  },
+  {
+    "code": "PLSC 327",
+    "department": "PLSC",
+    "number": 327,
+    "title": "Political Psychology",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Political psychology."
+  },
+  {
+    "code": "PLSC 328",
+    "department": "PLSC",
+    "number": 328,
+    "title": "Political Behavior",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Political behavior."
+  },
+  {
+    "code": "PLSC 329",
+    "department": "PLSC",
+    "number": 329,
+    "title": "Interest Group Politics",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Interest group politics."
+  },
+  {
+    "code": "PLSC 330",
+    "department": "PLSC",
+    "number": 330,
+    "title": "Global Justice",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Global justice."
+  },
+  {
+    "code": "PLSC 331",
+    "department": "PLSC",
+    "number": 331,
+    "title": "Islamic Political Thought",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Islamic World Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Islamic political thought."
+  },
+  {
+    "code": "PLSC 332",
+    "department": "PLSC",
+    "number": 332,
+    "title": "Politics of American Bureaucracies",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Politics of American bureaucracies."
+  },
+  {
+    "code": "PLSC 333",
+    "department": "PLSC",
+    "number": 333,
+    "title": "Crossing Borders: The Politics of Immigration",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "The politics of immigration."
+  },
+  {
+    "code": "PLSC 334",
+    "department": "PLSC",
+    "number": 334,
+    "title": "Urban Policies and Problems",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Urban policies and problems."
+  },
+  {
+    "code": "PLSC 335",
+    "department": "PLSC",
+    "number": 335,
+    "title": "Urban Semester Seminar",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Urban semester seminar."
+  },
+  {
+    "code": "PLSC 336",
+    "department": "PLSC",
+    "number": 336,
+    "title": "Politics in Contemporary China",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global and International Studies",
+      "Global Studies",
+      "Asian Studies",
+      "Peace Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "This course primarily focuses on domestic politics in post-1978 China."
+  },
+  {
+    "code": "PLSC 337",
+    "department": "PLSC",
+    "number": 337,
+    "title": "Terrorism",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Terrorism."
+  },
+  {
+    "code": "PLSC 339",
+    "department": "PLSC",
+    "number": 339,
+    "title": "Political Ideologies",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Political ideologies."
+  },
+  {
+    "code": "PLSC 340",
+    "department": "PLSC",
+    "number": 340,
+    "title": "International Relations of Africa",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "African Studies and the African Diaspora",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "International relations of Africa."
+  },
+  {
+    "code": "PLSC 342",
+    "department": "PLSC",
+    "number": 342,
+    "title": "African Politics",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "African Studies and the African Diaspora",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "African politics."
+  },
+  {
+    "code": "PLSC 343",
+    "department": "PLSC",
+    "number": 343,
+    "title": "Latin American Politics",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Latin American Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Latin American politics."
+  },
+  {
+    "code": "PLSC 344",
+    "department": "PLSC",
+    "number": 344,
+    "title": "Contemporary Issues in Latin America",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Latin American Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Contemporary issues in Latin America."
+  },
+  {
+    "code": "PLSC 345",
+    "department": "PLSC",
+    "number": 345,
+    "title": "South & Southeast Asian Politics",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies",
+      "Asian Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "South and Southeast Asian politics."
+  },
+  {
+    "code": "PLSC 346",
+    "department": "PLSC",
+    "number": 346,
+    "title": "East Asian Politics",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies",
+      "Asian Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "East Asian politics."
+  },
+  {
+    "code": "PLSC 347",
+    "department": "PLSC",
+    "number": 347,
+    "title": "The European Union",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "The European Union."
+  },
+  {
+    "code": "PLSC 348",
+    "department": "PLSC",
+    "number": 348,
+    "title": "Soviet & Post-Soviet Politics",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Soviet and post-Soviet politics."
+  },
+  {
+    "code": "PLSC 349",
+    "department": "PLSC",
+    "number": 349,
+    "title": "Eastern European Politics",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Eastern European politics."
+  },
+  {
+    "code": "PLSC 350",
+    "department": "PLSC",
+    "number": 350,
+    "title": "Politics of International Economic Relations",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Politics of international economic relations."
+  },
+  {
+    "code": "PLSC 351",
+    "department": "PLSC",
+    "number": 351,
+    "title": "Latin American International System",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Latin American Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Latin American international system."
+  },
+  {
+    "code": "PLSC 352",
+    "department": "PLSC",
+    "number": 352,
+    "title": "Canadian Politics",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Canadian politics."
+  },
+  {
+    "code": "PLSC 353",
+    "department": "PLSC",
+    "number": 353,
+    "title": "International Law",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "International law."
+  },
+  {
+    "code": "PLSC 354",
+    "department": "PLSC",
+    "number": 354,
+    "title": "Global Environmental Politics",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Global environmental politics."
+  },
+  {
+    "code": "PLSC 355C",
+    "department": "PLSC",
+    "number": 355,
+    "title": "Women and Politics: A Cross-National Perspective",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Women and Gender Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Women and politics cross-national."
+  },
+  {
+    "code": "PLSC 356",
+    "department": "PLSC",
+    "number": 356,
+    "title": "Intervent in World Politics",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Intervention in world politics."
+  },
+  {
+    "code": "PLSC 357",
+    "department": "PLSC",
+    "number": 357,
+    "title": "Hollywood and Law",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Hollywood and law."
+  },
+  {
+    "code": "PLSC 358",
+    "department": "PLSC",
+    "number": 358,
+    "title": "War, Peace and Politics",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies",
+      "Peace Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "War, peace and politics."
+  },
+  {
+    "code": "PLSC 358D",
+    "department": "PLSC",
+    "number": 358,
+    "title": "The Scientific Study of War",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies",
+      "Peace Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "The scientific study of war."
+  },
+  {
+    "code": "PLSC 359",
+    "department": "PLSC",
+    "number": 359,
+    "title": "Revolutions",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Revolutions."
+  },
+  {
+    "code": "PLSC 360",
+    "department": "PLSC",
+    "number": 360,
+    "title": "Western European Politics",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Western European politics."
+  },
+  {
+    "code": "PLSC 362",
+    "department": "PLSC",
+    "number": 362,
+    "title": "Politics Developing Societies",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Politics of developing societies."
+  },
+  {
+    "code": "PLSC 363",
+    "department": "PLSC",
+    "number": 363,
+    "title": "International Politics",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "International politics."
+  },
+  {
+    "code": "PLSC 364",
+    "department": "PLSC",
+    "number": 364,
+    "title": "UN & International Organization",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "UN and international organization."
+  },
+  {
+    "code": "PLSC 365",
+    "department": "PLSC",
+    "number": 365,
+    "title": "Italian Politics & Government",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Italian politics and government."
+  },
+  {
+    "code": "PLSC 366",
+    "department": "PLSC",
+    "number": 366,
+    "title": "Dictatorship",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Dictatorship."
+  },
+  {
+    "code": "PLSC 367",
+    "department": "PLSC",
+    "number": 367,
+    "title": "Model United Nations",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": true,
+    "writing_intensive": false,
+    "description": "Model United Nations."
+  },
+  {
+    "code": "PLSC 368",
+    "department": "PLSC",
+    "number": 368,
+    "title": "Politics of the Middle East",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Islamic World Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Politics of the Middle East."
+  },
+  {
+    "code": "PLSC 369",
+    "department": "PLSC",
+    "number": 369,
+    "title": "Politics of Energy",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Politics of energy."
+  },
+  {
+    "code": "PLSC 370",
+    "department": "PLSC",
+    "number": 370,
+    "title": "Fieldwork in Political Science-Internship",
+    "credits": {
+      "min": 1,
+      "max": 6
+    },
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": true,
+    "writing_intensive": false,
+    "description": "Practical experience in political and governmental agencies."
+  },
+  {
+    "code": "PLSC 371",
+    "department": "PLSC",
+    "number": 371,
+    "title": "Roman Law",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Roman law."
+  },
+  {
+    "code": "PLSC 372",
+    "department": "PLSC",
+    "number": 372,
+    "title": "Crime, Race & Violence",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Crime, race and violence."
+  },
+  {
+    "code": "PLSC 373",
+    "department": "PLSC",
+    "number": 373,
+    "title": "Politics and Literature",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Politics and literature."
+  },
+  {
+    "code": "PLSC 374",
+    "department": "PLSC",
+    "number": 374,
+    "title": "Democracy",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Democracy."
+  },
+  {
+    "code": "PLSC 376",
+    "department": "PLSC",
+    "number": 376,
+    "title": "Political Behavior and Public Opinion",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Political behavior and public opinion."
+  },
+  {
+    "code": "PLSC 377",
+    "department": "PLSC",
+    "number": 377,
+    "title": "American Public Policies",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "American public policies."
+  },
+  {
+    "code": "PLSC 378",
+    "department": "PLSC",
+    "number": 378,
+    "title": "Intro to Political Economy",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Introduction to political economy."
+  },
+  {
+    "code": "PLSC 379",
+    "department": "PLSC",
+    "number": 379,
+    "title": "The Legislative Process",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "The legislative process."
+  },
+  {
+    "code": "PLSC 380",
+    "department": "PLSC",
+    "number": 380,
+    "title": "Public Policy Analysis",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Public policy analysis."
+  },
+  {
+    "code": "PLSC 381",
+    "department": "PLSC",
+    "number": 381,
+    "title": "The American Presidency",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "The American presidency."
+  },
+  {
+    "code": "PLSC 384",
+    "department": "PLSC",
+    "number": 384,
+    "title": "The Judicial Process",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "The judicial process."
+  },
+  {
+    "code": "PLSC 385",
+    "department": "PLSC",
+    "number": 385,
+    "title": "Introduction to Law",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Introduction to law."
+  },
+  {
+    "code": "PLSC 386",
+    "department": "PLSC",
+    "number": 386,
+    "title": "Campaigns and Elections",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Campaigns and elections."
+  },
+  {
+    "code": "PLSC 387",
+    "department": "PLSC",
+    "number": 387,
+    "title": "Politics and the Press",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Politics and the press."
+  },
+  {
+    "code": "PLSC 388",
+    "department": "PLSC",
+    "number": 388,
+    "title": "The Morality and Legality of War",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Peace Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "The morality and legality of war."
+  },
+  {
+    "code": "PLSC 389",
+    "department": "PLSC",
+    "number": 389,
+    "title": "State Politics",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "State politics."
+  },
+  {
+    "code": "PLSC 390",
+    "department": "PLSC",
+    "number": 390,
+    "title": "Urban Politics",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Urban politics."
+  },
+  {
+    "code": "PLSC 391",
+    "department": "PLSC",
+    "number": 391,
+    "title": "Chicago Politics",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Chicago politics."
+  },
+  {
+    "code": "PLSC 392",
+    "department": "PLSC",
+    "number": 392,
+    "title": "Environmental Politics",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Environmental politics."
+  },
+  {
+    "code": "PLSC 393",
+    "department": "PLSC",
+    "number": 393,
+    "title": "Black Politics",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Black politics."
+  },
+  {
+    "code": "PLSC 395",
+    "department": "PLSC",
+    "number": 395,
+    "title": "Political Science Honors Seminar",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Political science honors seminar."
+  },
+  {
+    "code": "PLSC 396",
+    "department": "PLSC",
+    "number": 396,
+    "title": "Directed Readings",
+    "credits": {
+      "min": 1,
+      "max": 3
+    },
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Directed readings."
+  },
+  {
+    "code": "PLSC 398",
+    "department": "PLSC",
+    "number": 398,
+    "title": "Washington DC Internship Seminar",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": true,
+    "description": "Washington DC internship seminar. This course is Writing Intensive."
+  },
+  {
+    "code": "SPAN 101",
+    "department": "SPAN",
+    "number": 101,
+    "title": "Spanish I",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "This course is an introduction to the basic elements of Spanish language and culture. It is designed for students with no previous experience in Spanish."
+  },
+  {
+    "code": "SPAN 102",
+    "department": "SPAN",
+    "number": 102,
+    "title": "Spanish II",
+    "credits": 3,
+    "prerequisites": "SPAN 101",
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Latin American Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": ""
+  },
+  {
+    "code": "SPAN 103",
+    "department": "SPAN",
+    "number": 103,
+    "title": "Spanish III",
+    "credits": 3,
+    "prerequisites": "SPAN 102",
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": ""
+  },
+  {
+    "code": "SPAN 104",
+    "department": "SPAN",
+    "number": 104,
+    "title": "Spanish IV",
+    "credits": 3,
+    "prerequisites": "SPAN 103",
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": ""
+  },
+  {
+    "code": "SPAN 190",
+    "department": "SPAN",
+    "number": 190,
+    "title": "Spanish for Medical Professionals I",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "This course develops intermediate-level skills in comprehension and conversation for the health professions."
+  },
+  {
+    "code": "SPAN 195",
+    "department": "SPAN",
+    "number": 195,
+    "title": "Spanish for Medical Interpretation",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "This course is part of an intermediate advanced sequence focusing on advanced oral intercultural skills in Spanish language."
+  },
+  {
+    "code": "SPAN 250",
+    "department": "SPAN",
+    "number": 250,
+    "title": "Composition & Conversation I",
+    "credits": 3,
+    "prerequisites": "SPAN 104",
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": ""
+  },
+  {
+    "code": "SPAN 251",
+    "department": "SPAN",
+    "number": 251,
+    "title": "Composition & Conversation II",
+    "credits": 3,
+    "prerequisites": "SPAN 250",
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": ""
+  },
+  {
+    "code": "SPAN 252",
+    "department": "SPAN",
+    "number": 252,
+    "title": "Composition & Conversation: Native Speakers",
+    "credits": 3,
+    "prerequisites": "fluency in Spanish",
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": ""
+  },
+  {
+    "code": "SPAN 253",
+    "department": "SPAN",
+    "number": 253,
+    "title": "Advanced Composition & Conversation: Native Speakers",
+    "credits": 3,
+    "prerequisites": "SPAN 252 or equivalent",
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": ""
+  },
+  {
+    "code": "SPAN 270",
+    "department": "SPAN",
+    "number": 270,
+    "title": "Introduction to Critical Analysis in Spanish",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "This course reviews and sharpens the essential skills and techniques necessary to critically read, interpret, and write and speak about all genres of Hispanic literature in Spanish."
+  },
+  {
+    "code": "SPAN 271",
+    "department": "SPAN",
+    "number": 271,
+    "title": "Introduction to Iberian Literature and Culture",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "An introduction to Iberian literature, film, and cultural production."
+  },
+  {
+    "code": "SPAN 272",
+    "department": "SPAN",
+    "number": 272,
+    "title": "Introduction to Spanish American Literature and Culture",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "An introduction to Spanish-speaking Latin American literature, film, and other forms of cultural production."
+  },
+  {
+    "code": "SPAN 300",
+    "department": "SPAN",
+    "number": 300,
+    "title": "Tutorial for Credit",
+    "credits": {
+      "min": 1,
+      "max": 6
+    },
+    "prerequisites": "permission of chairperson",
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": ""
+  },
+  {
+    "code": "SPAN 302",
+    "department": "SPAN",
+    "number": 302,
+    "title": "Business Spanish",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Introduction to the fundamentals of the Spanish language and Hispanic culture as it relates to business practices."
+  },
+  {
+    "code": "SPAN 305",
+    "department": "SPAN",
+    "number": 305,
+    "title": "Advanced Spanish Grammar",
+    "credits": 3,
+    "prerequisites": "SPAN 251 and permission of chairperson",
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": ""
+  },
+  {
+    "code": "SPAN 308",
+    "department": "SPAN",
+    "number": 308,
+    "title": "Literary Criticism",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [
+      "FREN",
+      "GERM",
+      "ITAL"
+    ],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Introduction to various theories and methods of literary criticism and textual analysis."
+  },
+  {
+    "code": "SPAN 311",
+    "department": "SPAN",
+    "number": 311,
+    "title": "Generation of 1898",
+    "credits": 3,
+    "prerequisites": "Permission of chairperson",
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": ""
+  },
+  {
+    "code": "SPAN 314",
+    "department": "SPAN",
+    "number": 314,
+    "title": "Survey of Medieval Literature",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies",
+      "Medieval Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "This course is a survey of the more prominent works of the Spanish Middle Ages."
+  },
+  {
+    "code": "SPAN 319",
+    "department": "SPAN",
+    "number": 319,
+    "title": "Romanticism",
+    "credits": 3,
+    "prerequisites": "permission of chairperson",
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": ""
+  },
+  {
+    "code": "SPAN 321",
+    "department": "SPAN",
+    "number": 321,
+    "title": "20th Century Theatre",
+    "credits": 3,
+    "prerequisites": "permission of chairperson",
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": ""
+  },
+  {
+    "code": "SPAN 326",
+    "department": "SPAN",
+    "number": 326,
+    "title": "Theater of The Golden Age",
+    "credits": 3,
+    "prerequisites": "permission of chairperson",
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": ""
+  },
+  {
+    "code": "SPAN 331",
+    "department": "SPAN",
+    "number": 331,
+    "title": "20th Century Poetry",
+    "credits": 3,
+    "prerequisites": "Permission of chairperson",
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": ""
+  },
+  {
+    "code": "SPAN 336",
+    "department": "SPAN",
+    "number": 336,
+    "title": "Poetry of The Golden Age",
+    "credits": 3,
+    "prerequisites": "permission of chairperson",
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": ""
+  },
+  {
+    "code": "SPAN 339",
+    "department": "SPAN",
+    "number": 339,
+    "title": "19th Century Poetry",
+    "credits": 3,
+    "prerequisites": "permission of chairperson",
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": ""
+  },
+  {
+    "code": "SPAN 340",
+    "department": "SPAN",
+    "number": 340,
+    "title": "Survey Prose-Fictional & Nonfiction",
+    "credits": 3,
+    "prerequisites": "permission of chairperson",
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": ""
+  },
+  {
+    "code": "SPAN 341",
+    "department": "SPAN",
+    "number": 341,
+    "title": "20th Century Spanish Literature",
+    "credits": 3,
+    "prerequisites": "permission of chairperson",
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": ""
+  },
+  {
+    "code": "SPAN 346",
+    "department": "SPAN",
+    "number": 346,
+    "title": "Prose of The Golden Age",
+    "credits": 3,
+    "prerequisites": "permission of chairperson",
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": ""
+  },
+  {
+    "code": "SPAN 347",
+    "department": "SPAN",
+    "number": 347,
+    "title": "Cervantes Don Quijote",
+    "credits": 3,
+    "prerequisites": "permission of chairperson",
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": ""
+  },
+  {
+    "code": "SPAN 349",
+    "department": "SPAN",
+    "number": 349,
+    "title": "Realism and Naturalism",
+    "credits": 3,
+    "prerequisites": "permission of chairperson",
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "European Studies",
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": ""
+  },
+  {
+    "code": "SPAN 352",
+    "department": "SPAN",
+    "number": 352,
+    "title": "Masterpieces of Latin American Literature",
+    "credits": 3,
+    "prerequisites": "permission of chairperson",
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Latin American Studies"
+    ],
+    "cross_listings": [
+      "LASP372"
+    ],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": ""
+  },
+  {
+    "code": "SPAN 353",
+    "department": "SPAN",
+    "number": 353,
+    "title": "Literary Masterpieces of Spain",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "This course is a survey of representative works of Spanish literature from the Middle Ages to the present."
+  },
+  {
+    "code": "SPAN 360",
+    "department": "SPAN",
+    "number": 360,
+    "title": "Intro to Hispanic Linguistics",
+    "credits": 3,
+    "prerequisites": "SPAN 271 or 272",
+    "knowledge_area": null,
+    "interdisciplinary_options": [],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": ""
+  },
+  {
+    "code": "SPAN 361",
+    "department": "SPAN",
+    "number": 361,
+    "title": "Hispanic Women Writers",
+    "credits": 3,
+    "prerequisites": "SPAN 271 or SPAN 272",
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Women & Gender Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": ""
+  },
+  {
+    "code": "SPAN 362",
+    "department": "SPAN",
+    "number": 362,
+    "title": "History of Hispanic Feminism",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "This course challenges the usual view of feminism in Hispanic societies."
+  },
+  {
+    "code": "SPAN 363",
+    "department": "SPAN",
+    "number": 363,
+    "title": "Borges",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "This course focuses on the poetry and prose of Jorge Luis Borges."
+  },
+  {
+    "code": "SPAN 366",
+    "department": "SPAN",
+    "number": 366,
+    "title": "Spanish Cinema",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "This course focuses on Spanish cinema."
+  },
+  {
+    "code": "SPAN 370",
+    "department": "SPAN",
+    "number": 370,
+    "title": "Latin American Poetry",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Latin American poetry."
+  },
+  {
+    "code": "SPAN 380",
+    "department": "SPAN",
+    "number": 380,
+    "title": "Latin American Prose Fiction",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Latin American prose fiction."
+  },
+  {
+    "code": "SPAN 381",
+    "department": "SPAN",
+    "number": 381,
+    "title": "Contemporary Spanish-American Novel",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Contemporary Spanish-American novel."
+  },
+  {
+    "code": "SPAN 385",
+    "department": "SPAN",
+    "number": 385,
+    "title": "Caribbean Literature",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Caribbean literature."
+  },
+  {
+    "code": "SPAN 389",
+    "department": "SPAN",
+    "number": 389,
+    "title": "Latin American Short Story",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Latin American short story."
+  },
+  {
+    "code": "SPAN 390",
+    "department": "SPAN",
+    "number": 390,
+    "title": "Latin American Culture and Civilization",
+    "credits": 3,
+    "prerequisites": null,
+    "knowledge_area": null,
+    "interdisciplinary_options": [
+      "Global Studies"
+    ],
+    "cross_listings": [],
+    "engaged_learning": false,
+    "writing_intensive": false,
+    "description": "Latin American culture and civilization."
+  }
+]
