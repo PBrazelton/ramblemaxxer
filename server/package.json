@@ -19,6 +19,7 @@
     "postmark": "^4.0.7"
   },
   "devDependencies": {
+    "cheerio": "^1.2.0",
     "nodemon": "^3.0.3"
   }
 }

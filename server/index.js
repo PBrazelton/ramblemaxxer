@@ -23,7 +23,7 @@ const requirementsRoutes = require("./routes/requirements");
 const adminRoutes = require("./routes/admin");
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3006;
 const IS_PROD = process.env.NODE_ENV === "production";
 
 // ── Middleware ─────────────────────────────────────────────────────────────
@@ -31,7 +31,7 @@ if (IS_PROD) app.set("trust proxy", 1);
 app.use(express.json());
 app.use(
   cors({
-    origin: IS_PROD ? false : "http://localhost:5175",
+    origin: IS_PROD ? false : ["http://localhost:5175", "http://localhost:5176"],
     credentials: true,
   })
 );

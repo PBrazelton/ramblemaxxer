@@ -10,7 +10,9 @@
     "build": "cd client && npm run build",
     "start": "cd server && npm start",
     "db:init": "cd server && node db/init.js",
-    "db:seed": "cd server && node db/seed.js"
+    "db:seed": "cd server && node db/seed.js",
+    "db:scrape": "cd server && node scripts/scrape-catalog.js",
+    "db:seed-courses": "cd server && node scripts/seed-courses.js"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

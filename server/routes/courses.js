@@ -1,9 +1,10 @@
 /**
  * server/routes/courses.js
- * GET /api/courses           - full catalog
- * GET /api/courses/search    - search by title or dept
- * GET /api/courses/for-slot  - eligible courses for a requirement slot
- * GET /api/courses/:code     - single course
+ * GET /api/courses             - full catalog (optional dept filter + limit)
+ * GET /api/courses/search      - FTS5 search with prefix matching
+ * GET /api/courses/departments - department list with counts
+ * GET /api/courses/for-slot    - eligible courses for a requirement slot
+ * GET /api/courses/:code       - single course with tags + cross-listings
  */
 
 const express = require("express");
@@ -13,12 +14,97 @@ const db = require("../db/connection");
 
 const router = express.Router();
 
+// Check if courses table has data (DB-backed mode)
+let dbMode = false;
+try {
+  const row = db.prepare("SELECT COUNT(*) as count FROM courses").get();
+  dbMode = row && row.count > 0;
+} catch (e) { /* table doesn't exist */ }
+
+// ── Helper: hydrate a DB row into a course object with junction data ────────
+function hydrateCourse(row) {
+  if (!row) return null;
+  const tags = db.prepare(
+    "SELECT tag FROM course_interdisciplinary_tags WHERE course_code = ?"
+  ).all(row.code).map(r => r.tag);
+  const crossListings = db.prepare(
+    "SELECT cross_listed_code FROM course_cross_listings WHERE course_code = ?"
+  ).all(row.code).map(r => r.cross_listed_code);
+
+  return {
+    code: row.code,
+    department: row.department,
+    number: row.number,
+    title: row.title,
+    credits: row.credits,
+    credits_min: row.credits_min,
+    credits_max: row.credits_max,
+    prerequisites: row.prerequisites,
+    knowledge_area: row.knowledge_area,
+    interdisciplinary_options: tags,
+    cross_listings: crossListings,
+    engaged_learning: !!row.engaged_learning,
+    writing_intensive: !!row.writing_intensive,
+    description: row.description,
+  };
+}
+
+// ── GET /api/courses ────────────────────────────────────────────────────────
 router.get("/", (req, res) => {
-  res.json([...allCourses.values()]);
+  const { dept, limit } = req.query;
+
+  if (dbMode) {
+    let sql = "SELECT * FROM courses";
+    const params = [];
+    if (dept) { sql += " WHERE department = ?"; params.push(dept.toUpperCase()); }
+    sql += " ORDER BY department, number";
+    if (limit) { sql += " LIMIT ?"; params.push(parseInt(limit, 10)); }
+    const rows = db.prepare(sql).all(...params);
+    return res.json(rows.map(hydrateCourse));
+  }
+
+  let results = [...allCourses.values()];
+  if (dept) results = results.filter(c => c.department === dept.toUpperCase());
+  if (limit) results = results.slice(0, parseInt(limit, 10));
+  res.json(results);
 });
 
+// ── GET /api/courses/search ─────────────────────────────────────────────────
 router.get("/search", (req, res) => {
-  const { q, dept, glstOnly } = req.query;
+  const { q, dept, glstOnly, limit } = req.query;
+  const maxResults = Math.min(parseInt(limit, 10) || 50, 200);
+
+  if (dbMode && q) {
+    try {
+      // FTS5 prefix matching: "biol*" matches "biology", "BIOL 101", etc.
+      const ftsQuery = q.replace(/[^\w\s]/g, "").trim();
+      if (!ftsQuery) return res.json([]);
+
+      let sql = `
+        SELECT c.* FROM courses_fts f
+        JOIN courses c ON c.id = f.rowid
+        WHERE courses_fts MATCH ?
+      `;
+      const params = [`"${ftsQuery}"*`];
+
+      if (dept) { sql += " AND c.department = ?"; params.push(dept.toUpperCase()); }
+      sql += ` ORDER BY rank LIMIT ?`;
+      params.push(maxResults);
+
+      const rows = db.prepare(sql).all(...params);
+      let results = rows.map(hydrateCourse);
+
+      if (glstOnly === "true") {
+        results = results.filter(c => c.interdisciplinary_options.includes("Global Studies"));
+      }
+
+      return res.json(results);
+    } catch (e) {
+      // FTS error — fall through to LIKE fallback
+    }
+  }
+
+  // Fallback: in-memory search (JSON mode or FTS failure)
   let results = [...allCourses.values()];
   if (q) {
     const term = q.toLowerCase();
@@ -26,10 +112,31 @@ router.get("/search", (req, res) => {
   }
   if (dept) results = results.filter(c => c.department === dept.toUpperCase());
   if (glstOnly === "true") results = results.filter(c => c.interdisciplinary_options?.includes("Global Studies"));
-  res.json(results.slice(0, 50));
+  res.json(results.slice(0, maxResults));
 });
 
-// ── GET /api/courses/for-slot ────────────────────────────────────────────────
+// ── GET /api/courses/departments ────────────────────────────────────────────
+router.get("/departments", (req, res) => {
+  if (dbMode) {
+    const rows = db.prepare(
+      "SELECT department, COUNT(*) as count FROM courses GROUP BY department ORDER BY department"
+    ).all();
+    return res.json(rows);
+  }
+
+  // Fallback: count from in-memory map
+  const counts = {};
+  for (const c of allCourses.values()) {
+    counts[c.department] = (counts[c.department] || 0) + 1;
+  }
+  res.json(
+    Object.entries(counts)
+      .map(([department, count]) => ({ department, count }))
+      .sort((a, b) => a.department.localeCompare(b.department))
+  );
+});
+
+// ── GET /api/courses/for-slot ───────────────────────────────────────────────
 router.get("/for-slot", requireAuth, (req, res) => {
   const { programId, categoryName } = req.query;
   const userId = req.session.userId;
@@ -123,8 +230,16 @@ function getFriendsWithCourses(userId) {
   }, {});
 }
 
+// ── GET /api/courses/:code ──────────────────────────────────────────────────
 router.get("/:code", (req, res) => {
   const code = req.params.code.toUpperCase().replace("-", " ");
+
+  if (dbMode) {
+    const row = db.prepare("SELECT * FROM courses WHERE code = ?").get(code);
+    if (!row) return res.status(404).json({ error: "Course not found" });
+    return res.json(hydrateCourse(row));
+  }
+
   const course = allCourses.get(code);
   if (!course) return res.status(404).json({ error: "Course not found" });
   res.json(course);

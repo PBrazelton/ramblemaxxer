@@ -60,6 +60,72 @@ CREATE TABLE IF NOT EXISTS slot_assignments (
   UNIQUE(user_id, course_code, program_id, slot_id)
 );
 
+-- Course catalog (scraped from catalog.luc.edu + enriched from local JSON)
+CREATE TABLE IF NOT EXISTS courses (
+  id                INTEGER PRIMARY KEY AUTOINCREMENT,
+  code              TEXT    NOT NULL UNIQUE,     -- e.g. 'PLSC 100'
+  department        TEXT    NOT NULL,            -- e.g. 'PLSC'
+  number            INTEGER NOT NULL,            -- e.g. 100
+  title             TEXT    NOT NULL,
+  credits           INTEGER,                     -- typical credit value
+  credits_min       INTEGER,                     -- for variable-credit courses
+  credits_max       INTEGER,
+  prerequisites     TEXT,                        -- free-text from catalog
+  knowledge_area    TEXT,                        -- Core knowledge area
+  engaged_learning  INTEGER NOT NULL DEFAULT 0,  -- boolean flag
+  writing_intensive INTEGER NOT NULL DEFAULT 0,  -- boolean flag
+  description       TEXT,
+  catalog_year      TEXT,                        -- e.g. '2025-2026'
+  created_at        TEXT    NOT NULL DEFAULT (datetime('now')),
+  updated_at        TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_courses_department ON courses(department);
+CREATE INDEX IF NOT EXISTS idx_courses_dept_number ON courses(department, number);
+
+-- Interdisciplinary program tags (many-to-many)
+CREATE TABLE IF NOT EXISTS course_interdisciplinary_tags (
+  course_code TEXT NOT NULL,
+  tag         TEXT NOT NULL,
+  PRIMARY KEY (course_code, tag),
+  FOREIGN KEY (course_code) REFERENCES courses(code) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_course_tags_tag ON course_interdisciplinary_tags(tag);
+
+-- Cross-listed course equivalences
+CREATE TABLE IF NOT EXISTS course_cross_listings (
+  course_code       TEXT NOT NULL,
+  cross_listed_code TEXT NOT NULL,
+  PRIMARY KEY (course_code, cross_listed_code),
+  FOREIGN KEY (course_code) REFERENCES courses(code) ON DELETE CASCADE
+);
+
+-- Full-text search on courses
+CREATE VIRTUAL TABLE IF NOT EXISTS courses_fts USING fts5(
+  code, title, description, department, knowledge_area,
+  content='courses',
+  content_rowid='id'
+);
+
+-- FTS sync triggers
+CREATE TRIGGER IF NOT EXISTS courses_ai AFTER INSERT ON courses BEGIN
+  INSERT INTO courses_fts(rowid, code, title, description, department, knowledge_area)
+  VALUES (new.id, new.code, new.title, new.description, new.department, new.knowledge_area);
+END;
+
+CREATE TRIGGER IF NOT EXISTS courses_ad AFTER DELETE ON courses BEGIN
+  INSERT INTO courses_fts(courses_fts, rowid, code, title, description, department, knowledge_area)
+  VALUES ('delete', old.id, old.code, old.title, old.description, old.department, old.knowledge_area);
+END;
+
+CREATE TRIGGER IF NOT EXISTS courses_au AFTER UPDATE ON courses BEGIN
+  INSERT INTO courses_fts(courses_fts, rowid, code, title, description, department, knowledge_area)
+  VALUES ('delete', old.id, old.code, old.title, old.description, old.department, old.knowledge_area);
+  INSERT INTO courses_fts(rowid, code, title, description, department, knowledge_area)
+  VALUES (new.id, new.code, new.title, new.description, new.department, new.knowledge_area);
+END;
+
 -- Invite tokens (Penelope invites her friends)
 CREATE TABLE IF NOT EXISTS invites (
   id          INTEGER PRIMARY KEY AUTOINCREMENT,
