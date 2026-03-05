@@ -51,7 +51,7 @@ export const sharedStyles = {
 };
 
 // ── Logo header ─────────────────────────────────────────────────────────────
-export function StickyHeader({ user, badge, onLogout }) {
+export function StickyHeader({ user, badge, onLogout, onSettings }) {
   return (
     <div style={{ position: "sticky", top: 0, zIndex: 50, background: BG, borderBottom: `1px solid ${BORDER}`, padding: "0.6rem 1rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
       <h1 style={{ fontFamily: FONT.serif, fontSize: "1.3rem", fontWeight: 700, margin: 0, letterSpacing: "-0.02em" }}>
@@ -60,12 +60,45 @@ export function StickyHeader({ user, badge, onLogout }) {
       </h1>
       <div style={{ display: "flex", gap: "0.6rem", alignItems: "center" }}>
         <span style={{ fontFamily: FONT.mono, fontSize: "0.75rem", color: "#666" }}>{user.name}</span>
+        {onSettings && (
+          <button onClick={onSettings} style={{ fontFamily: FONT.mono, fontSize: "1rem", padding: "0.2rem 0.4rem", background: "transparent", border: "none", cursor: "pointer", color: "#666" }} title="Settings">
+            &#9881;
+          </button>
+        )}
         <button onClick={onLogout} style={{ fontFamily: FONT.mono, fontSize: "0.7rem", padding: "0.3rem 0.7rem", background: "#1a1a1a", color: "#fff", border: "none", borderRadius: 4, cursor: "pointer" }}>
           log out
         </button>
       </div>
     </div>
   );
+}
+
+// ── Input ──────────────────────────────────────────────────────────────────
+export function Input(props) {
+  return <input {...props} style={{ ...sharedStyles.input, width: "100%", boxSizing: "border-box", ...props.style }} />;
+}
+
+// ── Btn ────────────────────────────────────────────────────────────────────
+export function Btn({ full, children, ...props }) {
+  return (
+    <button {...props} style={{ ...sharedStyles.button, width: full ? "100%" : "auto", ...props.style }}>
+      {children}
+    </button>
+  );
+}
+
+// ── SectionTitle ───────────────────────────────────────────────────────────
+export function SectionTitle({ children }) {
+  return (
+    <div style={{ fontFamily: FONT.serif, fontSize: "1.1rem", fontWeight: 700, marginBottom: 12 }}>
+      {children}
+    </div>
+  );
+}
+
+// ── ErrMsg ─────────────────────────────────────────────────────────────────
+export function ErrMsg({ children }) {
+  return <p style={sharedStyles.error}>{children}</p>;
 }
 
 // ── Bottom sheet wrapper ────────────────────────────────────────────────────

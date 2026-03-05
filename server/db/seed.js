@@ -1,12 +1,9 @@
 /**
  * db/seed.js
- * Seeds the database with:
- *   - Penelope as the first user
- *   - Her declared programs (PLSC-BA, GLST-BA, CORE)
- *   - Her full course list (from the handoff doc)
+ * Seeds the database with Penelope + Paul if they don't already exist.
+ * Fully idempotent — safe to run on every deploy.
  *
  * Usage: node server/db/seed.js
- * Safe to re-run — clears existing seed data first.
  */
 
 const Database = require("better-sqlite3");
@@ -71,15 +68,15 @@ const PENELOPE_COURSES = [
 const PENELOPE_PROGRAMS = ["PLSC-BA", "GLST-BA", "CORE", "CAS-GRAD", "SPAN-LANG"];
 
 // ── Seed ──────────────────────────────────────────────────────────────────
-const run = db.transaction(() => {
-  // Clear existing seed data (by email — idempotent)
-  const existing = db.prepare("SELECT id FROM users WHERE email = ?").get("penelope@brazelton.net");
+const seedPenelope = db.transaction(() => {
+  const existing = db.prepare("SELECT id FROM users WHERE email = ?")
+    .get("penelope@brazelton.net");
+
   if (existing) {
-    db.prepare("DELETE FROM users WHERE id = ?").run(existing.id);
-    console.log("  Removed existing Penelope record");
+    console.log(`  Penelope already exists (id=${existing.id}), skipping`);
+    return;
   }
 
-  // Create Penelope
   const passwordHash = bcrypt.hashSync("peeps", 10);
   const { lastInsertRowid: userId } = db.prepare(`
     INSERT INTO users (email, name, password_hash, role, grad_year)
@@ -89,31 +86,32 @@ const run = db.transaction(() => {
   console.log(`  Created user: Penelope (id=${userId})`);
 
   // Programs
-  const insertProgram = db.prepare(`
-    INSERT OR IGNORE INTO student_programs (user_id, program_id) VALUES (?, ?)
-  `);
+  const insertProgram = db.prepare(
+    "INSERT OR IGNORE INTO student_programs (user_id, program_id) VALUES (?, ?)"
+  );
   for (const prog of PENELOPE_PROGRAMS) {
     insertProgram.run(userId, prog);
   }
   console.log(`  Inserted ${PENELOPE_PROGRAMS.length} programs`);
 
   // Courses
-  const insertCourse = db.prepare(`
-    INSERT OR REPLACE INTO student_courses (user_id, course_code, semester, status)
-    VALUES (?, ?, ?, ?)
-  `);
+  const insertCourse = db.prepare(
+    "INSERT OR IGNORE INTO student_courses (user_id, course_code, semester, status) VALUES (?, ?, ?, ?)"
+  );
   for (const c of PENELOPE_COURSES) {
     insertCourse.run(userId, c.code, c.semester, c.status);
   }
   console.log(`  Inserted ${PENELOPE_COURSES.length} courses`);
 });
 
-run();
+seedPenelope();
 
-// Paul — admin (outside transaction, idempotent)
+// Paul — admin
 const existingPaul = db.prepare("SELECT id FROM users WHERE email = ?")
   .get("paul@ramblemaxxer.com");
-if (!existingPaul) {
+if (existingPaul) {
+  console.log(`  Paul already exists (id=${existingPaul.id}), skipping`);
+} else {
   const paulHash = bcrypt.hashSync("changeme-admin", 10);
   db.prepare(`
     INSERT INTO users (email, name, password_hash, role, invited_by)
@@ -123,6 +121,4 @@ if (!existingPaul) {
 }
 
 db.close();
-console.log("✓ Seed complete.");
-console.log("  Penelope: penelope@brazelton.net / peeps");
-console.log("  Paul (admin): paul@ramblemaxxer.com / changeme-admin");
+console.log("✓ Seed complete (idempotent — existing data preserved).");

@@ -6,11 +6,24 @@ CREATE TABLE IF NOT EXISTS users (
   id          INTEGER PRIMARY KEY AUTOINCREMENT,
   email       TEXT    NOT NULL UNIQUE,
   name        TEXT    NOT NULL,
-  password_hash TEXT  NOT NULL,
+  password_hash TEXT,            -- nullable for OAuth users
   role        TEXT    NOT NULL DEFAULT 'student', -- 'student' | 'admin'
   grad_year   INTEGER,
   created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
-  invited_by  INTEGER REFERENCES users(id)
+  invited_by  INTEGER REFERENCES users(id),
+  provider    TEXT    NOT NULL DEFAULT 'local',  -- 'local' | 'google'
+  provider_id TEXT,
+  avatar_url  TEXT
+);
+
+-- Password reset tokens
+CREATE TABLE IF NOT EXISTS password_resets (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  token       TEXT    NOT NULL UNIQUE,
+  expires_at  TEXT    NOT NULL,
+  used_at     TEXT,
+  created_at  TEXT    NOT NULL DEFAULT (datetime('now'))
 );
 
 -- Declared programs per student (majors, minors, core)

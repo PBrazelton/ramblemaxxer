@@ -41,5 +41,41 @@ try {
   console.log("  Migrated: added privacy column");
 } catch (e) { /* already exists */ }
 
+// Migration: add provider column to users
+try {
+  db.prepare("ALTER TABLE users ADD COLUMN provider TEXT NOT NULL DEFAULT 'local'").run();
+  console.log("  Migrated: added provider column");
+} catch (e) { /* already exists */ }
+
+// Migration: add provider_id column to users
+try {
+  db.prepare("ALTER TABLE users ADD COLUMN provider_id TEXT").run();
+  console.log("  Migrated: added provider_id column");
+} catch (e) { /* already exists */ }
+
+// Migration: add avatar_url column to users
+try {
+  db.prepare("ALTER TABLE users ADD COLUMN avatar_url TEXT").run();
+  console.log("  Migrated: added avatar_url column");
+} catch (e) { /* already exists */ }
+
+// Migration: create unique index on provider + provider_id
+try {
+  db.prepare("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_provider ON users(provider, provider_id) WHERE provider_id IS NOT NULL").run();
+  console.log("  Migrated: added provider unique index");
+} catch (e) { /* already exists */ }
+
+// Migration: create password_resets table
+db.exec(`
+  CREATE TABLE IF NOT EXISTS password_resets (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    token       TEXT    NOT NULL UNIQUE,
+    expires_at  TEXT    NOT NULL,
+    used_at     TEXT,
+    created_at  TEXT    NOT NULL DEFAULT (datetime('now'))
+  )
+`);
+
 db.close();
 console.log(`✓ Database initialized at ${DB_PATH}`);

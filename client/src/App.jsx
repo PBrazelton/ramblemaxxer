@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { COLORS, STATUS_COLOR, FONT, BG, BORDER, api, ProgressRing, BottomSheet, StickyHeader, sharedStyles } from "./lib/ui.jsx";
+import { COLORS, STATUS_COLOR, FONT, BG, BORDER, api, ProgressRing, BottomSheet, StickyHeader, sharedStyles, Input, Btn, SectionTitle, ErrMsg } from "./lib/ui.jsx";
 import AdminPanel from "./pages/AdminPanel.jsx";
 
 // ── Router ──────────────────────────────────────────────────────────────────
 function getPage() {
   const hash = window.location.hash.slice(1) || "/";
   if (hash.startsWith("/register")) return "register";
+  if (hash.startsWith("/reset-password")) return "reset-password";
+  if (hash.startsWith("/forgot-password")) return "forgot-password";
   return hash === "/login" ? "login" : "dashboard";
 }
 
@@ -31,10 +33,38 @@ export default function App() {
     await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
     setUser(false);
   };
+  if (page === "forgot-password") return <ForgotPasswordPage />;
+  if (page === "reset-password") return <ResetPasswordPage />;
   if (!user && page !== "register") return <LoginPage onLogin={setUser} />;
   if (page === "register") return <RegisterPage onRegister={setUser} />;
   if (user.role === "admin") return <AdminPanel user={user} onLogout={doLogout} />;
-  return <Dashboard user={user} onLogout={doLogout} />;
+  return <Dashboard user={user} setUser={setUser} onLogout={doLogout} />;
+}
+
+// ── AuthShell ───────────────────────────────────────────────────────────────
+function AuthShell({ title, sub, children }) {
+  return (
+    <div style={styles.centered}>
+      <div style={styles.card}>
+        <h1 style={styles.logo}><span>ramble</span><span style={{ color: "#c43b2d" }}>maxxer</span></h1>
+        <p style={styles.tagline}>{sub || "stop guessing, start maxxing"}</p>
+        {title && <div style={{ fontFamily: FONT.serif, fontSize: "1.1rem", fontWeight: 600, marginBottom: 12 }}>{title}</div>}
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// ── GoogleIcon ──────────────────────────────────────────────────────────────
+function GoogleIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 48 48" style={{ verticalAlign: "middle", marginRight: 8 }}>
+      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+      <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+    </svg>
+  );
 }
 
 // ── Login Page ──────────────────────────────────────────────────────────────
@@ -42,6 +72,14 @@ function LoginPage({ onLogin }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+
+  // Check for OAuth error in URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.hash.split("?")[1] || "");
+    const oauthErr = params.get("error");
+    if (oauthErr && oauthErr !== "oauth_error") setError(decodeURIComponent(oauthErr));
+    else if (oauthErr === "oauth_error") setError("Google sign-in failed. Try again.");
+  }, []);
 
   const submit = async (e) => {
     e.preventDefault(); setError("");
@@ -51,18 +89,32 @@ function LoginPage({ onLogin }) {
   };
 
   return (
-    <div style={styles.centered}>
-      <div style={styles.card}>
-        <h1 style={styles.logo}><span>ramble</span><span style={{ color: "#c43b2d" }}>maxxer</span></h1>
-        <p style={styles.tagline}>stop guessing, start maxxing</p>
-        <form onSubmit={submit} style={styles.form}>
-          <input style={styles.input} type="email" placeholder="email" value={email} onChange={e => setEmail(e.target.value)} required />
-          <input style={styles.input} type="password" placeholder="password" value={password} onChange={e => setPassword(e.target.value)} required />
-          {error && <p style={styles.error}>{error}</p>}
-          <button style={styles.button} type="submit">log in</button>
-        </form>
+    <AuthShell>
+      <form onSubmit={submit} style={styles.form}>
+        <Input type="email" placeholder="email" value={email} onChange={e => setEmail(e.target.value)} required />
+        <Input type="password" placeholder="password" value={password} onChange={e => setPassword(e.target.value)} required />
+        {error && <ErrMsg>{error}</ErrMsg>}
+        <Btn type="submit" full>log in</Btn>
+      </form>
+      <div style={{ textAlign: "center", margin: "1rem 0 0.5rem" }}>
+        <a href="/api/auth/google" style={{
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+          width: "100%", padding: "0.6rem", borderRadius: 4,
+          border: `1px solid ${BORDER}`, background: "#fff", cursor: "pointer",
+          fontFamily: FONT.mono, fontSize: "0.85rem", color: "#333",
+          textDecoration: "none",
+        }}>
+          <GoogleIcon /> sign in with Google
+        </a>
       </div>
-    </div>
+      <div style={{ textAlign: "center", marginTop: "0.75rem" }}>
+        <button onClick={() => { window.location.hash = "/forgot-password"; }}
+          style={{ background: "none", border: "none", color: "#9a9590",
+            fontSize: "0.75rem", fontFamily: FONT.mono, cursor: "pointer" }}>
+          forgot password?
+        </button>
+      </div>
+    </AuthShell>
   );
 }
 
@@ -81,18 +133,218 @@ function RegisterPage({ onRegister }) {
   };
 
   return (
-    <div style={styles.centered}>
-      <div style={styles.card}>
-        <h1 style={styles.logo}><span>ramble</span><span style={{ color: "#c43b2d" }}>maxxer</span></h1>
-        <p style={styles.tagline}>create your account</p>
-        <form onSubmit={submit} style={styles.form}>
-          <input style={styles.input} placeholder="name" value={form.name} onChange={set("name")} required />
-          <input style={styles.input} type="email" placeholder="email" value={form.email} onChange={set("email")} required />
-          <input style={styles.input} type="password" placeholder="password" value={form.password} onChange={set("password")} required />
-          <input style={styles.input} placeholder="graduation year (e.g. 2027)" value={form.grad_year} onChange={set("grad_year")} />
-          {error && <p style={styles.error}>{error}</p>}
-          <button style={styles.button} type="submit">create account</button>
+    <AuthShell sub="create your account">
+      <a href={`/api/auth/google${token ? `?token=${token}` : ""}`}
+        style={{
+          display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+          padding: "0.65rem 1rem", borderRadius: 8, border: `1px solid ${BORDER}`,
+          background: "#fff", color: "#3a3530", textDecoration: "none",
+          fontFamily: FONT.mono, fontSize: "0.9rem", marginBottom: 12,
+        }}>
+        <GoogleIcon /> continue with Google
+      </a>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+        <div style={{ flex: 1, height: 1, background: BORDER }} />
+        <span style={{ fontSize: 11, color: "#b0a090", fontFamily: FONT.mono }}>or</span>
+        <div style={{ flex: 1, height: 1, background: BORDER }} />
+      </div>
+      <form onSubmit={submit} style={styles.form}>
+        <Input placeholder="name" value={form.name} onChange={set("name")} required />
+        <Input type="email" placeholder="email" value={form.email} onChange={set("email")} required />
+        <Input type="password" placeholder="password" value={form.password} onChange={set("password")} required />
+        <Input placeholder="graduation year (e.g. 2027)" value={form.grad_year} onChange={set("grad_year")} />
+        {error && <ErrMsg>{error}</ErrMsg>}
+        <Btn type="submit" full>create account</Btn>
+      </form>
+    </AuthShell>
+  );
+}
+
+// ── ForgotPasswordPage ──────────────────────────────────────────────────────
+function ForgotPasswordPage() {
+  const [email, setEmail] = useState("");
+  const [sent, setSent] = useState(false);
+  const [err, setErr] = useState("");
+
+  const submit = async e => {
+    e.preventDefault();
+    const res = await api.post("/api/auth/forgot-password", { email });
+    res.ok !== false ? setSent(true) : setErr(res.error);
+  };
+
+  const onBack = () => { window.location.hash = "/login"; };
+
+  return (
+    <AuthShell title="reset password" sub="we'll send you a link">
+      {sent ? (
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 14, color: "#5a5550", marginBottom: 16 }}>
+            If that email is in our system, a reset link is on its way.
+          </div>
+          <Btn onClick={onBack} full>back to login</Btn>
+        </div>
+      ) : (
+        <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <Input type="email" placeholder="your email" value={email}
+            onChange={e => setEmail(e.target.value)} required />
+          {err && <ErrMsg>{err}</ErrMsg>}
+          <Btn type="submit" full>send reset link</Btn>
+          <button type="button" onClick={onBack}
+            style={{ background: "none", border: "none", color: "#9a9590",
+              fontSize: 12, fontFamily: FONT.mono, cursor: "pointer" }}>
+            back to login
+          </button>
         </form>
+      )}
+    </AuthShell>
+  );
+}
+
+// ── ResetPasswordPage ───────────────────────────────────────────────────────
+function ResetPasswordPage() {
+  const token = new URLSearchParams(window.location.hash.split("?")[1] || "").get("token") || "";
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [done, setDone] = useState(false);
+  const [err, setErr] = useState("");
+
+  const submit = async e => {
+    e.preventDefault();
+    if (password !== confirm) return setErr("Passwords don't match");
+    const res = await api.post("/api/auth/reset-password", { token, password });
+    res.ok ? setDone(true) : setErr(res.error);
+  };
+
+  return (
+    <AuthShell title="new password" sub="make it a good one">
+      {done ? (
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 14, color: "#22863a", marginBottom: 16 }}>
+            Password updated! You can now log in.
+          </div>
+          <Btn onClick={() => { window.location.hash = "/login"; }} full>go to login</Btn>
+        </div>
+      ) : (
+        <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <Input type="password" placeholder="new password (8+ chars)"
+            value={password} onChange={e => setPassword(e.target.value)} required />
+          <Input type="password" placeholder="confirm password"
+            value={confirm} onChange={e => setConfirm(e.target.value)} required />
+          {err && <ErrMsg>{err}</ErrMsg>}
+          <Btn type="submit" full>set new password</Btn>
+        </form>
+      )}
+    </AuthShell>
+  );
+}
+
+// ── SettingsSheet ───────────────────────────────────────────────────────────
+function SettingsSheet({ user, onClose, onUpdate }) {
+  const [name, setName] = useState(user.name);
+  const [gradYear, setGradYear] = useState(user.grad_year || "");
+  const [privacy, setPrivacy] = useState(user.privacy || "private");
+  const [currentPw, setCurrentPw] = useState("");
+  const [newPw, setNewPw] = useState("");
+  const [msg, setMsg] = useState("");
+  const [err, setErr] = useState("");
+
+  const saveProfile = async () => {
+    setMsg(""); setErr("");
+    const res = await api.put("/api/students/me/settings", {
+      name, grad_year: parseInt(gradYear) || null, privacy
+    });
+    res.ok ? (setMsg("Saved"), onUpdate({ ...user, name, grad_year: gradYear, privacy }))
+           : setErr(res.error);
+  };
+
+  const changePassword = async () => {
+    setMsg(""); setErr("");
+    if (!currentPw || !newPw) return setErr("Both fields required");
+    const res = await api.put("/api/students/me/password", {
+      currentPassword: currentPw, newPassword: newPw
+    });
+    res.ok ? (setMsg("Password updated"), setCurrentPw(""), setNewPw(""))
+           : setErr(res.error);
+  };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)",
+      zIndex: 1000, display: "flex", alignItems: "flex-end", justifyContent: "center" }}
+      onClick={onClose}>
+      <div onClick={e => e.stopPropagation()}
+        style={{ background: BG, borderRadius: "16px 16px 0 0", padding: "24px 20px 48px",
+          width: "100%", maxWidth: 560, boxShadow: "0 -8px 32px rgba(0,0,0,0.15)",
+          maxHeight: "85vh", overflowY: "auto" }}>
+
+        <div style={{ width: 36, height: 4, borderRadius: 2, background: "#d0ccc6",
+          margin: "0 auto 20px" }} />
+
+        <SectionTitle>Profile</SectionTitle>
+
+        {user.avatar_url && (
+          <img src={user.avatar_url} alt={user.name}
+            style={{ width: 48, height: 48, borderRadius: "50%", marginBottom: 12 }} />
+        )}
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
+          <Input placeholder="display name" value={name}
+            onChange={e => setName(e.target.value)} />
+          <Input placeholder="graduation year" value={gradYear}
+            onChange={e => setGradYear(e.target.value)} />
+          <div>
+            <div style={{ fontSize: 12, color: "#8a8580", marginBottom: 6,
+              fontFamily: FONT.mono }}>course visibility</div>
+            <div style={{ display: "flex", gap: 8 }}>
+              {["private", "friends"].map(v => (
+                <button key={v} onClick={() => setPrivacy(v)}
+                  style={{ flex: 1, padding: "10px 0", borderRadius: 8,
+                    border: `2px solid ${privacy === v ? COLORS["PLSC-BA"] : BORDER}`,
+                    background: privacy === v ? COLORS["PLSC-BA"] + "11" : "transparent",
+                    cursor: "pointer", fontFamily: FONT.mono, fontSize: 13,
+                    color: privacy === v ? COLORS["PLSC-BA"] : "#5a5550" }}>
+                  {v === "private" ? "private" : "friends"}
+                </button>
+              ))}
+            </div>
+            <div style={{ fontSize: 11, color: "#9a9590", marginTop: 6 }}>
+              {privacy === "friends"
+                ? "People in your invite network can see your course list"
+                : "Only you can see your course list"}
+            </div>
+          </div>
+          <Btn onClick={saveProfile} full>save profile</Btn>
+        </div>
+
+        {(user.provider === "local" || !user.provider) && (
+          <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: 16, marginBottom: 16 }}>
+            <SectionTitle>Change Password</SectionTitle>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <Input type="password" placeholder="current password"
+                value={currentPw} onChange={e => setCurrentPw(e.target.value)} />
+              <Input type="password" placeholder="new password (8+ chars)"
+                value={newPw} onChange={e => setNewPw(e.target.value)} />
+              <Btn onClick={changePassword} full>update password</Btn>
+            </div>
+          </div>
+        )}
+
+        {user.provider === "google" && (
+          <div style={{ fontSize: 12, color: "#9a9590", fontFamily: FONT.mono,
+            padding: "12px 0", borderTop: `1px solid ${BORDER}` }}>
+            Signed in with Google — password change not available
+          </div>
+        )}
+
+        {msg && <div style={{ color: "#22863a", fontSize: 13, fontFamily: FONT.mono,
+          marginTop: 8 }}>{msg}</div>}
+        {err && <ErrMsg>{err}</ErrMsg>}
+
+        <button onClick={onClose}
+          style={{ marginTop: 16, width: "100%", padding: 12, borderRadius: 10,
+            border: "none", background: "#e8e4df", cursor: "pointer",
+            fontFamily: FONT.mono, fontSize: 13, color: "#5a5550" }}>
+          close
+        </button>
       </div>
     </div>
   );
@@ -587,10 +839,11 @@ function DetailItem({ label, value }) {
 }
 
 // ── Dashboard ───────────────────────────────────────────────────────────────
-function Dashboard({ user, onLogout }) {
+function Dashboard({ user, setUser, onLogout }) {
   const [data, setData] = useState(null);
   const [pinModal, setPinModal] = useState(null);
   const [slotModal, setSlotModal] = useState(null);
+  const [showSettings, setShowSettings] = useState(false);
 
   const refresh = useCallback(() => {
     api.get("/api/students/me/solve").then(setData);
@@ -635,7 +888,7 @@ function Dashboard({ user, onLogout }) {
 
   return (
     <div style={{ background: BG, minHeight: "100vh" }}>
-      <StickyHeader user={user} onLogout={onLogout} />
+      <StickyHeader user={user} onLogout={onLogout} onSettings={() => setShowSettings(true)} />
 
       {/* Content */}
       <div style={{ maxWidth: 680, margin: "0 auto", padding: "1rem" }}>
@@ -669,6 +922,11 @@ function Dashboard({ user, onLogout }) {
       {slotModal && (
         <SlotModal programCode={slotModal.programCode} categoryName={slotModal.categoryName}
           onClose={() => setSlotModal(null)} />
+      )}
+
+      {showSettings && (
+        <SettingsSheet user={user} onClose={() => setShowSettings(false)}
+          onUpdate={(updated) => setUser(updated)} />
       )}
     </div>
   );

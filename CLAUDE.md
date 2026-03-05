@@ -94,6 +94,15 @@ course code to `eligible_courses`.
 4. Test with `npm run dev`
 5. Deploy: `git push`, then SSH and `git pull` + rebuild + restart
 
+**OAuth is set up via Passport.js + Google strategy (`server/lib/passport.js`):**
+Google Client ID/Secret live in environment variables (Railway in prod).
+Local dev uses the same OAuth flow — add localhost callback URL to Google Console.
+Invite-gated: new Google users need a matching invite email to sign up.
+
+**Email is sent via Postmark (`server/lib/email.js`):**
+Set `POSTMARK_API_KEY` env var. Without it, emails log to console (safe for local dev).
+Used for invite emails and password reset links.
+
 ## What's not built yet (Phase 2)
 
 - Course schedule data (fall/spring offering — behind Loyola login, not scraped yet)

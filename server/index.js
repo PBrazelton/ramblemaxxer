@@ -15,6 +15,7 @@ const session = require("express-session");
 const SqliteStore = require("better-sqlite3-session-store")(session);
 const sessionDb = require("better-sqlite3")(path.join(__dirname, "db", "ramblemaxxer.db"));
 
+const passport = require("./lib/passport");
 const authRoutes = require("./routes/auth");
 const studentRoutes = require("./routes/students");
 const coursesRoutes = require("./routes/courses");
@@ -48,6 +49,9 @@ app.use(
     },
   })
 );
+
+// ── Passport (initialize only, no passport sessions) ──────────────────────
+app.use(passport.initialize());
 
 // ── API Routes ─────────────────────────────────────────────────────────────
 app.use("/api/auth", authRoutes);

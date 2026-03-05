@@ -11,14 +11,18 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const db = require("../db/connection");
+const passport = require("../lib/passport");
+const { sendInviteEmail, sendPasswordResetEmail } = require("../lib/email");
 
 const router = express.Router();
+const APP_URL = process.env.APP_URL || "http://localhost:5175";
 
 // ── GET /api/auth/me ───────────────────────────────────────────────────────
 router.get("/me", (req, res) => {
   if (!req.session.userId) return res.status(401).json({ error: "Not logged in" });
-  const user = db.prepare("SELECT id, email, name, role, grad_year FROM users WHERE id = ?")
-    .get(req.session.userId);
+  const user = db.prepare(
+    "SELECT id, email, name, role, grad_year, privacy, provider, avatar_url FROM users WHERE id = ?"
+  ).get(req.session.userId);
   if (!user) return res.status(401).json({ error: "Session invalid" });
   res.json(user);
 });
@@ -29,7 +33,7 @@ router.post("/login", (req, res) => {
   if (!email || !password) return res.status(400).json({ error: "Email and password required" });
 
   const user = db.prepare("SELECT * FROM users WHERE email = ?").get(email.toLowerCase().trim());
-  if (!user || !bcrypt.compareSync(password, user.password_hash)) {
+  if (!user || !user.password_hash || !bcrypt.compareSync(password, user.password_hash)) {
     return res.status(401).json({ error: "Invalid email or password" });
   }
   if (user.active === 0) {
@@ -86,7 +90,7 @@ router.post("/register", (req, res) => {
 });
 
 // ── POST /api/auth/invite ──────────────────────────────────────────────────
-router.post("/invite", requireAuth, (req, res) => {
+router.post("/invite", requireAuth, async (req, res) => {
   const { email } = req.body; // optional pre-fill
   const token = crypto.randomBytes(24).toString("hex");
 
@@ -94,8 +98,96 @@ router.post("/invite", requireAuth, (req, res) => {
     INSERT INTO invites (token, invited_by, email) VALUES (?, ?, ?)
   `).run(token, req.session.userId, email || null);
 
-  const inviteUrl = `${process.env.APP_URL || "http://localhost:5175"}/#/register?token=${token}`;
+  const inviteUrl = `${APP_URL}/#/register?token=${token}`;
+
+  // Send invite email if an email was provided
+  if (email) {
+    const inviter = db.prepare("SELECT name FROM users WHERE id = ?").get(req.session.userId);
+    try {
+      await sendInviteEmail(email, inviteUrl, inviter?.name || "A friend");
+    } catch (e) {
+      console.error("[invite email error]", e);
+    }
+  }
+
   res.json({ token, inviteUrl });
+});
+
+// ── GET /api/auth/google ──────────────────────────────────────────────────
+router.get("/google", (req, res, next) => {
+  // Stash invite token in session so callback can use it
+  if (req.query.token) req.session.inviteToken = req.query.token;
+  passport.authenticate("google", { scope: ["profile", "email"], session: false })(req, res, next);
+});
+
+// ── GET /api/auth/google/callback ─────────────────────────────────────────
+router.get("/google/callback",
+  (req, res, next) => {
+    passport.authenticate("google", { session: false }, (err, user, info) => {
+      if (err) {
+        console.error("[google oauth error]", err);
+        return res.redirect(`${APP_URL}/#/login?error=oauth_error`);
+      }
+      if (!user) {
+        const msg = encodeURIComponent(info?.message || "Google sign-in failed");
+        return res.redirect(`${APP_URL}/#/login?error=${msg}`);
+      }
+      req.session.userId = user.id;
+      res.redirect(`${APP_URL}/#/`);
+    })(req, res, next);
+  }
+);
+
+// ── POST /api/auth/forgot-password ────────────────────────────────────────
+router.post("/forgot-password", async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: "Email required" });
+
+  const user = db.prepare("SELECT id, provider FROM users WHERE email = ?")
+    .get(email.toLowerCase().trim());
+
+  // Always return ok to avoid email enumeration
+  if (!user || user.provider !== "local") {
+    return res.json({ ok: true });
+  }
+
+  const token = crypto.randomBytes(32).toString("hex");
+  const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1 hour
+
+  db.prepare(`
+    INSERT INTO password_resets (user_id, token, expires_at) VALUES (?, ?, ?)
+  `).run(user.id, token, expiresAt);
+
+  try {
+    await sendPasswordResetEmail(email.toLowerCase().trim(), token);
+  } catch (e) {
+    console.error("[reset email error]", e);
+  }
+
+  res.json({ ok: true });
+});
+
+// ── POST /api/auth/reset-password ─────────────────────────────────────────
+router.post("/reset-password", (req, res) => {
+  const { token, password } = req.body;
+  if (!token || !password) return res.status(400).json({ error: "Token and password required" });
+  if (password.length < 8) return res.status(400).json({ error: "Password must be at least 8 characters" });
+
+  const reset = db.prepare(`
+    SELECT * FROM password_resets
+    WHERE token = ? AND used_at IS NULL AND expires_at > datetime('now')
+  `).get(token);
+
+  if (!reset) return res.status(400).json({ error: "Invalid or expired reset link" });
+
+  const hash = bcrypt.hashSync(password, 10);
+
+  db.transaction(() => {
+    db.prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(hash, reset.user_id);
+    db.prepare("UPDATE password_resets SET used_at = datetime('now') WHERE id = ?").run(reset.id);
+  })();
+
+  res.json({ ok: true });
 });
 
 // ── Middleware ─────────────────────────────────────────────────────────────

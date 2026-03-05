@@ -12,6 +12,7 @@
  */
 
 const express = require("express");
+const bcrypt = require("bcryptjs");
 const db = require("../db/connection");
 const { requireAuth } = require("./auth");
 const { solve, getSuggestions } = require("../../shared/solver");
@@ -123,12 +124,63 @@ router.post("/me/programs", (req, res) => {
 
 // ── PUT /api/students/me/settings ────────────────────────────────────────
 router.put("/me/settings", (req, res) => {
-  const { privacy } = req.body;
-  if (!["private", "friends"].includes(privacy)) {
+  const { privacy, name, grad_year } = req.body;
+  if (privacy && !["private", "friends"].includes(privacy)) {
     return res.status(400).json({ error: "privacy must be 'private' or 'friends'" });
   }
-  db.prepare("UPDATE users SET privacy = ? WHERE id = ?")
-    .run(privacy, req.session.userId);
+
+  const updates = [];
+  const params = [];
+  if (privacy) { updates.push("privacy = ?"); params.push(privacy); }
+  if (name !== undefined) { updates.push("name = ?"); params.push(name); }
+  if (grad_year !== undefined) { updates.push("grad_year = ?"); params.push(grad_year); }
+
+  if (updates.length === 0) return res.status(400).json({ error: "No fields to update" });
+
+  params.push(req.session.userId);
+  db.prepare(`UPDATE users SET ${updates.join(", ")} WHERE id = ?`).run(...params);
+  res.json({ ok: true });
+});
+
+// ── PUT /api/students/me/password ───────────────────────────────────────
+router.put("/me/password", (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ error: "Current and new password required" });
+  }
+  if (newPassword.length < 8) {
+    return res.status(400).json({ error: "Password must be at least 8 characters" });
+  }
+
+  const user = db.prepare("SELECT password_hash, provider FROM users WHERE id = ?")
+    .get(req.session.userId);
+  if (!user || user.provider !== "local") {
+    return res.status(400).json({ error: "Password change not available for this account" });
+  }
+  if (!bcrypt.compareSync(currentPassword, user.password_hash)) {
+    return res.status(401).json({ error: "Current password is incorrect" });
+  }
+
+  const hash = bcrypt.hashSync(newPassword, 10);
+  db.prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(hash, req.session.userId);
+  res.json({ ok: true });
+});
+
+// ── PUT /api/students/me/programs ───────────────────────────────────────
+router.put("/me/programs", (req, res) => {
+  const { programs } = req.body; // array of program IDs to be declared
+  if (!Array.isArray(programs)) {
+    return res.status(400).json({ error: "programs must be an array" });
+  }
+
+  db.transaction(() => {
+    db.prepare("DELETE FROM student_programs WHERE user_id = ?").run(req.session.userId);
+    const insert = db.prepare("INSERT INTO student_programs (user_id, program_id) VALUES (?, ?)");
+    for (const pid of programs) {
+      insert.run(req.session.userId, pid);
+    }
+  })();
+
   res.json({ ok: true });
 });
 
