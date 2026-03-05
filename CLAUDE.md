@@ -92,7 +92,13 @@ course code to `eligible_courses`.
 2. Register it in `server/index.js`
 3. Add the UI in `client/src/App.jsx` (or a new file in `client/src/pages/`)
 4. Test with `npm run dev`
-5. Deploy: `git push`, then SSH and `git pull` + rebuild + restart
+5. Deploy: `git push` — Railway auto-deploys from main
+
+**Railway build command:**
+`cd client && npm install && npm run build && cd ../server && npm install && node db/init.js`
+
+**Seed (`npm run db:seed`) is local-only** — run once on a fresh DB to create
+Penelope + Paul. It's idempotent (skips existing users) but not in the deploy pipeline.
 
 **OAuth is set up via Passport.js + Google strategy (`server/lib/passport.js`):**
 Google Client ID/Secret live in environment variables (Railway in prod).
