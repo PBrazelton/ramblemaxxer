@@ -12,11 +12,14 @@ const express = require("express");
 const path = require("path");
 const cors = require("cors");
 const session = require("express-session");
+const SqliteStore = require("better-sqlite3-session-store")(session);
+const sessionDb = require("better-sqlite3")(path.join(__dirname, "db", "ramblemaxxer.db"));
 
 const authRoutes = require("./routes/auth");
 const studentRoutes = require("./routes/students");
 const coursesRoutes = require("./routes/courses");
 const requirementsRoutes = require("./routes/requirements");
+const adminRoutes = require("./routes/admin");
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -32,6 +35,7 @@ app.use(
 );
 app.use(
   session({
+    store: new SqliteStore({ client: sessionDb, expired: { clear: true, intervalMs: 900000 } }),
     secret: process.env.SESSION_SECRET || "dev-secret-change-in-production",
     resave: false,
     saveUninitialized: false,
@@ -48,6 +52,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/students", studentRoutes);
 app.use("/api/courses", coursesRoutes);
 app.use("/api/requirements", requirementsRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Health check
 app.get("/api/health", (req, res) => {

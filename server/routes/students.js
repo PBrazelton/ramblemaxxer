@@ -14,14 +14,8 @@
 const express = require("express");
 const db = require("../db/connection");
 const { requireAuth } = require("./auth");
-const { solve, getSuggestions, buildCourseMap, buildProgramMap } = require("../../shared/solver");
-const coursesArray = require("../../data/courses.json");
-const supplementalArray = require("../../data/courses-supplemental.json");
-const degreeRequirements = require("../../data/degree_requirements.json");
-
-// Build lookup maps once at startup
-const courseMap = buildCourseMap(coursesArray, supplementalArray);
-const programMap = buildProgramMap(degreeRequirements);
+const { solve, getSuggestions } = require("../../shared/solver");
+const { courseMap, programMap, degreeRequirements } = require("../lib/catalog");
 
 const router = express.Router();
 router.use(requireAuth);
@@ -125,6 +119,17 @@ router.post("/me/programs", (req, res) => {
   db.prepare("INSERT OR IGNORE INTO student_programs (user_id, program_id) VALUES (?, ?)")
     .run(req.session.userId, programId);
   res.status(201).json({ ok: true });
+});
+
+// ── PUT /api/students/me/settings ────────────────────────────────────────
+router.put("/me/settings", (req, res) => {
+  const { privacy } = req.body;
+  if (!["private", "friends"].includes(privacy)) {
+    return res.status(400).json({ error: "privacy must be 'private' or 'friends'" });
+  }
+  db.prepare("UPDATE users SET privacy = ? WHERE id = ?")
+    .run(privacy, req.session.userId);
+  res.json({ ok: true });
 });
 
 module.exports = router;

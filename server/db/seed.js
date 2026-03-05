@@ -109,5 +109,20 @@ const run = db.transaction(() => {
 });
 
 run();
+
+// Paul — admin (outside transaction, idempotent)
+const existingPaul = db.prepare("SELECT id FROM users WHERE email = ?")
+  .get("paul@ramblemaxxer.com");
+if (!existingPaul) {
+  const paulHash = bcrypt.hashSync("changeme-admin", 10);
+  db.prepare(`
+    INSERT INTO users (email, name, password_hash, role, invited_by)
+    VALUES (?, ?, ?, 'admin', NULL)
+  `).run("paul@ramblemaxxer.com", "Paul", paulHash);
+  console.log("  Created admin: Paul");
+}
+
 db.close();
-console.log("✓ Seed complete. Penelope's password is 'changeme' — change it on first login.");
+console.log("✓ Seed complete.");
+console.log("  Penelope: penelope@ramblemaxxer.local / changeme");
+console.log("  Paul (admin): paul@ramblemaxxer.com / changeme-admin");

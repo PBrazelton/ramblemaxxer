@@ -27,9 +27,19 @@ db.exec(schema);
 try {
   db.prepare("ALTER TABLE student_courses ADD COLUMN pinned_program TEXT").run();
   console.log("  Migrated: added pinned_program column");
-} catch (e) {
-  // Column already exists — fine
-}
+} catch (e) { /* already exists */ }
+
+// Migration: add active column to users
+try {
+  db.prepare("ALTER TABLE users ADD COLUMN active INTEGER NOT NULL DEFAULT 1").run();
+  console.log("  Migrated: added active column");
+} catch (e) { /* already exists */ }
+
+// Migration: add privacy column to users
+try {
+  db.prepare("ALTER TABLE users ADD COLUMN privacy TEXT NOT NULL DEFAULT 'private'").run();
+  console.log("  Migrated: added privacy column");
+} catch (e) { /* already exists */ }
 
 db.close();
 console.log(`✓ Database initialized at ${DB_PATH}`);

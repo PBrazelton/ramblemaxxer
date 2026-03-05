@@ -1,24 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-
-// ── Constants ───────────────────────────────────────────────────────────────
-const COLORS = {
-  "PLSC-BA": "#c43b2d", "GLST-BA": "#1a7a5a", "CORE": "#7a4a1a",
-  "CAS-GRAD": "#5a6a7a", "SPAN-LANG": "#6f42c1",
-};
-const STATUS_COLOR = {
-  complete: "#22863a", enrolled: "#b08800",
-  planned: "#6f42c1", transfer: "#5a6a7a", waived: "#bbb",
-};
-const FONT = { serif: "'Source Serif 4', Georgia, serif", mono: "'DM Mono', monospace" };
-const BG = "#fffbf0";
-const BORDER = "#e8e4df";
-
-// ── API helpers ─────────────────────────────────────────────────────────────
-const api = {
-  get: (url) => fetch(url, { credentials: "include" }).then(r => r.json()),
-  post: (url, body) => fetch(url, { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then(r => r.json()),
-  put: (url, body) => fetch(url, { method: "PUT", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then(r => r.json()),
-};
+import { COLORS, STATUS_COLOR, FONT, BG, BORDER, api, ProgressRing, BottomSheet, StickyHeader, sharedStyles } from "./lib/ui.jsx";
+import AdminPanel from "./pages/AdminPanel.jsx";
 
 // ── Router ──────────────────────────────────────────────────────────────────
 function getPage() {
@@ -45,9 +27,14 @@ export default function App() {
       <span style={{ fontFamily: FONT.mono, color: "#888" }}>loading...</span>
     </div>
   );
+  const doLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+    setUser(false);
+  };
   if (!user && page !== "register") return <LoginPage onLogin={setUser} />;
   if (page === "register") return <RegisterPage onRegister={setUser} />;
-  return <Dashboard user={user} onLogout={() => setUser(false)} />;
+  if (user.role === "admin") return <AdminPanel user={user} onLogout={doLogout} />;
+  return <Dashboard user={user} onLogout={doLogout} />;
 }
 
 // ── Login Page ──────────────────────────────────────────────────────────────
@@ -111,20 +98,6 @@ function RegisterPage({ onRegister }) {
   );
 }
 
-// ── ProgressRing ────────────────────────────────────────────────────────────
-function ProgressRing({ value, max, size = 80, stroke = 6, color = "#22863a" }) {
-  const r = (size - stroke) / 2;
-  const circ = 2 * Math.PI * r;
-  const pct = Math.min(value / max, 1);
-  return (
-    <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
-      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={BORDER} strokeWidth={stroke} />
-      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth={stroke}
-        strokeDasharray={circ} strokeDashoffset={circ * (1 - pct)} strokeLinecap="round" />
-    </svg>
-  );
-}
-
 // ── CreditMeter ─────────────────────────────────────────────────────────────
 function CreditMeter({ credits }) {
   const { total, complete, enrolled, planned } = credits;
@@ -163,7 +136,7 @@ function CreditMeter({ credits }) {
 }
 
 // ── ProgramCard ─────────────────────────────────────────────────────────────
-function ProgramCard({ prog, conflicts, onPipClick, defaultOpen = false }) {
+function ProgramCard({ prog, conflicts, onPipClick, onSlotTap, defaultOpen = false }) {
   const [open, setOpen] = useState(defaultOpen);
   const color = COLORS[prog.code] || "#444";
   const filledSlots = prog.categories.reduce((s, c) => s + (c.filledCount || 0), 0);
@@ -189,7 +162,8 @@ function ProgramCard({ prog, conflicts, onPipClick, defaultOpen = false }) {
       {open && (
         <div style={{ padding: "0 1rem 0.8rem 1rem" }}>
           {prog.categories.map((cat, i) => (
-            <CategoryRow key={i} cat={cat} color={color} conflicts={conflicts} onPipClick={onPipClick} />
+            <CategoryRow key={i} cat={cat} color={color} conflicts={conflicts} onPipClick={onPipClick}
+              onSlotTap={!cat.isSatisfied && !cat.isWaived && onSlotTap ? () => onSlotTap(prog.code, cat.name) : null} />
           ))}
         </div>
       )}
@@ -198,7 +172,7 @@ function ProgramCard({ prog, conflicts, onPipClick, defaultOpen = false }) {
 }
 
 // ── CategoryRow ─────────────────────────────────────────────────────────────
-function CategoryRow({ cat, color, conflicts, onPipClick }) {
+function CategoryRow({ cat, color, conflicts, onPipClick, onSlotTap }) {
   const hasConflict = cat.slots.some(s => conflicts[s.code]);
 
   // Build pip list — coversBothTiers slots expand to fill both positions
@@ -225,15 +199,21 @@ function CategoryRow({ cat, color, conflicts, onPipClick }) {
 
   return (
     <div style={{ padding: "0.5rem 0", borderTop: `1px solid ${BORDER}` }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.3rem" }}>
+      <div onClick={onSlotTap || undefined} style={{
+        display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.3rem",
+        cursor: onSlotTap ? "pointer" : "default",
+      }}>
         <div style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 600 }}>
           {cat.name}
           {cat.isWaived && <span style={{ marginLeft: 6, fontSize: "0.6rem", background: "#f0ede8", padding: "1px 6px", borderRadius: 3, color: "#888" }}>waived</span>}
           {hasConflict && <span style={{ marginLeft: 6, fontSize: "0.6rem", background: "#fff3cd", padding: "1px 6px", borderRadius: 3, color: "#856404" }}>conflict</span>}
         </div>
-        <span style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: cat.isSatisfied ? "#22863a" : "#b08800", fontWeight: 600 }}>
-          {cat.filledCount || 0}/{cat.slotsNeeded}
-        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+          <span style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: cat.isSatisfied ? "#22863a" : "#b08800", fontWeight: 600 }}>
+            {cat.filledCount || 0}/{cat.slotsNeeded}
+          </span>
+          {onSlotTap && <span style={{ color: "#c0b8b0", fontSize: 14 }}>&rsaquo;</span>}
+        </div>
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem" }}>{pips}</div>
     </div>
@@ -389,16 +369,18 @@ function CASCard({ casGrad, spanLang }) {
 }
 
 // ── RemainingCard ───────────────────────────────────────────────────────────
-function RemainingCard({ remaining }) {
+function RemainingCard({ remaining, onSlotTap }) {
   if (!remaining || remaining.length === 0) return null;
   return (
     <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 8, padding: "1rem", marginBottom: "0.75rem" }}>
       <div style={{ fontFamily: FONT.serif, fontSize: "1rem", fontWeight: 600, marginBottom: "0.5rem" }}>Remaining</div>
       {remaining.map((r, i) => (
-        <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.25rem 0", fontFamily: FONT.mono, fontSize: "0.7rem" }}>
+        <div key={i} onClick={() => onSlotTap?.(r.program, r.category)}
+          style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.25rem 0", fontFamily: FONT.mono, fontSize: "0.7rem", cursor: onSlotTap ? "pointer" : "default" }}>
           <span style={{ width: 8, height: 8, borderRadius: "50%", background: COLORS[r.program] || "#888", flexShrink: 0 }} />
           <span style={{ color: "#444" }}>{r.category}</span>
           <span style={{ color: "#888", marginLeft: "auto", fontSize: "0.6rem" }}>{r.programName} · {r.needed} needed</span>
+          {onSlotTap && <span style={{ color: "#c0b8b0", fontSize: 14 }}>&rsaquo;</span>}
         </div>
       ))}
     </div>
@@ -441,36 +423,165 @@ function SuggestionsCard({ suggestions }) {
 // ── PinModal ────────────────────────────────────────────────────────────────
 function PinModal({ code, title, programs, onPin, onClose }) {
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.3)", zIndex: 100, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: "16px 16px 0 0", padding: "1.5rem", width: "100%", maxWidth: 400, maxHeight: "60vh", overflow: "auto" }}>
-        <div style={{ width: 40, height: 4, borderRadius: 2, background: "#ddd", margin: "0 auto 1rem" }} />
-        <div style={{ fontFamily: FONT.serif, fontSize: "1.1rem", fontWeight: 600, marginBottom: "0.2rem" }}>Pin course to one program</div>
-        <div style={{ fontFamily: FONT.mono, fontSize: "0.85rem", fontWeight: 700, marginBottom: "0.1rem" }}>{code}</div>
-        <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#888", marginBottom: "1rem" }}>{title}</div>
+    <BottomSheet onClose={onClose}>
+      <div style={{ fontFamily: FONT.serif, fontSize: "1.1rem", fontWeight: 600, marginBottom: "0.2rem" }}>Pin course to one program</div>
+      <div style={{ fontFamily: FONT.mono, fontSize: "0.85rem", fontWeight: 700, marginBottom: "0.1rem" }}>{code}</div>
+      <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#888", marginBottom: "1rem" }}>{title}</div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-          {programs.map(p => (
-            <button key={p} onClick={() => onPin(code, p)} style={{
-              fontFamily: FONT.mono, fontSize: "0.85rem", padding: "0.7rem",
-              background: COLORS[p] || "#444", color: "#fff", border: "none", borderRadius: 6, cursor: "pointer",
-            }}>
-              Pin to {p}
-            </button>
-          ))}
-          <button onClick={() => onPin(code, null)} style={{
-            fontFamily: FONT.mono, fontSize: "0.8rem", padding: "0.6rem",
-            background: "#f5f0e8", color: "#666", border: `1px solid ${BORDER}`, borderRadius: 6, cursor: "pointer",
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+        {programs.map(p => (
+          <button key={p} onClick={() => onPin(code, p)} style={{
+            fontFamily: FONT.mono, fontSize: "0.85rem", padding: "0.7rem",
+            background: COLORS[p] || "#444", color: "#fff", border: "none", borderRadius: 6, cursor: "pointer",
           }}>
-            Let solver decide automatically
+            Pin to {p}
           </button>
-          <button onClick={onClose} style={{
-            fontFamily: FONT.mono, fontSize: "0.75rem", padding: "0.5rem",
-            background: "transparent", color: "#aaa", border: "none", cursor: "pointer",
-          }}>
-            Cancel
-          </button>
-        </div>
+        ))}
+        <button onClick={() => onPin(code, null)} style={{
+          fontFamily: FONT.mono, fontSize: "0.8rem", padding: "0.6rem",
+          background: "#f5f0e8", color: "#666", border: `1px solid ${BORDER}`, borderRadius: 6, cursor: "pointer",
+        }}>
+          Let solver decide automatically
+        </button>
+        <button onClick={onClose} style={{
+          fontFamily: FONT.mono, fontSize: "0.75rem", padding: "0.5rem",
+          background: "transparent", color: "#aaa", border: "none", cursor: "pointer",
+        }}>
+          Cancel
+        </button>
       </div>
+    </BottomSheet>
+  );
+}
+
+// ── SlotModal ──────────────────────────────────────────────────────────────
+function SlotModal({ programCode, categoryName, onClose }) {
+  const [courses, setCourses] = useState(null);
+  const [detail, setDetail] = useState(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams({ programId: programCode, categoryName });
+    api.get(`/api/courses/for-slot?${params}`).then(setCourses);
+  }, [programCode, categoryName]);
+
+  if (detail) {
+    return (
+      <BottomSheet onClose={onClose} maxWidth={480}>
+        <CourseDetailSheet course={detail} categoryName={categoryName} onBack={() => setDetail(null)} />
+      </BottomSheet>
+    );
+  }
+
+  return (
+    <BottomSheet onClose={onClose} maxWidth={480}>
+      <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: COLORS[programCode] || "#666", marginBottom: "0.2rem" }}>{programCode}</div>
+      <div style={{ fontFamily: FONT.serif, fontSize: "1.1rem", fontWeight: 600, marginBottom: "0.8rem" }}>{categoryName}</div>
+
+      {!courses && <div style={{ fontFamily: FONT.mono, fontSize: "0.8rem", color: "#888", textAlign: "center", padding: "2rem" }}>loading...</div>}
+
+      {courses && courses.length === 0 && (
+        <div style={{ fontFamily: FONT.mono, fontSize: "0.8rem", color: "#888", textAlign: "center", padding: "2rem" }}>
+          No eligible courses found in catalog.
+        </div>
+      )}
+
+      {courses && courses.map(c => (
+        <div key={c.code} onClick={() => setDetail(c)} style={{
+          padding: "0.6rem 0", borderTop: `1px solid ${BORDER}`, cursor: "pointer",
+        }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.2rem" }}>
+                <span style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 700 }}>{c.code}</span>
+                <span style={{ fontFamily: FONT.serif, fontSize: "0.8rem", color: "#444" }}>{c.title}</span>
+                <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#888" }}>{c.credits}cr</span>
+              </div>
+              {c.description && (
+                <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#888", marginBottom: "0.3rem" }}>
+                  {c.description.slice(0, 80)}{c.description.length > 80 ? "..." : ""}
+                </div>
+              )}
+              <div style={{ display: "flex", gap: "0.3rem", flexWrap: "wrap" }}>
+                {c.alreadyTaken && <span style={{ fontFamily: FONT.mono, fontSize: "0.55rem", background: "#e8f5e9", padding: "1px 5px", borderRadius: 3, color: "#22863a" }}>taking</span>}
+                {c.writing_intensive && <span style={{ fontFamily: FONT.mono, fontSize: "0.55rem", background: "#e3f2fd", padding: "1px 4px", borderRadius: 2, color: "#1565c0" }}>WI</span>}
+                {c.engaged_learning && <span style={{ fontFamily: FONT.mono, fontSize: "0.55rem", background: "#f3e5f5", padding: "1px 4px", borderRadius: 2, color: "#7b1fa2" }}>EL</span>}
+              </div>
+              {c.friends.length > 0 && (
+                <div style={{ fontFamily: FONT.mono, fontSize: "0.55rem", color: "#888", marginTop: "0.2rem" }}>
+                  {c.friends.map(f => f.name).join(", ")} {c.friends.length === 1 ? "is" : "are"} taking this
+                </div>
+              )}
+            </div>
+            <span style={{ color: "#c0b8b0", fontSize: 16, marginLeft: "0.5rem" }}>&rsaquo;</span>
+          </div>
+        </div>
+      ))}
+    </BottomSheet>
+  );
+}
+
+// ── CourseDetailSheet ───────────────────────────────────────────────────────
+function CourseDetailSheet({ course, categoryName, onBack }) {
+  return (
+    <div>
+      <div onClick={onBack} style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#888", cursor: "pointer", marginBottom: "0.8rem" }}>
+        &larr; Back to {categoryName}
+      </div>
+
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.3rem" }}>
+        <span style={{ fontFamily: FONT.mono, fontSize: "1rem", fontWeight: 700 }}>{course.code}</span>
+        <span style={{ fontFamily: FONT.mono, fontSize: "0.8rem", color: "#888" }}>{course.credits} credits</span>
+      </div>
+      <div style={{ fontFamily: FONT.serif, fontSize: "1.1rem", fontWeight: 600, marginBottom: "1rem" }}>{course.title}</div>
+
+      {course.description && (
+        <div style={{ marginBottom: "0.8rem" }}>
+          <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", fontWeight: 600, marginBottom: "0.2rem" }}>Description</div>
+          <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#444", lineHeight: 1.5 }}>{course.description}</div>
+        </div>
+      )}
+
+      {course.prerequisites && (
+        <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#666", marginBottom: "0.5rem" }}>
+          <strong>Prerequisites:</strong> {course.prerequisites}
+        </div>
+      )}
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.4rem", marginBottom: "0.8rem" }}>
+        <DetailItem label="Knowledge Area" value={course.knowledge_area || "--"} />
+        <DetailItem label="Department" value={course.department || "--"} />
+        <DetailItem label="Writing Intensive" value={course.writing_intensive ? "Yes" : "No"} />
+        <DetailItem label="Engaged Learning" value={course.engaged_learning ? "Yes" : "No"} />
+      </div>
+
+      {course.interdisciplinary_options?.length > 0 && (
+        <div style={{ marginBottom: "0.8rem" }}>
+          <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", fontWeight: 600, marginBottom: "0.2rem" }}>Interdisciplinary</div>
+          <div style={{ display: "flex", gap: "0.3rem", flexWrap: "wrap" }}>
+            {course.interdisciplinary_options.map(opt => (
+              <span key={opt} style={{ fontFamily: FONT.mono, fontSize: "0.55rem", background: "#f5f0e8", padding: "1px 5px", borderRadius: 3, color: "#666" }}>{opt}</span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {course.friends?.length > 0 && (
+        <div style={{ marginTop: "0.8rem" }}>
+          <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", fontWeight: 600, marginBottom: "0.2rem" }}>Friends taking this</div>
+          {course.friends.map(f => (
+            <div key={f.id} style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#444" }}>{f.name}</div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DetailItem({ label, value }) {
+  return (
+    <div>
+      <div style={{ fontFamily: FONT.mono, fontSize: "0.55rem", color: "#888", marginBottom: 1 }}>{label}</div>
+      <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#444" }}>{value}</div>
     </div>
   );
 }
@@ -479,6 +590,7 @@ function PinModal({ code, title, programs, onPin, onClose }) {
 function Dashboard({ user, onLogout }) {
   const [data, setData] = useState(null);
   const [pinModal, setPinModal] = useState(null);
+  const [slotModal, setSlotModal] = useState(null);
 
   const refresh = useCallback(() => {
     api.get("/api/students/me/solve").then(setData);
@@ -508,9 +620,8 @@ function Dashboard({ user, onLogout }) {
     setPinModal({ code, title, programs });
   };
 
-  const logout = async () => {
-    await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
-    onLogout();
+  const handleSlotTap = (programCode, categoryName) => {
+    setSlotModal({ programCode, categoryName });
   };
 
   if (!data) return (
@@ -524,18 +635,7 @@ function Dashboard({ user, onLogout }) {
 
   return (
     <div style={{ background: BG, minHeight: "100vh" }}>
-      {/* Sticky header */}
-      <div style={{ position: "sticky", top: 0, zIndex: 50, background: BG, borderBottom: `1px solid ${BORDER}`, padding: "0.6rem 1rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <h1 style={{ fontFamily: FONT.serif, fontSize: "1.3rem", fontWeight: 700, margin: 0, letterSpacing: "-0.02em" }}>
-          <span>ramble</span><span style={{ color: "#c43b2d" }}>maxxer</span>
-        </h1>
-        <div style={{ display: "flex", gap: "0.6rem", alignItems: "center" }}>
-          <span style={{ fontFamily: FONT.mono, fontSize: "0.75rem", color: "#666" }}>{user.name}</span>
-          <button onClick={logout} style={{ fontFamily: FONT.mono, fontSize: "0.7rem", padding: "0.3rem 0.7rem", background: "#1a1a1a", color: "#fff", border: "none", borderRadius: 4, cursor: "pointer" }}>
-            log out
-          </button>
-        </div>
-      </div>
+      <StickyHeader user={user} onLogout={onLogout} />
 
       {/* Content */}
       <div style={{ maxWidth: 680, margin: "0 auto", padding: "1rem" }}>
@@ -548,7 +648,7 @@ function Dashboard({ user, onLogout }) {
         )}
 
         {majors.map(prog => (
-          <ProgramCard key={prog.code} prog={prog} conflicts={conflicts} onPipClick={handlePipClick}
+          <ProgramCard key={prog.code} prog={prog} conflicts={conflicts} onPipClick={handlePipClick} onSlotTap={handleSlotTap}
             defaultOpen={prog.code === "PLSC-BA" || prog.code === "GLST-BA"} />
         ))}
 
@@ -556,7 +656,7 @@ function Dashboard({ user, onLogout }) {
 
         <CASCard casGrad={data.programs["CAS-GRAD"]} spanLang={data.programs["SPAN-LANG"]} />
 
-        <RemainingCard remaining={data.remaining} />
+        <RemainingCard remaining={data.remaining} onSlotTap={handleSlotTap} />
 
         <SuggestionsCard suggestions={data.suggestions} />
       </div>
@@ -565,18 +665,14 @@ function Dashboard({ user, onLogout }) {
         <PinModal code={pinModal.code} title={pinModal.title} programs={pinModal.programs}
           onPin={handlePin} onClose={() => setPinModal(null)} />
       )}
+
+      {slotModal && (
+        <SlotModal programCode={slotModal.programCode} categoryName={slotModal.categoryName}
+          onClose={() => setSlotModal(null)} />
+      )}
     </div>
   );
 }
 
-// ── Shared styles ───────────────────────────────────────────────────────────
-const styles = {
-  centered: { display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", padding: "1rem", background: BG },
-  card: { background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 8, padding: "2.5rem", width: "100%", maxWidth: 360, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" },
-  logo: { fontFamily: FONT.serif, fontSize: "1.8rem", fontWeight: 700, letterSpacing: "-0.02em", marginBottom: "0.25rem" },
-  tagline: { fontFamily: FONT.mono, fontSize: "0.75rem", color: "#888", marginBottom: "1.5rem" },
-  form: { display: "flex", flexDirection: "column", gap: "0.75rem" },
-  input: { fontFamily: FONT.mono, fontSize: "0.9rem", padding: "0.6rem 0.8rem", border: `1px solid #ddd`, borderRadius: 4, background: "#fafaf8", outline: "none" },
-  button: { fontFamily: FONT.mono, fontSize: "0.9rem", padding: "0.65rem", background: "#1a1a1a", color: "#fff", border: "none", borderRadius: 4, cursor: "pointer" },
-  error: { fontFamily: FONT.mono, fontSize: "0.8rem", color: "#c0392b", padding: "0.5rem", background: "#fdf0ed", borderRadius: 4 },
-};
+// ── Shared styles (aliased from lib/ui.jsx) ─────────────────────────────────
+const styles = sharedStyles;
