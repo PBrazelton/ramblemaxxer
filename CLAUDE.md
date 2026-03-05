@@ -29,7 +29,7 @@ npm run db:init      # create/migrate the database
 npm run db:seed      # seed Penelope + Paul's accounts
 ```
 
-Penelope's test login: `penelope@ramblemaxxer.local` / `changeme`
+Penelope's test login: `penelope@brazelton.net` / `peeps`
 Paul's admin login: `paul@ramblemaxxer.com` / `changeme-admin`
 
 ## Project structure

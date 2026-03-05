@@ -73,18 +73,18 @@ const PENELOPE_PROGRAMS = ["PLSC-BA", "GLST-BA", "CORE", "CAS-GRAD", "SPAN-LANG"
 // ── Seed ──────────────────────────────────────────────────────────────────
 const run = db.transaction(() => {
   // Clear existing seed data (by email — idempotent)
-  const existing = db.prepare("SELECT id FROM users WHERE email = ?").get("penelope@ramblemaxxer.local");
+  const existing = db.prepare("SELECT id FROM users WHERE email = ?").get("penelope@brazelton.net");
   if (existing) {
     db.prepare("DELETE FROM users WHERE id = ?").run(existing.id);
     console.log("  Removed existing Penelope record");
   }
 
   // Create Penelope
-  const passwordHash = bcrypt.hashSync("changeme", 10);
+  const passwordHash = bcrypt.hashSync("peeps", 10);
   const { lastInsertRowid: userId } = db.prepare(`
     INSERT INTO users (email, name, password_hash, role, grad_year)
     VALUES (?, ?, ?, ?, ?)
-  `).run("penelope@ramblemaxxer.local", "Penelope", passwordHash, "student", 2027);
+  `).run("penelope@brazelton.net", "Penelope", passwordHash, "student", 2027);
 
   console.log(`  Created user: Penelope (id=${userId})`);
 
@@ -124,5 +124,5 @@ if (!existingPaul) {
 
 db.close();
 console.log("✓ Seed complete.");
-console.log("  Penelope: penelope@ramblemaxxer.local / changeme");
+console.log("  Penelope: penelope@brazelton.net / peeps");
 console.log("  Paul (admin): paul@ramblemaxxer.com / changeme-admin");
