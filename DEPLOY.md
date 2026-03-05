@@ -1,94 +1,46 @@
-# Deploying Ramblemaxxer to ramblemaxxer.com
+# Deploying Ramblemaxxer
 
-## First-time setup (do this once)
+## How deploys work
 
-### On your Mac, make sure you have:
-- Git installed: `git --version` (if not, install Xcode Command Line Tools)
-- SSH access to Namecheap: see Paul for credentials
+Push to GitHub → Railway detects it → auto-deploys within ~2 minutes. That's it.
 
-### On the server (SSH in first):
+## Making and deploying a change
 ```bash
-ssh username@ramblemaxxer.com
-cd ~/
-git clone https://github.com/PBrazelton/ramblemaxxer.git ramblemaxxer
-cd ramblemaxxer
-cd server && npm install --production && cd ..
-cd client && npm install && npm run build && cd ..
-node server/db/init.js
-node server/db/seed.js
-```
-
-### Set up environment variables in cPanel:
-1. Log into cPanel → Software → Setup Node.js App
-2. Create new app:
-   - Node.js version: 18+
-   - Application mode: Production
-   - Application root: /home/USERNAME/ramblemaxxer
-   - Application URL: ramblemaxxer.com
-   - Application startup file: app.js
-3. Add environment variables:
-   - NODE_ENV = production
-   - SESSION_SECRET = (generate a random string — ask Paul or use: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`)
-   - APP_URL = https://ramblemaxxer.com
-4. Click Save, then Start
-
----
-
-## Deploying an update (do this every time)
-
-### On your Mac:
-```bash
-cd ~/path/to/ramblemaxxer
-
-# If you made changes locally and want to deploy them:
+# On your Mac, after making changes:
 git add -A
 git commit -m "describe what you changed"
 git push origin main
 ```
 
-### On the server:
+Watch it deploy at railway.com → Ramblemaxxer project → Deploy Logs.
+
+## First-time setup on a new Mac
 ```bash
-ssh username@ramblemaxxer.com
-cd ~/ramblemaxxer
-git pull origin main
-
-# If you changed any client code:
-cd client && npm run build && cd ..
-
-# Restart the app:
-# Go to cPanel → Node.js Apps → click Restart next to ramblemaxxer
+git clone https://github.com/PBrazelton/ramblemaxxer
+cd ramblemaxxer
+cd server && npm install && cd ..
+cd client && npm install && cd ..
+npm run db:init
+npm run db:seed
+npm run dev
 ```
 
-That's it. The site will be live within a few seconds of restart.
+Open http://localhost:5173
 
----
+## Environment variables (Railway dashboard)
 
-## Protecting the database
+Set these in Railway → Service → Variables:
+- `NODE_ENV` = `production`
+- `SESSION_SECRET` = (long random string)
 
-The database lives at `server/db/ramblemaxxer.db`.
-This file is NOT in git (on purpose — it contains real user data).
-**Never delete this file.** `git pull` will never touch it.
+## ⚠️ Database
 
-To back it up:
-```bash
-# On the server:
-cp ~/ramblemaxxer/server/db/ramblemaxxer.db ~/backups/ramblemaxxer-$(date +%Y%m%d).db
-```
+The database lives at `server/db/ramblemaxxer.db` on the Railway server.
+It is NOT in git. `git push` will never touch it.
 
-Set a reminder to do this monthly, or ask Paul to automate it.
+To back it up, download it from Railway → Service → Files (or ask Paul).
 
----
+## Custom domain
 
-## Troubleshooting
-
-**Site is down / showing an error:**
-- Check cPanel → Node.js Apps → is the app Running?
-- Check cPanel → Errors for the error log
-
-**My changes aren't showing up:**
-- Did you rebuild the client? `cd client && npm run build`
-- Did you restart the app in cPanel?
-
-**Database got wiped somehow:**
-- Restore from your backup: `cp ~/backups/ramblemaxxer-YYYYMMDD.db ~/ramblemaxxer/server/db/ramblemaxxer.db`
-- Restart the app
+`ramblemaxxer.com` points to Railway via Namecheap DNS CNAME.
+SSL is handled automatically by Railway.
