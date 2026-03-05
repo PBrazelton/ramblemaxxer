@@ -26,6 +26,7 @@ const PORT = process.env.PORT || 3001;
 const IS_PROD = process.env.NODE_ENV === "production";
 
 // ── Middleware ─────────────────────────────────────────────────────────────
+if (IS_PROD) app.set("trust proxy", 1);
 app.use(express.json());
 app.use(
   cors({
@@ -42,6 +43,7 @@ app.use(
     cookie: {
       secure: IS_PROD,
       httpOnly: true,
+      sameSite: IS_PROD ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     },
   })
