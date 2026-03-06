@@ -15,6 +15,7 @@ const crypto = require("crypto");
 const db = require("../db/connection");
 const { solve, getSuggestions } = require("../../shared/solver");
 const { courseMap, programMap, degreeRequirements } = require("../lib/catalog");
+const { sendInviteEmail } = require("../lib/email");
 
 const router = express.Router();
 
@@ -83,7 +84,7 @@ router.get("/invites", (req, res) => {
 });
 
 // ── POST /api/admin/invites ──────────────────────────────────────────────────
-router.post("/invites", (req, res) => {
+router.post("/invites", async (req, res) => {
   const { email } = req.body;
   const token = crypto.randomBytes(24).toString("hex");
 
@@ -92,7 +93,18 @@ router.post("/invites", (req, res) => {
   `).run(token, req.session.userId, email || null);
 
   const inviteUrl = `${process.env.APP_URL || "http://localhost:5175"}/#/register?token=${token}`;
-  res.json({ token, inviteUrl });
+
+  // Send invite email if address provided
+  if (email) {
+    const admin = db.prepare("SELECT name FROM users WHERE id = ?").get(req.session.userId);
+    try {
+      await sendInviteEmail(email, inviteUrl, admin?.name || "Ramblemaxxer");
+    } catch (e) {
+      console.error("Failed to send invite email:", e.message);
+    }
+  }
+
+  res.json({ token, inviteUrl, emailSent: !!email });
 });
 
 // ── PUT /api/admin/users/:id ─────────────────────────────────────────────────

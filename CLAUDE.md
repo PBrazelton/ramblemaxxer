@@ -23,6 +23,9 @@ picture before touching the solver.
 
 ## Running locally
 
+**After making server-side changes, restart `npm run dev`.** Don't let the server
+sit dead — proactively restart or remind Paul to restart.
+
 ```bash
 npm run dev          # starts both servers (Express :3001, Vite :5175)
 npm run db:init      # create/migrate the database

@@ -44,8 +44,8 @@ export default function AdminPanel({ user, onLogout }) {
     loadStudents();
   };
 
-  const generateInvite = async () => {
-    const res = await api.post("/api/admin/invites", {});
+  const generateInvite = async (email) => {
+    const res = await api.post("/api/admin/invites", { email: email || undefined });
     setNewInviteUrl(res.inviteUrl);
     loadInvites();
   };
@@ -214,6 +214,8 @@ function btnStyle(bg) {
 
 // ── Invites Tab ──────────────────────────────────────────────────────────────
 function InvitesTab({ invites, onGenerate, onCopy }) {
+  const [inviteEmail, setInviteEmail] = useState("");
+
   // Build invite tree
   const byInviter = {};
   for (const inv of invites) {
@@ -221,14 +223,33 @@ function InvitesTab({ invites, onGenerate, onCopy }) {
     byInviter[inv.inviter_id].invites.push(inv);
   }
 
+  const handleGenerate = () => {
+    onGenerate(inviteEmail.trim());
+    setInviteEmail("");
+  };
+
   return (
     <div>
-      <button onClick={onGenerate} style={{
-        fontFamily: FONT.mono, fontSize: "0.8rem", padding: "0.6rem 1rem", marginBottom: "1rem",
-        background: "#1a1a1a", color: "#fff", border: "none", borderRadius: 4, cursor: "pointer", width: "100%",
-      }}>
-        Generate New Invite
-      </button>
+      <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
+        <input
+          type="email"
+          placeholder="email (optional — sends invite)"
+          value={inviteEmail}
+          onChange={e => setInviteEmail(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && handleGenerate()}
+          style={{
+            flex: 1, fontFamily: FONT.mono, fontSize: "0.8rem", padding: "0.6rem 0.8rem",
+            border: `1px solid ${BORDER}`, borderRadius: 4, background: "#fafaf8", outline: "none",
+          }}
+        />
+        <button onClick={handleGenerate} style={{
+          fontFamily: FONT.mono, fontSize: "0.8rem", padding: "0.6rem 1rem",
+          background: "#1a1a1a", color: "#fff", border: "none", borderRadius: 4, cursor: "pointer",
+          whiteSpace: "nowrap",
+        }}>
+          {inviteEmail.trim() ? "Send Invite" : "Generate Link"}
+        </button>
+      </div>
 
       {Object.entries(byInviter).map(([inviterId, group]) => (
         <div key={inviterId} style={{ marginBottom: "1rem" }}>

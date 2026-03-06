@@ -56,9 +56,10 @@ if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET) {
         }
 
         // Create new user from invite
+        // password_hash is NOT NULL in older DBs — use empty string for OAuth users
         const { lastInsertRowid: userId } = db.prepare(`
           INSERT INTO users (email, name, password_hash, role, grad_year, invited_by, provider, provider_id, avatar_url)
-          VALUES (?, ?, NULL, 'student', NULL, ?, 'google', ?, ?)
+          VALUES (?, ?, '', 'student', NULL, ?, 'google', ?, ?)
         `).run(
           email,
           profile.displayName || email.split("@")[0],

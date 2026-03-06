@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="420" viewBox="0 0 1600 420" role="img" aria-label="Ramblemaxxer logo">
+    
+    
+        <g transform="translate(72 54)">
+          <ellipse cx="58" cy="54" rx="28" ry="34" transform="rotate(-18 58 54)" fill="#eaaa00"/>
+          <ellipse cx="128" cy="30" rx="29" ry="36" transform="rotate(-6 128 30)" fill="#eaaa00"/>
+          <ellipse cx="198" cy="34" rx="29" ry="36" transform="rotate(8 198 34)" fill="#eaaa00"/>
+          <ellipse cx="262" cy="64" rx="28" ry="34" transform="rotate(18 262 64)" fill="#eaaa00"/>
+          <path d="M66 182
+                   C74 136, 110 108, 160 106
+                   C211 104, 250 130, 263 179
+                   C272 211, 262 247, 234 272
+                   C214 291, 188 300, 161 300
+                   C132 300, 105 290, 85 271
+                   C58 246, 50 213, 66 182 Z" fill="#5a0722"/>
+        </g>
+        
+    <g>
+      <text x="430" y="198"
+            fill="#5a0722"
+            font-size="114"
+            font-weight="700"
+            font-family="'Source Serif 4', 'Source Serif Pro', Georgia, serif"
+            letter-spacing="-2.2">ramble</text>
+      <text x="848" y="200"
+            fill="#eaaa00"
+            font-size="92"
+            font-weight="500"
+            font-family="'DM Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', monospace"
+            letter-spacing="-1.5">maxxer</text>
+      <text x="440" y="264"
+            fill="#7b6d64"
+            font-size="34"
+            font-weight="400"
+            font-family="'DM Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', monospace"
+            letter-spacing="0.45">stop guessing, start maxxing</text>
+    </g>
+    </svg>

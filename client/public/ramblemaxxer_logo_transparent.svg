@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="500" viewBox="0 0 1600 500" role="img" aria-label="Ramblemaxxer logo">
+  
+  <g transform="translate(0,0)">
+    <polygon points="78,120 95,84 125,70 149,86 149,123 119,142 89,135" fill="#eaaa00"/>
+    <polygon points="148,92 170,55 205,60 226,92 218,130 188,143 157,123" fill="#eaaa00"/>
+    <polygon points="222,90 250,57 282,63 295,97 279,134 247,143 220,122" fill="#eaaa00"/>
+    <polygon points="289,116 314,82 346,84 362,116 350,150 317,154 292,132" fill="#eaaa00"/>
+    <polygon points="95,220 116,177 156,148 211,144 264,165 300,203 295,270 259,320 204,339 145,323 106,279 89,240" fill="#5a0722"/>
+  </g>
+
+  <text x="430" y="215"
+        fill="#5a0722"
+        font-size="118"
+        font-weight="700"
+        font-family="'Source Serif 4', 'Source Serif Pro', Georgia, serif">ramble</text>
+
+  <text x="828" y="224"
+        fill="#eaaa00"
+        font-size="104"
+        font-weight="400"
+        font-family="'DM Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', monospace">maxxer</text>
+
+  <text x="436" y="302"
+        fill="#8f7f72"
+        font-size="36"
+        letter-spacing="0.4"
+        font-family="'DM Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', monospace">stop guessing, start maxxing</text>
+</svg>

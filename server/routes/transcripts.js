@@ -41,6 +41,22 @@ router.post("/parse", upload.single("file"), async (req, res) => {
     // Parse PDF
     const transcript = await parseTranscript(req.file.buffer);
 
+    // Debug: log parse result
+    const totalCourses = transcript.terms.reduce((s, t) => s + t.courses.length, 0);
+    console.log("[transcript] terms:", transcript.terms.length,
+      "courses:", totalCourses,
+      "transfer:", transcript.transferCredits.items.length,
+      "warnings:", transcript.warnings);
+    for (const t of transcript.terms) {
+      console.log(`  ${t.name}: ${t.courses.length} courses`, t.courses.map(c => c.code));
+    }
+    if (totalCourses === 0) {
+      // Dump raw text for debugging
+      const pdfParse = require("pdf-parse");
+      const { text } = await pdfParse(req.file.buffer);
+      console.log("[transcript] Raw PDF text (first 3000 chars):\n", text.slice(0, 3000));
+    }
+
     // Match against courses DB
     const matches = matchTranscript(transcript);
 

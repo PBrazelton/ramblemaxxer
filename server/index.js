@@ -79,6 +79,15 @@ if (IS_PROD) {
   });
 }
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`🦁 Ramblemaxxer server running on port ${PORT} (${IS_PROD ? "production" : "development"})`);
+});
+server.on("error", (err) => {
+  if (err.code === "EADDRINUSE") {
+    console.error(`Port ${PORT} in use — killing stale process and retrying...`);
+    require("child_process").execSync(`lsof -ti:${PORT} | xargs kill -9 2>/dev/null || true`);
+    setTimeout(() => server.listen(PORT), 1000);
+  } else {
+    throw err;
+  }
 });
