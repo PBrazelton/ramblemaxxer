@@ -19,7 +19,7 @@ const Database = require("better-sqlite3");
 const fs = require("fs");
 const path = require("path");
 
-const DB_PATH = path.join(__dirname, "../db/ramblemaxxer.db");
+const DB_PATH = process.env.DATABASE_PATH || path.join(__dirname, "../db/ramblemaxxer.db");
 const SCRAPED_PATH = path.join(__dirname, "../../data/scraped-catalog.json");
 const COURSES_PATH = path.join(__dirname, "../../data/courses.json");
 const SUPPLEMENTAL_PATH = path.join(__dirname, "../../data/courses-supplemental.json");

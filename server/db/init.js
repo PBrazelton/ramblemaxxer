@@ -10,7 +10,7 @@ const Database = require("better-sqlite3");
 const fs = require("fs");
 const path = require("path");
 
-const DB_PATH = path.join(__dirname, "ramblemaxxer.db");
+const DB_PATH = process.env.DATABASE_PATH || path.join(__dirname, "ramblemaxxer.db");
 const SCHEMA_PATH = path.join(__dirname, "schema.sql");
 
 const schema = fs.readFileSync(SCHEMA_PATH, "utf8");
@@ -175,6 +175,93 @@ try {
     }
   }
 } catch (e) { /* already migrated */ }
+
+// Migration: create programs table
+db.exec(`
+  CREATE TABLE IF NOT EXISTS programs (
+    code                    TEXT PRIMARY KEY,
+    name                    TEXT NOT NULL,
+    type                    TEXT NOT NULL,
+    department              TEXT,
+    college                 TEXT,
+    total_credits           INTEGER,
+    unique_credits_required INTEGER,
+    double_dip_policy       TEXT,
+    core_waivers            TEXT,
+    notes                   TEXT,
+    elective_pool_by_region TEXT,
+    is_active               INTEGER NOT NULL DEFAULT 1,
+    created_at              TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at              TEXT NOT NULL DEFAULT (datetime('now'))
+  )
+`);
+
+// Migration: create program_categories table
+db.exec(`
+  CREATE TABLE IF NOT EXISTS program_categories (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    program_code    TEXT NOT NULL REFERENCES programs(code) ON DELETE CASCADE,
+    name            TEXT NOT NULL,
+    description     TEXT,
+    slots           INTEGER NOT NULL,
+    credits_per_slot INTEGER NOT NULL DEFAULT 3,
+    sort_order      INTEGER NOT NULL DEFAULT 0,
+    tier_structure  TEXT,
+    wildcard        TEXT,
+    is_fixed        INTEGER NOT NULL DEFAULT 0,
+    constraints     TEXT,
+    notes           TEXT,
+    UNIQUE(program_code, name)
+  )
+`);
+try {
+  db.prepare("CREATE INDEX IF NOT EXISTS idx_program_categories_program ON program_categories(program_code)").run();
+} catch (e) { /* already exists */ }
+
+// Migration: create category_eligible_courses table
+db.exec(`
+  CREATE TABLE IF NOT EXISTS category_eligible_courses (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    category_id INTEGER NOT NULL REFERENCES program_categories(id) ON DELETE CASCADE,
+    course_code TEXT NOT NULL,
+    is_required INTEGER NOT NULL DEFAULT 0,
+    notes       TEXT,
+    UNIQUE(category_id, course_code)
+  )
+`);
+try {
+  db.prepare("CREATE INDEX IF NOT EXISTS idx_cat_eligible_category ON category_eligible_courses(category_id)").run();
+  db.prepare("CREATE INDEX IF NOT EXISTS idx_cat_eligible_course ON category_eligible_courses(course_code)").run();
+} catch (e) { /* already exists */ }
+
+// Migration: create overlap_rules table
+db.exec(`
+  CREATE TABLE IF NOT EXISTS overlap_rules (
+    id                    INTEGER PRIMARY KEY AUTOINCREMENT,
+    program_a             TEXT NOT NULL,
+    program_b             TEXT NOT NULL,
+    overlap_type          TEXT,
+    max_shared_courses    INTEGER,
+    max_from_single_dept  INTEGER,
+    constraint_source     TEXT,
+    details               TEXT,
+    notes                 TEXT,
+    UNIQUE(program_a, program_b)
+  )
+`);
+try {
+  db.prepare("CREATE INDEX IF NOT EXISTS idx_overlap_rules_programs ON overlap_rules(program_a, program_b)").run();
+} catch (e) { /* already exists */ }
+
+// Migration: create core_waivers table
+db.exec(`
+  CREATE TABLE IF NOT EXISTS core_waivers (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    program_code  TEXT NOT NULL,
+    waived_area   TEXT NOT NULL,
+    UNIQUE(program_code, waived_area)
+  )
+`);
 
 // Migration: fix UCLR 100 → UCLR 100C for Penelope
 try {

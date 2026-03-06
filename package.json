@@ -12,7 +12,9 @@
     "db:init": "cd server && node db/init.js",
     "db:seed": "cd server && node db/seed.js",
     "db:scrape": "cd server && node scripts/scrape-catalog.js",
-    "db:seed-courses": "cd server && node scripts/seed-courses.js"
+    "db:seed-courses": "cd server && node scripts/seed-courses.js",
+    "db:seed-programs": "cd server && node scripts/seed-programs.js",
+    "db:reset": "npm run db:init && npm run db:seed && npm run db:seed-courses && npm run db:seed-programs"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

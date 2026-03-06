@@ -32,6 +32,7 @@ npm run db:init      # create/migrate the database
 npm run db:seed      # seed Penelope + Paul's accounts
 npm run db:scrape    # scrape full catalog → data/scraped-catalog.json (~1 min)
 npm run db:seed-courses  # load scraped + enrichment data into courses table
+npm run db:seed-programs # load degree_requirements.json into programs tables
 ```
 
 Penelope's test login: `penelope@brazelton.net` / `peeps`
@@ -46,6 +47,7 @@ client/src/pages/AdminPanel.jsx # admin view (Paul only)
 shared/solver.js                # constraint solver — the brain
 server/routes/                  # Express API routes
 server/routes/transcripts.js    # transcript parse + confirm endpoints
+server/routes/programs.js       # public program API endpoints
 server/lib/catalog.js           # shared course/program maps (DB-backed with JSON fallback)
 server/lib/transcript-parser.js # PDF → structured transcript data
 server/lib/transcript-matcher.js # match parsed courses against DB
@@ -108,6 +110,26 @@ API routes use FTS5 full-text search when DB is populated:
 - `GET /api/courses/departments` — department list with counts
 - `GET /api/courses/:code` — full record with tags + cross-listings
 
+## Program definitions pipeline
+
+Program/degree requirements (PLSC-BA, GLST-BA, CORE, CAS-GRAD, SPAN-LANG) live in 5 DB tables:
+- `programs` — program definitions (code, name, type, credits, policies)
+- `program_categories` — requirement categories per program (slots, wildcards, tier structure)
+- `category_eligible_courses` — eligible courses per category
+- `overlap_rules` — double-dipping rules between program pairs
+- `core_waivers` — which core areas each major waives (includes future programs)
+
+`server/lib/catalog.js` loads from DB if populated, falls back to `data/degree_requirements.json`.
+
+```bash
+npm run db:seed-programs  # loads degree_requirements.json → DB (idempotent)
+```
+
+API endpoints (public, no auth):
+- `GET /api/programs` — list active programs (summary)
+- `GET /api/programs/:code` — full program with categories, eligible courses, overlap rules
+- `GET /api/programs/:code/eligible-courses/:categoryId` — eligible courses for one category
+
 ## Common tasks
 
 **Add a new course to the catalog:**
@@ -125,7 +147,7 @@ course code to `eligible_courses`.
 5. Deploy: `git push` — Railway auto-deploys from main
 
 **Railway build command:**
-`cd client && npm install && npm run build && cd ../server && npm install && node db/init.js && node scripts/seed-courses.js`
+`cd client && npm install && npm run build && cd ../server && npm install && node db/init.js && node scripts/seed-courses.js && node scripts/seed-programs.js`
 
 **Seed (`npm run db:seed`) is local-only** — run once on a fresh DB to create
 Penelope + Paul. It's idempotent (skips existing users) but not in the deploy pipeline.

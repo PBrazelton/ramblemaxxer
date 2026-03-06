@@ -1,6 +1,25 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { COLORS, STATUS_COLOR, FONT, BG, BORDER, api, ProgressRing, BottomSheet, StickyHeader, sharedStyles, Input, Btn, SectionTitle, ErrMsg } from "./lib/ui.jsx";
 import AdminPanel from "./pages/AdminPanel.jsx";
+
+// ── Helper functions ────────────────────────────────────────────────────────
+function getCurrentAcademicTerm() {
+  const now = new Date();
+  const month = now.getMonth() + 1; // 1-12
+  const year = now.getFullYear();
+  if (month >= 8) return `Fall ${year}`;
+  if (month >= 5) return `Summer ${year}`;
+  return `Spring ${year}`;
+}
+
+function termOrderClient(semester) {
+  if (!semester || semester === "Transfer") return 0;
+  const m = String(semester).match(/^(Fall|Spring|Summer)\s+(\d{4})$/);
+  if (!m) return 1;
+  const year = parseInt(m[2]);
+  const season = m[1] === "Spring" ? 0 : m[1] === "Summer" ? 1 : 2;
+  return year * 3 + season;
+}
 
 // ── Router ──────────────────────────────────────────────────────────────────
 function getPage() {
@@ -351,7 +370,7 @@ function SettingsSheet({ user, onClose, onUpdate }) {
 }
 
 // ── CreditMeter ─────────────────────────────────────────────────────────────
-function CreditMeter({ credits }) {
+function CreditMeter({ credits, hasUnmappedTransfer, onTransferWarningTap }) {
   const { total, complete, enrolled, planned } = credits;
   const max = 120;
   const pctC = (complete / max) * 100, pctE = (enrolled / max) * 100, pctP = (planned / max) * 100;
@@ -381,7 +400,91 @@ function CreditMeter({ credits }) {
           <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#888", marginTop: "0.3rem" }}>
             {max - total > 0 ? `${max - total} credits remaining` : "Credit requirement met"}
           </div>
+          {hasUnmappedTransfer && (
+            <div onClick={onTransferWarningTap} style={{
+              fontFamily: FONT.mono, fontSize: "0.65rem", color: "#b08800", marginTop: "0.3rem",
+              cursor: onTransferWarningTap ? "pointer" : "default",
+            }}>
+              Transfer credits not mapped to requirements
+            </div>
+          )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ── NextStepsSection ────────────────────────────────────────────────────────
+function NextStepsSection({ data, onAddCourses, onMapTransfer, onSuggestionTap }) {
+  const cards = [];
+
+  // 1. Current enrollment check
+  const currentTerm = getCurrentAcademicTerm();
+  if (data.latestTerm && termOrderClient(data.latestTerm) < termOrderClient(currentTerm)) {
+    cards.push({
+      key: "enrollment",
+      icon: "&#128218;",
+      title: `Add your ${currentTerm} courses`,
+      subtitle: `Last update: ${data.latestTerm}`,
+      action: () => onAddCourses?.(currentTerm),
+    });
+  }
+
+  // 2. Unmapped transfer credits
+  const xferCount = Object.keys(data.slotAssignments || {}).filter(c => c.startsWith("XFER")).length;
+  if (xferCount > 0) {
+    cards.push({
+      key: "transfer",
+      icon: "&#8644;",
+      title: `Map ${xferCount} transfer credit${xferCount !== 1 ? "s" : ""}`,
+      subtitle: "Match to catalog courses for requirement tracking",
+      action: () => onMapTransfer?.(),
+    });
+  }
+
+  // 3. Top suggestion
+  if (data.suggestions?.[0]?.boxCount >= 2) {
+    const s = data.suggestions[0];
+    cards.push({
+      key: "suggestion",
+      icon: "&#9733;",
+      title: `Consider ${s.code}`,
+      subtitle: `Fills ${s.boxCount} requirements — ${s.fills.slice(0, 2).join(", ")}`,
+      action: () => onSuggestionTap?.(s),
+    });
+  }
+
+  // 4. Overlap warning
+  if (data.overlaps?.glstMajorUsed >= data.overlaps?.glstMajorMax && data.overlaps?.glstMajorMax > 0) {
+    cards.push({
+      key: "overlap",
+      icon: "&#9888;",
+      title: "Overlap budget full",
+      subtitle: `${data.overlaps.glstMajorUsed}/${data.overlaps.glstMajorMax} PLSC/GLST shared slots used`,
+      action: null,
+    });
+  }
+
+  if (cards.length === 0) return null;
+
+  return (
+    <div style={{ marginBottom: "1rem" }}>
+      <div style={{ fontFamily: FONT.serif, fontSize: "1rem", fontWeight: 600, marginBottom: "0.5rem" }}>Next Steps</div>
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+        {cards.slice(0, 3).map(card => (
+          <div key={card.key} onClick={card.action || undefined} style={{
+            background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 8, padding: "0.7rem 1rem",
+            display: "flex", alignItems: "center", gap: "0.7rem",
+            cursor: card.action ? "pointer" : "default",
+          }}>
+            <span style={{ fontSize: "1.1rem", flexShrink: 0 }} dangerouslySetInnerHTML={{ __html: card.icon }} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 700 }}>{card.title}</div>
+              <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#888" }}>{card.subtitle}</div>
+            </div>
+            {card.action && <span style={{ fontFamily: FONT.mono, fontSize: "1rem", color: "#c0b8b0" }}>&rsaquo;</span>}
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -411,14 +514,50 @@ function ProgramCard({ prog, conflicts, onPipClick, onSlotTap, defaultOpen = fal
         </div>
         <span style={{ fontFamily: FONT.mono, fontSize: "0.8rem", color: "#aaa", transform: open ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>▼</span>
       </div>
-      {open && (
-        <div style={{ padding: "0 1rem 0.8rem 1rem" }}>
-          {prog.categories.map((cat, i) => (
-            <CategoryRow key={i} cat={cat} color={color} conflicts={conflicts} onPipClick={onPipClick}
-              onSlotTap={!cat.isSatisfied && !cat.isWaived && onSlotTap ? () => onSlotTap(prog.code, cat.name) : null} />
-          ))}
+      {open && (() => {
+        const incomplete = prog.categories.filter(cat => !cat.isSatisfied && !cat.isWaived);
+        const completed = prog.categories.filter(cat => cat.isSatisfied || cat.isWaived);
+        return (
+          <div style={{ padding: "0 1rem 0.8rem 1rem" }}>
+            {incomplete.map((cat, i) => (
+              <CategoryRow key={`inc-${i}`} cat={cat} color={color} conflicts={conflicts} onPipClick={onPipClick}
+                onSlotTap={onSlotTap ? () => onSlotTap(prog.code, cat.name) : null} />
+            ))}
+            {completed.length > 0 && (
+              <CompletedCategoriesGroup categories={completed} color={color} conflicts={conflicts} onPipClick={onPipClick} />
+            )}
+          </div>
+        );
+      })()}
+    </div>
+  );
+}
+
+// ── CompletedCategoriesGroup ────────────────────────────────────────────────
+function CompletedCategoriesGroup({ categories, color, conflicts, onPipClick }) {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: "0.5rem" }}>
+      <div onClick={() => setExpanded(!expanded)} style={{
+        display: "flex", alignItems: "center", gap: "0.4rem", cursor: "pointer", padding: "0.3rem 0",
+      }}>
+        <span style={{ color: "#22863a", fontSize: "0.7rem" }}>&#10003;</span>
+        <span style={{ fontFamily: FONT.mono, fontSize: "0.7rem", fontWeight: 600, color: "#22863a" }}>
+          {categories.length} completed
+        </span>
+        <span style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#aaa", transform: expanded ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>&#9660;</span>
+      </div>
+      {expanded && categories.map((cat, i) => (
+        <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.3rem 0", borderTop: `1px solid ${BORDER}` }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+            <span style={{ color: "#22863a", fontSize: "0.6rem" }}>&#10003;</span>
+            <span style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#444" }}>{cat.name}</span>
+          </div>
+          <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#22863a" }}>
+            {cat.filledCount || 0}/{cat.slotsNeeded}
+          </span>
         </div>
-      )}
+      ))}
     </div>
   );
 }
@@ -432,7 +571,7 @@ function CategoryRow({ cat, color, conflicts, onPipClick, onSlotTap }) {
   let slotIdx = 0;
   for (let i = 0; i < cat.slotsNeeded; i++) {
     const slot = cat.slots[slotIdx];
-    if (!slot) { pips.push(<EmptyPip key={i} />); continue; }
+    if (!slot) { pips.push(<EmptyPip key={i} onClick={onSlotTap || undefined} />); continue; }
     if (slot.code === "WAIVED") { pips.push(<WaivedPip key={i} />); slotIdx++; continue; }
     if (slot.coversBothTiers) {
       // Render two pips from one slot entry
@@ -458,7 +597,7 @@ function CategoryRow({ cat, color, conflicts, onPipClick, onSlotTap }) {
         <div style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 600 }}>
           {cat.name}
           {cat.isWaived && <span style={{ marginLeft: 6, fontSize: "0.6rem", background: "#f0ede8", padding: "1px 6px", borderRadius: 3, color: "#888" }}>waived</span>}
-          {hasConflict && <span style={{ marginLeft: 6, fontSize: "0.6rem", background: "#fff3cd", padding: "1px 6px", borderRadius: 3, color: "#856404" }}>conflict</span>}
+          {hasConflict && <span style={{ marginLeft: 6, fontSize: "0.6rem", background: "#e8f0fe", padding: "1px 6px", borderRadius: 3, color: "#1a5276" }}>shared</span>}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
           <span style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: cat.isSatisfied ? "#22863a" : "#b08800", fontWeight: 600 }}>
@@ -488,8 +627,19 @@ function FilledPip({ slot, color, isConflict, onClick, label }) {
   );
 }
 
-function EmptyPip() {
-  return <div style={{ width: 60, height: 24, borderRadius: 4, border: `1.5px dashed #ccc`, background: "transparent" }} />;
+function EmptyPip({ onClick }) {
+  return (
+    <div onClick={onClick} style={{
+      width: 60, height: 24, borderRadius: 4,
+      border: `1.5px dashed ${onClick ? "#999" : "#ccc"}`,
+      background: onClick ? "#fafaf8" : "transparent",
+      cursor: onClick ? "pointer" : "default",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      fontFamily: FONT.mono, fontSize: "0.65rem", color: "#999",
+    }}>
+      {onClick && "+"}
+    </div>
+  );
 }
 
 function WaivedPip() {
@@ -501,10 +651,20 @@ function WaivedPip() {
 }
 
 // ── OverlapBudget ───────────────────────────────────────────────────────────
-function OverlapBudget({ overlaps, conflicts }) {
+function OverlapBudget({ overlaps, conflicts, onPipClick }) {
   const { glstMajorUsed, glstMajorMax, glstElectiveDeptUsage, glstElectiveDeptMax } = overlaps;
   const overBudget = glstMajorUsed > glstMajorMax;
   const depts = Object.entries(glstElectiveDeptUsage);
+  const sharedCodes = Object.keys(conflicts);
+
+  // Contextual plain-English paragraph
+  const overlapExplain = glstMajorUsed === 0
+    ? "No courses are currently shared between your two majors. GLST allows up to " + glstMajorMax + " courses to count for both."
+    : overBudget
+      ? `You have ${glstMajorUsed} shared courses but GLST only allows ${glstMajorMax}. Pin some courses to one program to get back under budget.`
+      : glstMajorUsed === glstMajorMax
+        ? `All ${glstMajorMax} shared slots are used. Any new course counting for both PLSC and GLST will put you over budget.`
+        : `${glstMajorUsed} of ${glstMajorMax} shared slots used. You can double-count ${glstMajorMax - glstMajorUsed} more course${glstMajorMax - glstMajorUsed !== 1 ? "s" : ""}.`;
 
   return (
     <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 8, padding: "1rem", marginBottom: "0.75rem" }}>
@@ -517,11 +677,9 @@ function OverlapBudget({ overlaps, conflicts }) {
             {glstMajorUsed}/{glstMajorMax}
           </span>
         </div>
-        {Object.keys(conflicts).length > 0 && (
-          <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#888", marginBottom: "0.4rem" }}>
-            Tap a conflicted course to pin it to one program
-          </div>
-        )}
+        <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#666", lineHeight: 1.5, marginBottom: "0.4rem" }}>
+          {overlapExplain}
+        </div>
         <div style={{ display: "flex", gap: "0.3rem" }}>
           {Array.from({ length: glstMajorMax }).map((_, i) => (
             <div key={i} style={{
@@ -532,6 +690,21 @@ function OverlapBudget({ overlaps, conflicts }) {
           ))}
           {overBudget && <div style={{ width: 32, height: 20, borderRadius: 4, background: "#c43b2d", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.55rem", color: "#fff", fontFamily: FONT.mono }}>!</div>}
         </div>
+
+        {/* Tappable shared course chips */}
+        {sharedCodes.length > 0 && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem", marginTop: "0.5rem" }}>
+            {sharedCodes.map(code => (
+              <span key={code} onClick={() => onPipClick?.(code, "", conflicts[code])} style={{
+                fontFamily: FONT.mono, fontSize: "0.6rem", padding: "2px 8px", borderRadius: 4,
+                background: "#e8f0fe", border: "1px solid #b8d0f0", color: "#1a5276",
+                cursor: "pointer",
+              }}>
+                {code}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
       {depts.length > 0 && (
@@ -640,9 +813,18 @@ function RemainingCard({ remaining, onSlotTap }) {
 }
 
 // ── SuggestionsCard ─────────────────────────────────────────────────────────
-function SuggestionsCard({ suggestions }) {
+function SuggestionsCard({ suggestions, remaining }) {
   if (!suggestions || suggestions.length === 0) return null;
   const top = suggestions.slice(0, 8);
+
+  // Build lookup: fill string → needed count from remaining
+  const neededLookup = {};
+  if (remaining) {
+    for (const r of remaining) {
+      neededLookup[r.category] = r.needed;
+    }
+  }
+
   return (
     <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 8, padding: "1rem", marginBottom: "0.75rem" }}>
       <div style={{ fontFamily: FONT.serif, fontSize: "1rem", fontWeight: 600, marginBottom: "0.5rem" }}>High-Efficiency Suggestions</div>
@@ -661,9 +843,14 @@ function SuggestionsCard({ suggestions }) {
               {s.engaged_learning && <span style={{ marginLeft: 4, fontSize: "0.55rem", background: "#f3e5f5", padding: "1px 4px", borderRadius: 2, color: "#7b1fa2" }}>EL</span>}
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "0.25rem", marginTop: "0.2rem" }}>
-              {s.fills.map((f, j) => (
-                <span key={j} style={{ fontFamily: FONT.mono, fontSize: "0.55rem", background: "#f5f0e8", padding: "1px 5px", borderRadius: 3, color: "#666" }}>{f}</span>
-              ))}
+              {s.fills.map((f, j) => {
+                const needed = neededLookup[f];
+                return (
+                  <span key={j} style={{ fontFamily: FONT.mono, fontSize: "0.55rem", background: "#f5f0e8", padding: "1px 5px", borderRadius: 3, color: "#666" }}>
+                    {f}{needed ? ` (${needed} needed)` : ""}
+                  </span>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -672,13 +859,69 @@ function SuggestionsCard({ suggestions }) {
   );
 }
 
+// ── RemainingPill ───────────────────────────────────────────────────────────
+function RemainingPill({ count, remainingRef }) {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = remainingRef.current;
+    if (!el || !count) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setVisible(!entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [remainingRef, count]);
+
+  if (!visible || !count) return null;
+
+  return (
+    <div onClick={() => remainingRef.current?.scrollIntoView({ behavior: "smooth" })}
+      style={{
+        position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)",
+        background: "#1a1a1a", color: "#fff", padding: "10px 20px", borderRadius: 24,
+        fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 600, cursor: "pointer",
+        zIndex: 50, boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
+      }}>
+      {count} requirements remaining &#9650;
+    </div>
+  );
+}
+
 // ── PinModal ────────────────────────────────────────────────────────────────
-function PinModal({ code, title, programs, onPin, onClose }) {
+function PinModal({ code, title, programs, onPin, onClose, slotAssignments, overlaps }) {
+  const assignments = slotAssignments?.[code] || [];
+  const { glstMajorUsed, glstMajorMax } = overlaps || {};
+
   return (
     <BottomSheet onClose={onClose}>
       <div style={{ fontFamily: FONT.serif, fontSize: "1.1rem", fontWeight: 600, marginBottom: "0.2rem" }}>Pin course to one program</div>
       <div style={{ fontFamily: FONT.mono, fontSize: "0.85rem", fontWeight: 700, marginBottom: "0.1rem" }}>{code}</div>
-      <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#888", marginBottom: "1rem" }}>{title}</div>
+      <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#888", marginBottom: "0.8rem" }}>{title}</div>
+
+      {/* Explanation block */}
+      <div style={{ background: "#f8f6f2", border: `1px solid ${BORDER}`, borderRadius: 6, padding: "0.6rem 0.8rem", marginBottom: "0.8rem" }}>
+        <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#555", lineHeight: 1.5 }}>
+          This course counts toward both programs.
+          {glstMajorMax != null && ` GLST allows up to ${glstMajorMax} shared (${glstMajorUsed || 0} used).`}
+        </div>
+      </div>
+
+      {/* Slot assignments */}
+      {assignments.length > 0 && (
+        <div style={{ marginBottom: "0.8rem" }}>
+          <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", fontWeight: 600, color: "#888", marginBottom: "0.3rem" }}>Currently fills:</div>
+          {assignments.map((a, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.2rem 0" }}>
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: COLORS[a.programCode] || "#888", flexShrink: 0 }} />
+              <span style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#444" }}>
+                {a.programCode}: {a.categoryName}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
         {programs.map(p => (
@@ -835,6 +1078,228 @@ function DetailItem({ label, value }) {
       <div style={{ fontFamily: FONT.mono, fontSize: "0.55rem", color: "#888", marginBottom: 1 }}>{label}</div>
       <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#444" }}>{value}</div>
     </div>
+  );
+}
+
+// ── AddCoursesSheet ─────────────────────────────────────────────────────────
+function AddCoursesSheet({ initialTerm, onClose, onSaved }) {
+  const [term, setTerm] = useState(initialTerm || getCurrentAcademicTerm());
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState([]);
+  const [selected, setSelected] = useState([]); // array of { code, title, credits }
+  const [saving, setSaving] = useState(false);
+  const debounceRef = useRef(null);
+
+  const termOptions = useMemo(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+    const terms = [];
+    // Current and next few terms
+    if (month <= 5) terms.push(`Spring ${year}`);
+    if (month <= 7) terms.push(`Summer ${year}`);
+    terms.push(`Fall ${year}`);
+    terms.push(`Spring ${year + 1}`);
+    return [...new Set(terms)];
+  }, []);
+
+  useEffect(() => {
+    if (!query.trim()) { setResults([]); return; }
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      api.get(`/api/courses/search?q=${encodeURIComponent(query.trim())}`).then(r => {
+        setResults(Array.isArray(r) ? r : r.results || []);
+      });
+    }, 250);
+    return () => clearTimeout(debounceRef.current);
+  }, [query]);
+
+  const toggleCourse = (course) => {
+    setSelected(prev => {
+      const exists = prev.find(c => c.code === course.code);
+      if (exists) return prev.filter(c => c.code !== course.code);
+      return [...prev, { code: course.code, title: course.title, credits: course.credits || 3 }];
+    });
+  };
+
+  const isSelected = (code) => selected.some(c => c.code === code);
+
+  const totalCredits = selected.reduce((s, c) => s + (c.credits || 3), 0);
+
+  const handleSave = async () => {
+    if (selected.length === 0) return;
+    setSaving(true);
+    await api.post("/api/students/me/courses/bulk", {
+      courses: selected.map(c => ({ code: c.code, semester: term, status: "enrolled" })),
+    });
+    setSaving(false);
+    onSaved?.();
+    onClose();
+  };
+
+  return (
+    <BottomSheet onClose={onClose} maxWidth={480}>
+      <div style={{ fontFamily: FONT.serif, fontSize: "1.1rem", fontWeight: 600, marginBottom: "0.5rem" }}>Add Courses</div>
+
+      {/* Term selector */}
+      <div style={{ display: "flex", gap: 6, marginBottom: "0.8rem", flexWrap: "wrap" }}>
+        {termOptions.map(t => (
+          <button key={t} onClick={() => setTerm(t)} style={{
+            fontFamily: FONT.mono, fontSize: "0.65rem", padding: "4px 10px", borderRadius: 12,
+            border: `1px solid ${term === t ? "#1a1a1a" : BORDER}`,
+            background: term === t ? "#1a1a1a" : "transparent",
+            color: term === t ? "#fff" : "#666", cursor: "pointer",
+          }}>{t}</button>
+        ))}
+      </div>
+
+      {/* Search */}
+      <Input placeholder="Search courses..." value={query} onChange={e => setQuery(e.target.value)}
+        style={{ marginBottom: "0.5rem" }} />
+
+      {/* Selected chips */}
+      {selected.length > 0 && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: "0.5rem" }}>
+          {selected.map(c => (
+            <span key={c.code} onClick={() => toggleCourse(c)} style={{
+              fontFamily: FONT.mono, fontSize: "0.6rem", padding: "3px 8px", borderRadius: 4,
+              background: "#e8f5e9", color: "#22863a", cursor: "pointer",
+              display: "inline-flex", alignItems: "center", gap: 4,
+            }}>
+              {c.code} <span style={{ color: "#888" }}>&times;</span>
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Results */}
+      <div style={{ maxHeight: 280, overflow: "auto" }}>
+        {results.slice(0, 20).map(c => (
+          <div key={c.code} onClick={() => toggleCourse(c)} style={{
+            display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 0",
+            borderTop: `1px solid ${BORDER}`, cursor: "pointer",
+          }}>
+            <span style={{
+              width: 20, height: 20, borderRadius: 4, flexShrink: 0,
+              border: `1.5px solid ${isSelected(c.code) ? "#22863a" : "#ccc"}`,
+              background: isSelected(c.code) ? "#22863a" : "transparent",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: "#fff", fontSize: 11,
+            }}>
+              {isSelected(c.code) && "\u2713"}
+            </span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", fontWeight: 600 }}>
+                {c.code} <span style={{ fontWeight: 400, color: "#666" }}>{c.title}</span>
+              </div>
+            </div>
+            <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#888", flexShrink: 0 }}>{c.credits || 3}cr</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Footer */}
+      {selected.length > 0 && (
+        <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: "0.8rem", marginTop: "0.5rem",
+          display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#666" }}>
+            {selected.length} course{selected.length !== 1 ? "s" : ""} · {totalCredits} credits
+          </span>
+          <Btn onClick={handleSave} style={{ padding: "0.5rem 1.5rem" }}>
+            {saving ? "saving..." : "Save"}
+          </Btn>
+        </div>
+      )}
+    </BottomSheet>
+  );
+}
+
+// ── TransferMappingSheet ────────────────────────────────────────────────────
+function TransferMappingSheet({ onClose, onSaved }) {
+  const [rows, setRows] = useState([{ label: "", creditHours: 3, satisfiesCode: "" }]);
+  const [saving, setSaving] = useState(false);
+
+  const addRow = () => setRows(prev => [...prev, { label: "", creditHours: 3, satisfiesCode: "" }]);
+
+  const updateRow = (idx, field, value) => {
+    setRows(prev => prev.map((r, i) => i === idx ? { ...r, [field]: value } : r));
+  };
+
+  const removeRow = (idx) => {
+    if (rows.length <= 1) return;
+    setRows(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const totalCredits = rows.reduce((s, r) => s + (parseFloat(r.creditHours) || 0), 0);
+
+  const handleSave = async () => {
+    const valid = rows.filter(r => r.label.trim() || r.satisfiesCode.trim());
+    if (valid.length === 0) return;
+    setSaving(true);
+    await api.post("/api/students/me/transfer-credits", {
+      credits: valid.map(r => ({
+        label: r.label.trim(),
+        creditHours: parseFloat(r.creditHours) || 3,
+        satisfiesCode: r.satisfiesCode.trim() || undefined,
+      })),
+    });
+    setSaving(false);
+    onSaved?.();
+    onClose();
+  };
+
+  return (
+    <BottomSheet onClose={onClose} maxWidth={480}>
+      <div style={{ fontFamily: FONT.serif, fontSize: "1.1rem", fontWeight: 600, marginBottom: "0.2rem" }}>Transfer Credits</div>
+      <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#888", marginBottom: "1rem" }}>
+        Add credits from other institutions
+      </div>
+
+      {rows.map((row, i) => (
+        <div key={i} style={{
+          display: "flex", gap: 6, alignItems: "flex-start", marginBottom: 8,
+          padding: "0.5rem 0", borderTop: i ? `1px solid ${BORDER}` : "none",
+        }}>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
+            <Input placeholder="Description (e.g. Intro to Psych)"
+              value={row.label} onChange={e => updateRow(i, "label", e.target.value)}
+              style={{ fontSize: "0.75rem" }} />
+            <div style={{ display: "flex", gap: 6 }}>
+              <Input type="number" placeholder="Cr" value={row.creditHours}
+                onChange={e => updateRow(i, "creditHours", e.target.value)}
+                style={{ width: 50, fontSize: "0.75rem", textAlign: "center" }} />
+              <Input placeholder="Catalog code (optional, e.g. PSYC 101)"
+                value={row.satisfiesCode} onChange={e => updateRow(i, "satisfiesCode", e.target.value)}
+                style={{ flex: 1, fontSize: "0.75rem" }} />
+            </div>
+          </div>
+          {rows.length > 1 && (
+            <button onClick={() => removeRow(i)} style={{
+              background: "transparent", border: "none", cursor: "pointer",
+              fontFamily: FONT.mono, fontSize: "1rem", color: "#ccc", padding: "0.3rem",
+            }}>&times;</button>
+          )}
+        </div>
+      ))}
+
+      <button onClick={addRow} style={{
+        fontFamily: FONT.mono, fontSize: "0.7rem", color: "#888", background: "transparent",
+        border: `1px dashed ${BORDER}`, borderRadius: 6, padding: "0.5rem", width: "100%",
+        cursor: "pointer", marginBottom: "0.8rem",
+      }}>
+        + Add another
+      </button>
+
+      <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: "0.8rem",
+        display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#666" }}>
+          {rows.length} credit{rows.length !== 1 ? "s" : ""} · {totalCredits} hours
+        </span>
+        <Btn onClick={handleSave} style={{ padding: "0.5rem 1.5rem" }}>
+          {saving ? "saving..." : "Save"}
+        </Btn>
+      </div>
+    </BottomSheet>
   );
 }
 
@@ -1267,6 +1732,10 @@ function Dashboard({ user, setUser, onLogout }) {
   const [slotModal, setSlotModal] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [addCoursesSheet, setAddCoursesSheet] = useState(null); // null or { term }
+  const [transferSheet, setTransferSheet] = useState(false);
+  const remainingRef = useRef(null);
+  const nextStepsRef = useRef(null);
 
   const refresh = useCallback(() => {
     api.get("/api/students/me/solve").then(setData);
@@ -1284,12 +1753,16 @@ function Dashboard({ user, setUser, onLogout }) {
     if (!data) return {};
     return Object.entries(data.slotAssignments || {}).reduce((acc, [code, asgns]) => {
       const progs = new Set(asgns.map(a => a.programCode));
-      // Only flag as conflict if course fills slots in BOTH major programs
       if (progs.has("PLSC-BA") && progs.has("GLST-BA")) {
         acc[code] = [...progs].filter(p => p === "PLSC-BA" || p === "GLST-BA");
       }
       return acc;
     }, {});
+  }, [data]);
+
+  const hasUnmappedTransfer = useMemo(() => {
+    if (!data?.slotAssignments) return false;
+    return Object.keys(data.slotAssignments).some(c => c.startsWith("XFER"));
   }, [data]);
 
   const handlePin = async (code, pinnedProgram) => {
@@ -1315,6 +1788,7 @@ function Dashboard({ user, setUser, onLogout }) {
 
   const majorOrder = ["PLSC-BA", "GLST-BA", "CORE"];
   const majors = majorOrder.map(code => data.programs[code]).filter(Boolean);
+  const remainingCount = data.remaining?.length || 0;
 
   return (
     <div style={{ background: BG, minHeight: "100vh" }}>
@@ -1322,7 +1796,16 @@ function Dashboard({ user, setUser, onLogout }) {
 
       {/* Content */}
       <div style={{ maxWidth: 680, margin: "0 auto", padding: "1rem" }}>
-        <CreditMeter credits={data.credits} />
+        <CreditMeter credits={data.credits} hasUnmappedTransfer={hasUnmappedTransfer}
+          onTransferWarningTap={() => nextStepsRef.current?.scrollIntoView({ behavior: "smooth" })} />
+
+        <div ref={nextStepsRef}>
+          <NextStepsSection data={data}
+            onAddCourses={(term) => setAddCoursesSheet({ term })}
+            onMapTransfer={() => setTransferSheet(true)}
+            onSuggestionTap={() => remainingRef.current?.scrollIntoView({ behavior: "smooth" })}
+          />
+        </div>
 
         {data.overlaps.glstMajorUsed > data.overlaps.glstMajorMax && (
           <div style={{ background: "#fde8e8", border: "1px solid #f5c6cb", borderRadius: 8, padding: "0.7rem 1rem", marginBottom: "0.75rem", fontFamily: FONT.mono, fontSize: "0.75rem", color: "#721c24" }}>
@@ -1335,23 +1818,35 @@ function Dashboard({ user, setUser, onLogout }) {
             defaultOpen={prog.code === "PLSC-BA" || prog.code === "GLST-BA"} />
         ))}
 
-        <OverlapBudget overlaps={data.overlaps} conflicts={conflicts} />
+        <OverlapBudget overlaps={data.overlaps} conflicts={conflicts} onPipClick={handlePipClick} />
 
         <CASCard casGrad={data.programs["CAS-GRAD"]} spanLang={data.programs["SPAN-LANG"]} />
 
-        <RemainingCard remaining={data.remaining} onSlotTap={handleSlotTap} />
+        <div ref={remainingRef}>
+          <RemainingCard remaining={data.remaining} onSlotTap={handleSlotTap} />
+        </div>
 
-        <SuggestionsCard suggestions={data.suggestions} />
+        <SuggestionsCard suggestions={data.suggestions} remaining={data.remaining} />
       </div>
 
       {pinModal && (
         <PinModal code={pinModal.code} title={pinModal.title} programs={pinModal.programs}
-          onPin={handlePin} onClose={() => setPinModal(null)} />
+          onPin={handlePin} onClose={() => setPinModal(null)}
+          slotAssignments={data.slotAssignments} overlaps={data.overlaps} />
       )}
 
       {slotModal && (
         <SlotModal programCode={slotModal.programCode} categoryName={slotModal.categoryName}
           onClose={() => setSlotModal(null)} />
+      )}
+
+      {addCoursesSheet && (
+        <AddCoursesSheet initialTerm={addCoursesSheet.term}
+          onClose={() => setAddCoursesSheet(null)} onSaved={refresh} />
+      )}
+
+      {transferSheet && (
+        <TransferMappingSheet onClose={() => setTransferSheet(false)} onSaved={refresh} />
       )}
 
       {showSettings && (
@@ -1362,6 +1857,8 @@ function Dashboard({ user, setUser, onLogout }) {
       {showOnboarding && (
         <OnboardingWizard user={user} onComplete={() => { setShowOnboarding(false); refresh(); }} />
       )}
+
+      <RemainingPill count={remainingCount} remainingRef={remainingRef} />
     </div>
   );
 }

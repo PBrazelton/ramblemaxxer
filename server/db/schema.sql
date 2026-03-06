@@ -126,6 +126,76 @@ CREATE TRIGGER IF NOT EXISTS courses_au AFTER UPDATE ON courses BEGIN
   VALUES (new.id, new.code, new.title, new.description, new.department, new.knowledge_area);
 END;
 
+-- Program definitions (degree requirements moved from JSON to DB)
+CREATE TABLE IF NOT EXISTS programs (
+  code                    TEXT PRIMARY KEY,
+  name                    TEXT NOT NULL,
+  type                    TEXT NOT NULL,  -- 'major' | 'core' | 'college' | 'requirement'
+  department              TEXT,
+  college                 TEXT,
+  total_credits           INTEGER,
+  unique_credits_required INTEGER,
+  double_dip_policy       TEXT,
+  core_waivers            TEXT,  -- JSON array
+  notes                   TEXT,  -- JSON array
+  elective_pool_by_region TEXT,  -- JSON object (GLST-BA only)
+  is_active               INTEGER NOT NULL DEFAULT 1,
+  created_at              TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at              TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS program_categories (
+  id              INTEGER PRIMARY KEY AUTOINCREMENT,
+  program_code    TEXT NOT NULL REFERENCES programs(code) ON DELETE CASCADE,
+  name            TEXT NOT NULL,
+  description     TEXT,
+  slots           INTEGER NOT NULL,
+  credits_per_slot INTEGER NOT NULL DEFAULT 3,
+  sort_order      INTEGER NOT NULL DEFAULT 0,
+  tier_structure  TEXT,    -- 'single' | 'foundation_plus_tier2' (CORE only)
+  wildcard        TEXT,    -- 'ANY_PLSC_200_PLUS' | 'ANY_GLST_TAGGED' | null
+  is_fixed        INTEGER NOT NULL DEFAULT 0,  -- 1 = eligible_courses_fixed shape
+  constraints     TEXT,    -- JSON (GLST Electives only)
+  notes           TEXT,
+  UNIQUE(program_code, name)
+);
+
+CREATE INDEX IF NOT EXISTS idx_program_categories_program ON program_categories(program_code);
+
+CREATE TABLE IF NOT EXISTS category_eligible_courses (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  category_id INTEGER NOT NULL REFERENCES program_categories(id) ON DELETE CASCADE,
+  course_code TEXT NOT NULL,
+  is_required INTEGER NOT NULL DEFAULT 0,
+  notes       TEXT,
+  UNIQUE(category_id, course_code)
+);
+
+CREATE INDEX IF NOT EXISTS idx_cat_eligible_category ON category_eligible_courses(category_id);
+CREATE INDEX IF NOT EXISTS idx_cat_eligible_course ON category_eligible_courses(course_code);
+
+CREATE TABLE IF NOT EXISTS overlap_rules (
+  id                    INTEGER PRIMARY KEY AUTOINCREMENT,
+  program_a             TEXT NOT NULL,
+  program_b             TEXT NOT NULL,
+  overlap_type          TEXT,           -- 'waiver' | null
+  max_shared_courses    INTEGER,
+  max_from_single_dept  INTEGER,
+  constraint_source     TEXT,
+  details               TEXT,
+  notes                 TEXT,  -- JSON array
+  UNIQUE(program_a, program_b)
+);
+
+CREATE INDEX IF NOT EXISTS idx_overlap_rules_programs ON overlap_rules(program_a, program_b);
+
+CREATE TABLE IF NOT EXISTS core_waivers (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  program_code  TEXT NOT NULL,
+  waived_area   TEXT NOT NULL,
+  UNIQUE(program_code, waived_area)
+);
+
 -- Invite tokens (Penelope invites her friends)
 CREATE TABLE IF NOT EXISTS invites (
   id          INTEGER PRIMARY KEY AUTOINCREMENT,

@@ -24,6 +24,7 @@ const coursesRoutes = require("./routes/courses");
 const requirementsRoutes = require("./routes/requirements");
 const adminRoutes = require("./routes/admin");
 const transcriptRoutes = require("./routes/transcripts");
+const programRoutes = require("./routes/programs");
 
 const app = express();
 const PORT = process.env.PORT || 3006;
@@ -63,6 +64,7 @@ app.use("/api/courses", coursesRoutes);
 app.use("/api/requirements", requirementsRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/transcript", transcriptRoutes);
+app.use("/api/programs", programRoutes);
 
 // Health check
 app.get("/api/health", (req, res) => {

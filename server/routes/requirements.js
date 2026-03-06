@@ -5,14 +5,14 @@
  */
 
 const express = require("express");
-const degreeRequirements = require("../../data/degree_requirements.json");
+const { degreeRequirements, programMap } = require("../lib/catalog");
 
 const router = express.Router();
 
 router.get("/", (req, res) => res.json(degreeRequirements));
 
 router.get("/:programId", (req, res) => {
-  const prog = degreeRequirements[req.params.programId];
+  const prog = programMap.get(req.params.programId);
   if (!prog) return res.status(404).json({ error: "Program not found" });
   res.json(prog);
 });
