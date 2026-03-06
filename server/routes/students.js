@@ -21,12 +21,23 @@ const { courseMap, programMap, degreeRequirements } = require("../lib/catalog");
 const router = express.Router();
 router.use(requireAuth);
 
+// ── Term ordering helper ──────────────────────────────────────────────────
+function termOrder(semester) {
+  if (!semester || semester === "Transfer") return 0;
+  const m = String(semester).match(/^(Fall|Spring|Summer)\s+(\d{4})$/);
+  if (!m) return 1; // unknown terms sort after Transfer
+  const year = parseInt(m[2]);
+  const season = m[1] === "Spring" ? 0 : m[1] === "Summer" ? 1 : 2;
+  return year * 3 + season;
+}
+
 // ── GET /api/students/me/courses ──────────────────────────────────────────
 router.get("/me/courses", (req, res) => {
   const rows = db.prepare(`
     SELECT course_code as code, semester, status, credits_override, note
-    FROM student_courses WHERE user_id = ? ORDER BY semester, course_code
+    FROM student_courses WHERE user_id = ?
   `).all(req.session.userId);
+  rows.sort((a, b) => termOrder(a.semester) - termOrder(b.semester) || a.code.localeCompare(b.code));
   res.json(rows);
 });
 

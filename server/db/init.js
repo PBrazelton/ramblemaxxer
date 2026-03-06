@@ -160,5 +160,27 @@ try {
   `);
 } catch (e) { /* triggers already exist */ }
 
+// Migration: convert Penelope's integer semesters to string terms
+try {
+  const penelope = db.prepare("SELECT id FROM users WHERE email = 'penelope@brazelton.net'").get();
+  if (penelope) {
+    const check = db.prepare("SELECT semester FROM student_courses WHERE user_id = ? LIMIT 1").get(penelope.id);
+    if (check && /^\d+$/.test(String(check.semester))) {
+      const map = { 0: 'Transfer', 1: 'Fall 2024', 2: 'Spring 2025', 3: 'Fall 2025', 4: 'Spring 2026', 5: 'Fall 2026', 6: 'Spring 2027' };
+      for (const [old, term] of Object.entries(map)) {
+        db.prepare("UPDATE student_courses SET semester = ? WHERE semester = ? AND user_id = ?")
+          .run(term, parseInt(old), penelope.id);
+      }
+      console.log("  Migrated: Penelope's semesters to string terms");
+    }
+  }
+} catch (e) { /* already migrated */ }
+
+// Migration: fix UCLR 100 → UCLR 100C for Penelope
+try {
+  const result = db.prepare("UPDATE student_courses SET course_code = 'UCLR 100C' WHERE course_code = 'UCLR 100'").run();
+  if (result.changes > 0) console.log("  Migrated: UCLR 100 → UCLR 100C");
+} catch (e) { /* already fixed */ }
+
 db.close();
 console.log(`✓ Database initialized at ${DB_PATH}`);

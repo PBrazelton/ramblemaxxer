@@ -838,17 +838,447 @@ function DetailItem({ label, value }) {
   );
 }
 
+// ── OnboardingWizard ─────────────────────────────────────────────────────────
+function OnboardingWizard({ user, onComplete }) {
+  const [step, setStep] = useState(1);
+  const [gradYear, setGradYear] = useState(user.grad_year || "");
+  const [programs, setPrograms] = useState(["PLSC-BA", "GLST-BA"]);
+  const [uploading, setUploading] = useState(false);
+  const [parseResult, setParseResult] = useState(null);
+  const [reviewCourses, setReviewCourses] = useState([]);
+  const [reviewTransfer, setReviewTransfer] = useState([]);
+  const [confirming, setConfirming] = useState(false);
+  const [error, setError] = useState("");
+
+  const toggleProgram = (pid) => {
+    setPrograms(prev => prev.includes(pid) ? prev.filter(p => p !== pid) : [...prev, pid]);
+  };
+
+  // Step 1: Save programs + grad year
+  const saveStep1 = async () => {
+    setError("");
+    const allProgs = [...new Set([...programs, "CORE", "CAS-GRAD"])];
+    try {
+      await api.put("/api/students/me/programs", { programs: allProgs });
+      if (gradYear) {
+        await api.put("/api/students/me/settings", { grad_year: parseInt(gradYear) || null });
+      }
+      setStep(2);
+    } catch (e) {
+      setError("Failed to save programs");
+    }
+  };
+
+  // Step 2: Upload transcript
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setError("");
+    setUploading(true);
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch("/api/transcript/parse", {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Failed to parse transcript");
+        setUploading(false);
+        return;
+      }
+      setParseResult(data);
+
+      // Flatten courses for review
+      const courses = [];
+      for (const term of data.terms) {
+        for (const c of term.courses) {
+          courses.push({ ...c, semester: term.name, included: true });
+        }
+      }
+      setReviewCourses(courses);
+
+      // Transfer items
+      const transfer = (data.transferCredits?.items || []).map(t => ({
+        ...t, semester: "Transfer", included: true,
+      }));
+      setReviewTransfer(transfer);
+
+      setStep(3);
+    } catch (e) {
+      setError("Failed to upload transcript");
+    }
+    setUploading(false);
+  };
+
+  // Step 3: Confirm
+  const handleConfirm = async () => {
+    setError("");
+    setConfirming(true);
+
+    const allProgs = [...new Set([...programs, "CORE", "CAS-GRAD"])];
+    const coursesToSend = reviewCourses
+      .filter(c => c.included)
+      .map(c => ({
+        code: c.code,
+        matchedCode: c.matchedCode,
+        semester: c.semester,
+        status: c.status,
+      }));
+
+    const transferToSend = reviewTransfer
+      .filter(t => t.included)
+      .map(t => ({
+        code: t.code,
+        matchedCode: t.matchedCode,
+      }));
+
+    try {
+      const res = await fetch("/api/transcript/confirm", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          courses: coursesToSend,
+          transferCredits: { items: transferToSend },
+          programs: allProgs,
+          gradYear: parseInt(gradYear) || null,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Failed to save courses");
+        setConfirming(false);
+        return;
+      }
+      onComplete();
+    } catch (e) {
+      setError("Failed to save courses");
+      setConfirming(false);
+    }
+  };
+
+  const matchIcon = (type) => {
+    if (type === "exact") return { symbol: "\u2713", color: "#22863a", bg: "#e8f5e9" };
+    if (type === "unmatched") return { symbol: "\u2717", color: "#c43b2d", bg: "#fde8e8" };
+    return { symbol: "~", color: "#b08800", bg: "#fff8e1" };
+  };
+
+  const programOptions = [
+    { id: "PLSC-BA", name: "Political Science (BA)", color: COLORS["PLSC-BA"] },
+    { id: "GLST-BA", name: "Global & International Studies (BA)", color: COLORS["GLST-BA"] },
+  ];
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 1000,
+      display: "flex", alignItems: "flex-end", justifyContent: "center" }}
+      onClick={(e) => { if (e.target === e.currentTarget) onComplete(); }}>
+      <div onClick={e => e.stopPropagation()}
+        style={{
+          background: BG, borderRadius: "16px 16px 0 0", padding: "24px 20px 48px",
+          width: "100%", maxWidth: 600, boxShadow: "0 -8px 32px rgba(0,0,0,0.15)",
+          maxHeight: "90vh", overflowY: "auto",
+        }}>
+
+        {/* Drag handle */}
+        <div style={{ width: 36, height: 4, borderRadius: 2, background: "#d0ccc6", margin: "0 auto 20px" }} />
+
+        {/* Step indicator */}
+        <div style={{ display: "flex", gap: 6, justifyContent: "center", marginBottom: 24 }}>
+          {[1, 2, 3].map(s => (
+            <div key={s} style={{
+              width: s === step ? 24 : 8, height: 8, borderRadius: 4,
+              background: s === step ? "#1a1a1a" : s < step ? "#22863a" : "#d0ccc6",
+              transition: "all 0.3s",
+            }} />
+          ))}
+        </div>
+
+        {/* ── Step 1: Welcome + Programs ────────────────────────────────── */}
+        {step === 1 && (
+          <div>
+            <h2 style={{ fontFamily: FONT.serif, fontSize: "1.5rem", fontWeight: 700, marginBottom: 4 }}>
+              welcome to <span>ramble</span><span style={{ color: "#c43b2d" }}>maxxer</span>
+            </h2>
+            <p style={{ fontFamily: FONT.mono, fontSize: "0.8rem", color: "#888", marginBottom: 24 }}>
+              let's set up your degree tracking
+            </p>
+
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 600, marginBottom: 8 }}>
+                expected graduation
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                {[2026, 2027, 2028, 2029].map(y => (
+                  <button key={y} onClick={() => setGradYear(y)}
+                    style={{
+                      flex: 1, padding: "10px 0", borderRadius: 8, cursor: "pointer",
+                      fontFamily: FONT.mono, fontSize: "0.85rem",
+                      border: `2px solid ${gradYear == y ? "#1a1a1a" : BORDER}`,
+                      background: gradYear == y ? "#1a1a1a" : "transparent",
+                      color: gradYear == y ? "#fff" : "#5a5550",
+                    }}>
+                    {y}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 600, marginBottom: 8 }}>
+                your programs
+              </div>
+              {programOptions.map(p => (
+                <button key={p.id} onClick={() => toggleProgram(p.id)}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 10, width: "100%",
+                    padding: "12px 14px", marginBottom: 8, borderRadius: 8, cursor: "pointer",
+                    border: `2px solid ${programs.includes(p.id) ? p.color : BORDER}`,
+                    background: programs.includes(p.id) ? p.color + "11" : "transparent",
+                    textAlign: "left",
+                  }}>
+                  <div style={{
+                    width: 20, height: 20, borderRadius: 4,
+                    border: `2px solid ${programs.includes(p.id) ? p.color : "#ccc"}`,
+                    background: programs.includes(p.id) ? p.color : "transparent",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    color: "#fff", fontSize: 12, flexShrink: 0,
+                  }}>
+                    {programs.includes(p.id) && "\u2713"}
+                  </div>
+                  <div>
+                    <div style={{ fontFamily: FONT.mono, fontSize: "0.8rem", fontWeight: 600, color: p.color }}>{p.id}</div>
+                    <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#888" }}>{p.name}</div>
+                  </div>
+                </button>
+              ))}
+              <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#aaa", marginTop: 4 }}>
+                Core + CAS graduation requirements are tracked automatically
+              </div>
+            </div>
+
+            {error && <ErrMsg>{error}</ErrMsg>}
+            <Btn onClick={saveStep1} full>continue</Btn>
+          </div>
+        )}
+
+        {/* ── Step 2: Transcript Upload ─────────────────────────────────── */}
+        {step === 2 && (
+          <div>
+            <h2 style={{ fontFamily: FONT.serif, fontSize: "1.3rem", fontWeight: 700, marginBottom: 4 }}>
+              import your transcript
+            </h2>
+            <p style={{ fontFamily: FONT.mono, fontSize: "0.75rem", color: "#888", marginBottom: 24 }}>
+              upload your unofficial transcript PDF to auto-populate your courses
+            </p>
+
+            <label style={{
+              display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+              padding: "40px 20px", borderRadius: 12, cursor: "pointer",
+              border: `2px dashed ${BORDER}`, background: "#fff",
+              transition: "border-color 0.2s",
+            }}>
+              <input type="file" accept=".pdf" onChange={handleFileUpload}
+                style={{ display: "none" }} disabled={uploading} />
+              {uploading ? (
+                <span style={{ fontFamily: FONT.mono, fontSize: "0.85rem", color: "#888" }}>
+                  parsing transcript...
+                </span>
+              ) : (
+                <>
+                  <div style={{ fontSize: 32, marginBottom: 8, opacity: 0.4 }}>&#128196;</div>
+                  <div style={{ fontFamily: FONT.mono, fontSize: "0.85rem", color: "#444", marginBottom: 4 }}>
+                    tap to upload PDF
+                  </div>
+                  <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#aaa" }}>
+                    unofficial transcript from LOCUS (max 2MB)
+                  </div>
+                </>
+              )}
+            </label>
+
+            {error && <div style={{ marginTop: 12 }}><ErrMsg>{error}</ErrMsg></div>}
+
+            <button onClick={onComplete}
+              style={{
+                display: "block", width: "100%", marginTop: 20, padding: 12,
+                background: "transparent", border: "none", cursor: "pointer",
+                fontFamily: FONT.mono, fontSize: "0.75rem", color: "#9a9590",
+                textAlign: "center",
+              }}>
+              I'll add courses manually &rarr;
+            </button>
+          </div>
+        )}
+
+        {/* ── Step 3: Review ────────────────────────────────────────────── */}
+        {step === 3 && parseResult && (
+          <div>
+            <h2 style={{ fontFamily: FONT.serif, fontSize: "1.3rem", fontWeight: 700, marginBottom: 4 }}>
+              review your courses
+            </h2>
+
+            {/* Summary bar */}
+            <div style={{
+              display: "flex", gap: 12, padding: "10px 14px", borderRadius: 8,
+              background: "#fff", border: `1px solid ${BORDER}`, marginBottom: 16,
+              fontFamily: FONT.mono, fontSize: "0.7rem",
+            }}>
+              <span style={{ color: "#22863a" }}>{parseResult.summary.exact} matched</span>
+              <span style={{ color: "#b08800" }}>{parseResult.summary.fuzzy} fuzzy</span>
+              <span style={{ color: "#c43b2d" }}>{parseResult.summary.unmatched} unmatched</span>
+            </div>
+
+            {/* Transfer credits */}
+            {reviewTransfer.length > 0 && (
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 600, marginBottom: 8, color: COLORS["CAS-GRAD"] }}>
+                  Transfer Credits
+                </div>
+                {reviewTransfer.map((c, i) => {
+                  const icon = matchIcon(c.matchType);
+                  return (
+                    <div key={i} style={{
+                      display: "flex", alignItems: "center", gap: 8, padding: "8px 0",
+                      borderTop: i ? `1px solid ${BORDER}` : "none",
+                      opacity: c.included ? 1 : 0.4,
+                    }}>
+                      <button onClick={() => {
+                        const next = [...reviewTransfer];
+                        next[i] = { ...next[i], included: !next[i].included };
+                        setReviewTransfer(next);
+                      }} style={{
+                        width: 22, height: 22, borderRadius: 4, border: `1px solid ${BORDER}`,
+                        background: c.included ? "#1a1a1a" : "transparent", color: "#fff",
+                        cursor: "pointer", fontSize: 11, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                      }}>
+                        {c.included && "\u2713"}
+                      </button>
+                      <span style={{
+                        width: 18, height: 18, borderRadius: "50%", fontSize: "0.6rem",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        background: icon.bg, color: icon.color, flexShrink: 0,
+                      }}>{icon.symbol}</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", fontWeight: 600 }}>{c.code}</div>
+                        <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#888", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {c.title}
+                        </div>
+                      </div>
+                      <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#888", flexShrink: 0 }}>
+                        {c.credits}cr
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Term groups */}
+            {parseResult.terms.map(term => {
+              const termCourses = reviewCourses.filter(c => c.semester === term.name);
+              if (termCourses.length === 0) return null;
+              return (
+                <div key={term.name} style={{ marginBottom: 16 }}>
+                  <div style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 600, marginBottom: 8 }}>
+                    {term.name}
+                  </div>
+                  {termCourses.map((c, i) => {
+                    const globalIdx = reviewCourses.indexOf(c);
+                    const icon = matchIcon(c.matchType);
+                    return (
+                      <div key={i} style={{
+                        display: "flex", alignItems: "center", gap: 8, padding: "8px 0",
+                        borderTop: i ? `1px solid ${BORDER}` : "none",
+                        opacity: c.included ? 1 : 0.4,
+                      }}>
+                        <button onClick={() => {
+                          const next = [...reviewCourses];
+                          next[globalIdx] = { ...next[globalIdx], included: !next[globalIdx].included };
+                          setReviewCourses(next);
+                        }} style={{
+                          width: 22, height: 22, borderRadius: 4, border: `1px solid ${BORDER}`,
+                          background: c.included ? "#1a1a1a" : "transparent", color: "#fff",
+                          cursor: "pointer", fontSize: 11, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                        }}>
+                          {c.included && "\u2713"}
+                        </button>
+                        <span style={{
+                          width: 18, height: 18, borderRadius: "50%", fontSize: "0.6rem",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          background: icon.bg, color: icon.color, flexShrink: 0,
+                        }}>{icon.symbol}</span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", fontWeight: 600 }}>
+                            {c.matchedCode || c.code}
+                            {c.grade && <span style={{ fontWeight: 400, color: "#888", marginLeft: 6 }}>{c.grade}</span>}
+                          </div>
+                          <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#888", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {c.matchedTitle || c.title}
+                          </div>
+                          {c.matchType !== "exact" && c.matchedCode && c.matchedCode !== c.code && (
+                            <div style={{ fontFamily: FONT.mono, fontSize: "0.55rem", color: "#b08800" }}>
+                              transcript: {c.code} &rarr; matched: {c.matchedCode}
+                            </div>
+                          )}
+                        </div>
+                        <div style={{ textAlign: "right", flexShrink: 0 }}>
+                          <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#888" }}>{c.credits}cr</span>
+                          <div style={{
+                            fontFamily: FONT.mono, fontSize: "0.55rem",
+                            color: STATUS_COLOR[c.status] || "#888",
+                          }}>{c.status}</div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })}
+
+            {error && <ErrMsg>{error}</ErrMsg>}
+
+            <Btn onClick={handleConfirm} full style={{ marginTop: 8 }}>
+              {confirming ? "saving..." : "looks good"}
+            </Btn>
+            <button onClick={() => setStep(2)}
+              style={{
+                display: "block", width: "100%", marginTop: 12, padding: 8,
+                background: "transparent", border: "none", cursor: "pointer",
+                fontFamily: FONT.mono, fontSize: "0.7rem", color: "#9a9590", textAlign: "center",
+              }}>
+              &larr; upload a different file
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Dashboard ───────────────────────────────────────────────────────────────
 function Dashboard({ user, setUser, onLogout }) {
   const [data, setData] = useState(null);
   const [pinModal, setPinModal] = useState(null);
   const [slotModal, setSlotModal] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const refresh = useCallback(() => {
     api.get("/api/students/me/solve").then(setData);
   }, []);
   useEffect(() => { refresh(); }, [refresh]);
+
+  // Show onboarding for new users with zero courses
+  useEffect(() => {
+    if (data && data.credits.total === 0 && !showOnboarding) {
+      setShowOnboarding(true);
+    }
+  }, [data]);
 
   const conflicts = useMemo(() => {
     if (!data) return {};
@@ -927,6 +1357,10 @@ function Dashboard({ user, setUser, onLogout }) {
       {showSettings && (
         <SettingsSheet user={user} onClose={() => setShowSettings(false)}
           onUpdate={(updated) => setUser(updated)} />
+      )}
+
+      {showOnboarding && (
+        <OnboardingWizard user={user} onComplete={() => { setShowOnboarding(false); refresh(); }} />
       )}
     </div>
   );

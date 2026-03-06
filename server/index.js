@@ -1,3 +1,5 @@
+require("dotenv").config({ path: require("path").join(__dirname, "..", ".env") });
+
 /**
  * server/index.js
  * Express API server for Ramblemaxxer.
@@ -21,6 +23,7 @@ const studentRoutes = require("./routes/students");
 const coursesRoutes = require("./routes/courses");
 const requirementsRoutes = require("./routes/requirements");
 const adminRoutes = require("./routes/admin");
+const transcriptRoutes = require("./routes/transcripts");
 
 const app = express();
 const PORT = process.env.PORT || 3006;
@@ -59,6 +62,7 @@ app.use("/api/students", studentRoutes);
 app.use("/api/courses", coursesRoutes);
 app.use("/api/requirements", requirementsRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/transcript", transcriptRoutes);
 
 // Health check
 app.get("/api/health", (req, res) => {

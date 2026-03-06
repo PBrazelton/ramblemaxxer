@@ -16,53 +16,53 @@ db.pragma("foreign_keys = ON");
 
 // ── Penelope's course list (source of truth from handoff doc) ──────────────
 // status: 'transfer' | 'complete' | 'enrolled' | 'planned'
-// semester: 1=Fall23, 2=Spring24, 3=Fall24, 4=Spring25(current), 5=Fall25(abroad), 6+=future
+// semester: string term (e.g. "Fall 2024", "Transfer")
 const PENELOPE_COURSES = [
   // Transfer
-  { code: "AP BIO",   semester: 0, status: "transfer" },
-  { code: "AP PSYCH", semester: 0, status: "transfer" },
+  { code: "AP BIO",   semester: "Transfer", status: "transfer" },
+  { code: "AP PSYCH", semester: "Transfer", status: "transfer" },
 
-  // Semester 1: Fall 2023
-  { code: "HIST 104", semester: 1, status: "complete" },
-  { code: "PLSC 102", semester: 1, status: "complete" },
-  { code: "PLSC 103", semester: 1, status: "complete" },
-  { code: "THEO 186", semester: 1, status: "complete" },
-  { code: "UCLR 100", semester: 1, status: "complete" },
-  { code: "UNIV 101", semester: 1, status: "complete" },
+  // Fall 2024
+  { code: "HIST 104",  semester: "Fall 2024", status: "complete" },
+  { code: "PLSC 102",  semester: "Fall 2024", status: "complete" },
+  { code: "PLSC 103",  semester: "Fall 2024", status: "complete" },
+  { code: "THEO 186",  semester: "Fall 2024", status: "complete" },
+  { code: "UCLR 100C", semester: "Fall 2024", status: "complete" },
+  { code: "UNIV 101",  semester: "Fall 2024", status: "complete" },
 
-  // Semester 2: Spring 2024
-  { code: "PLSC 101", semester: 2, status: "complete" },
-  { code: "PLSC 202", semester: 2, status: "complete" },
-  { code: "PLSC 362", semester: 2, status: "complete" },
-  { code: "PHIL 130", semester: 2, status: "complete" },
-  { code: "THEO 100", semester: 2, status: "complete" },
-  { code: "UCWR 110", semester: 2, status: "complete" },
+  // Spring 2025
+  { code: "PLSC 101", semester: "Spring 2025", status: "complete" },
+  { code: "PLSC 202", semester: "Spring 2025", status: "complete" },
+  { code: "PLSC 362", semester: "Spring 2025", status: "complete" },
+  { code: "PHIL 130", semester: "Spring 2025", status: "complete" },
+  { code: "THEO 100", semester: "Spring 2025", status: "complete" },
+  { code: "UCWR 110", semester: "Spring 2025", status: "complete" },
 
-  // Semester 3: Fall 2024
-  { code: "GLST 101", semester: 3, status: "complete" },
-  { code: "ANTH 100", semester: 3, status: "complete" },
-  { code: "PLSC 252", semester: 3, status: "complete" },
-  { code: "PLSC 216", semester: 3, status: "complete" },
-  { code: "HIST 210", semester: 3, status: "complete" },
-  { code: "SPAN 102", semester: 3, status: "complete" },
+  // Fall 2025
+  { code: "GLST 101", semester: "Fall 2025", status: "complete" },
+  { code: "ANTH 100", semester: "Fall 2025", status: "complete" },
+  { code: "PLSC 252", semester: "Fall 2025", status: "complete" },
+  { code: "PLSC 216", semester: "Fall 2025", status: "complete" },
+  { code: "HIST 210", semester: "Fall 2025", status: "complete" },
+  { code: "SPAN 102", semester: "Fall 2025", status: "complete" },
 
-  // Semester 4: Spring 2025 (enrolled)
-  { code: "PLSC 311", semester: 4, status: "enrolled" },
-  { code: "PLSC 367", semester: 4, status: "enrolled" },
-  { code: "ANTH 321", semester: 4, status: "enrolled" },
-  { code: "PLSC 337", semester: 4, status: "enrolled" },
-  { code: "LITR 284", semester: 4, status: "enrolled" },
-  { code: "SPAN 103", semester: 4, status: "enrolled" },
+  // Spring 2026 (enrolled)
+  { code: "PLSC 311", semester: "Spring 2026", status: "enrolled" },
+  { code: "PLSC 367", semester: "Spring 2026", status: "enrolled" },
+  { code: "ANTH 321", semester: "Spring 2026", status: "enrolled" },
+  { code: "PLSC 337", semester: "Spring 2026", status: "enrolled" },
+  { code: "LITR 284", semester: "Spring 2026", status: "enrolled" },
+  { code: "SPAN 103", semester: "Spring 2026", status: "enrolled" },
 
-  // Semester 5: Fall 2025 (planned, abroad)
-  { code: "FNAR 113", semester: 5, status: "planned" },
-  { code: "ENGL 290", semester: 5, status: "planned" },
-  { code: "PHIL 287", semester: 5, status: "planned" },
-  { code: "THEO 278", semester: 5, status: "planned" },
-  { code: "ANTH 216", semester: 5, status: "planned" },
+  // Fall 2026 (planned, abroad)
+  { code: "FNAR 113", semester: "Fall 2026", status: "planned" },
+  { code: "ENGL 290", semester: "Fall 2026", status: "planned" },
+  { code: "PHIL 287", semester: "Fall 2026", status: "planned" },
+  { code: "THEO 278", semester: "Fall 2026", status: "planned" },
+  { code: "ANTH 216", semester: "Fall 2026", status: "planned" },
 
-  // Future (unscheduled)
-  { code: "SPAN 104", semester: 6, status: "planned" },
+  // Spring 2027 (future)
+  { code: "SPAN 104", semester: "Spring 2027", status: "planned" },
 ];
 
 const PENELOPE_PROGRAMS = ["PLSC-BA", "GLST-BA", "CORE", "CAS-GRAD", "SPAN-LANG"];

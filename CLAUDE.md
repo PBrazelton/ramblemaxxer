@@ -37,17 +37,20 @@ Paul's admin login: `paul@ramblemaxxer.com` / `changeme-admin`
 ## Project structure
 
 ```
-client/src/App.jsx          # entire frontend (single file)
-client/src/lib/ui.jsx       # shared UI primitives and constants
-client/src/pages/AdminPanel.jsx  # admin view (Paul only)
-shared/solver.js            # constraint solver — the brain
-server/routes/              # Express API routes
-server/lib/catalog.js       # shared course/program maps (DB-backed with JSON fallback)
-server/db/                  # SQLite schema, init, seed
-server/scripts/             # scrape-catalog.js, seed-courses.js
-data/                       # course catalog + degree requirements JSON
-data/scraped-catalog.json   # full scraped catalog (~2000+ courses, committed)
-luc-handoff.md              # full constraint model documentation — READ THIS
+client/src/App.jsx              # entire frontend (single file, includes OnboardingWizard)
+client/src/lib/ui.jsx           # shared UI primitives and constants
+client/src/pages/AdminPanel.jsx # admin view (Paul only)
+shared/solver.js                # constraint solver — the brain
+server/routes/                  # Express API routes
+server/routes/transcripts.js    # transcript parse + confirm endpoints
+server/lib/catalog.js           # shared course/program maps (DB-backed with JSON fallback)
+server/lib/transcript-parser.js # PDF → structured transcript data
+server/lib/transcript-matcher.js # match parsed courses against DB
+server/db/                      # SQLite schema, init, seed
+server/scripts/                 # scrape-catalog.js, seed-courses.js
+data/                           # course catalog + degree requirements JSON
+data/scraped-catalog.json       # full scraped catalog (~2000+ courses, committed)
+luc-handoff.md                  # full constraint model documentation — READ THIS
 ```
 
 ## The solver
@@ -132,6 +135,26 @@ Invite-gated: new Google users need a matching invite email to sign up.
 **Email is sent via Postmark (`server/lib/email.js`):**
 Set `POSTMARK_API_KEY` env var. Without it, emails log to console (safe for local dev).
 Used for invite emails and password reset links.
+
+## Transcript import + onboarding
+
+New users with zero courses see a 3-step onboarding wizard (BottomSheet):
+1. **Programs + grad year** — saves via existing PUT endpoints
+2. **Transcript upload** — PDF parsed server-side, never written to disk
+3. **Review + confirm** — matched courses shown with checkboxes, saved in one transaction
+
+**Semester format:** `student_courses.semester` stores string terms like `"Fall 2024"`,
+`"Spring 2025"`, `"Transfer"`. SQLite is dynamically typed — no ALTER needed.
+The solver doesn't use semester at all.
+
+**API endpoints:**
+- `POST /api/transcript/parse` — upload PDF (multipart, 2MB max), returns matched courses
+- `POST /api/transcript/confirm` — save confirmed courses + programs in one transaction
+
+**Key files:**
+- `server/lib/transcript-parser.js` — PDF buffer → structured transcript (uses pdf-parse)
+- `server/lib/transcript-matcher.js` — matches parsed courses against courses DB
+- `server/routes/transcripts.js` — parse + confirm endpoints (uses multer memoryStorage)
 
 ## What's not built yet (Phase 2)
 
