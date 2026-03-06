@@ -1560,7 +1560,7 @@ function OnboardingWizard({ user, onComplete }) {
                     tap to upload PDF
                   </div>
                   <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#aaa" }}>
-                    unofficial transcript from LOCUS (max 2MB)
+                    official or unofficial transcript from LOCUS (max 2MB)
                   </div>
                 </>
               )}
@@ -1596,6 +1596,9 @@ function OnboardingWizard({ user, onComplete }) {
               <span style={{ color: "#22863a" }}>{parseResult.summary.exact} matched</span>
               <span style={{ color: "#b08800" }}>{parseResult.summary.fuzzy} fuzzy</span>
               <span style={{ color: "#c43b2d" }}>{parseResult.summary.unmatched} unmatched</span>
+              {parseResult.summary.inferred > 0 && (
+                <span style={{ color: "#b08800" }}>{parseResult.summary.inferred} inferred</span>
+              )}
             </div>
 
             {/* Transfer credits */}
@@ -1604,6 +1607,18 @@ function OnboardingWizard({ user, onComplete }) {
                 <div style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 600, marginBottom: 8, color: COLORS["CAS-GRAD"] }}>
                   Transfer Credits
                 </div>
+                {parseResult.transferCredits?.sources?.length > 0 && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+                    {parseResult.transferCredits.sources.map((src, i) => (
+                      <span key={i} style={{
+                        fontFamily: FONT.mono, fontSize: "0.6rem", padding: "3px 8px",
+                        borderRadius: 4, background: "#f5f0eb", color: "#5a5550",
+                      }}>
+                        {src.type === "test" ? "Test/AP Credits" : src.name || "Transfer"} — {src.credits}cr
+                      </span>
+                    ))}
+                  </div>
+                )}
                 {reviewTransfer.map((c, i) => {
                   const icon = matchIcon(c.matchType);
                   return (
@@ -1690,9 +1705,14 @@ function OnboardingWizard({ user, onComplete }) {
                               transcript: {c.code} &rarr; matched: {c.matchedCode}
                             </div>
                           )}
+                          {c.inferred && (
+                            <div style={{ fontFamily: FONT.mono, fontSize: "0.55rem", color: "#b08800" }}>
+                              please verify — credits not in PDF
+                            </div>
+                          )}
                         </div>
                         <div style={{ textAlign: "right", flexShrink: 0 }}>
-                          <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#888" }}>{c.credits}cr</span>
+                          <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#888" }}>{c.credits != null ? `${c.credits}cr` : "—"}</span>
                           <div style={{
                             fontFamily: FONT.mono, fontSize: "0.55rem",
                             color: STATUS_COLOR[c.status] || "#888",

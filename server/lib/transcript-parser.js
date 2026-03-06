@@ -2,7 +2,7 @@
  * server/lib/transcript-parser.js
  * Pure function: PDF buffer → structured transcript object.
  *
- * Parses LUC unofficial transcripts (clean text layer, no OCR needed).
+ * Parses LUC official and unofficial transcripts (clean text layer, no OCR needed).
  * LUC PDF text is concatenated — no spaces between fields:
  *   HIST104Global History since 15003.0003.000  A12.000
  */
@@ -29,7 +29,11 @@ const TERM_HEADER = /^(Fall|Spring|Summer)\s+(\d{4})$/;
 const COURSE_LINE_SPACED = /^([A-Z]{2,5})\s+(\d{3}[A-Z]?)\s+(.+?)\s+(\d+\.\d{3})\s+(\d+\.\d{3})\s+([A-Z][+-]?|P|W|WF|I|AU|NR)?\s*(\d+\.\d{3})?$/;
 
 // Transfer totals
-const TRANSFER_TOTALS = /Transfer\s+Totals\s*:\s*(\d+\.\d{3})/i;
+const TRANSFER_TOTALS = /Transfer\s+Totals?\s*:\s*(\d+\.\d{3})/i;
+
+// Transfer source headers
+const TRANSFER_FROM = /^Transfer\s+Credits?\s*(?:from\s+(.+))?$/i;
+const TEST_CREDITS_HEADER = /^Test\s+Credits?$/i;
 
 // Cumulative totals — "Cum GPA4.000Cum Totals52.00045.000132.000" or spaced
 const CUM_LINE = /Cum\s*GPA\s*:?\s*(\d+\.\d{2,3})\s*Cum\s*Totals\s*(\d+\.\d{3})\s*(\d+\.\d{3})/i;
@@ -47,13 +51,16 @@ const SKIP_PATTERNS = [
   /^Topic:/i,
   /^Public\s+Performance/i,
   /^UNOFFICIAL/i,
+  /^OFFICIAL/i,
+  /^Registrar/i,
+  /^Loyola\s+University/i,
+  /^Applied\s+Toward/i,
   /^Page\s+\d/i,
   /^Birthdate/i,
   /^Print\s+Date/i,
   /^Beginning\s+of/i,
   /^End\s+of/i,
   /^Undergraduate\s+Career/i,
-  /^Test\s+Credits/i,
   /^Earned$/i,
 ];
 
@@ -66,7 +73,7 @@ async function parseTranscript(buffer) {
 
   const result = {
     student: { name: null, id: null },
-    transferCredits: { total: 0, items: [] },
+    transferCredits: { total: 0, sources: [], items: [] },
     terms: [],
     cumGpa: null,
     cumCreditsEarned: 0,
@@ -75,6 +82,7 @@ async function parseTranscript(buffer) {
 
   let currentTerm = null;
   let inTransfer = false;
+  let currentTransferSource = null;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -96,12 +104,31 @@ async function parseTranscript(buffer) {
       continue;
     }
 
-    // Transfer totals
-    const transferMatch = line.match(TRANSFER_TOTALS);
-    if (transferMatch) {
-      result.transferCredits.total = parseFloat(transferMatch[1]);
+    // Transfer source headers: "Transfer Credits from Rock Valley College" or "Test Credits"
+    const transferFromMatch = line.match(TRANSFER_FROM);
+    if (transferFromMatch) {
+      currentTransferSource = { type: "institution", name: transferFromMatch[1]?.trim() || null };
       inTransfer = true;
       currentTerm = null;
+      continue;
+    }
+    const testCreditsMatch = line.match(TEST_CREDITS_HEADER);
+    if (testCreditsMatch) {
+      currentTransferSource = { type: "test", name: null };
+      inTransfer = true;
+      currentTerm = null;
+      continue;
+    }
+
+    // Transfer totals — accumulate (multiple transfer sections)
+    const transferMatch = line.match(TRANSFER_TOTALS);
+    if (transferMatch) {
+      const credits = parseFloat(transferMatch[1]);
+      result.transferCredits.total += credits;
+      if (currentTransferSource) {
+        result.transferCredits.sources.push({ ...currentTransferSource, credits });
+        currentTransferSource = null;
+      }
       continue;
     }
 
@@ -118,15 +145,25 @@ async function parseTranscript(buffer) {
     const spacedMatch = line.match(COURSE_LINE_SPACED);
     if (spacedMatch) {
       const course = buildCourse(spacedMatch);
-      if (currentTerm) currentTerm.courses.push(course);
+      if (inTransfer) {
+        course.status = "transfer";
+        result.transferCredits.items.push(course);
+      } else if (currentTerm) {
+        currentTerm.courses.push(course);
+      }
       continue;
     }
 
     // Try concatenated course line (LUC format)
-    if (currentTerm) {
+    if (currentTerm || inTransfer) {
       const course = parseConcatLine(line);
       if (course) {
-        currentTerm.courses.push(course);
+        if (inTransfer) {
+          course.status = "transfer";
+          result.transferCredits.items.push(course);
+        } else {
+          currentTerm.courses.push(course);
+        }
         continue;
       }
     }
@@ -147,18 +184,48 @@ async function parseTranscript(buffer) {
     }
   }
 
-  // If we got transfer total but no transfer items, create a placeholder
+  // Post-processing: infer status for courses missing numeric columns
+  for (const term of result.terms) {
+    const hasCompleted = term.courses.some(c => c.creditsEarned > 0);
+    for (const c of term.courses) {
+      if (c.inferred) {
+        c.status = hasCompleted ? "complete" : "enrolled";
+      }
+    }
+  }
+
+  // If we got transfer total but no transfer items, create placeholders
   if (result.transferCredits.total > 0 && result.transferCredits.items.length === 0) {
-    result.transferCredits.items.push({
-      code: "TRANSFER",
-      department: "TRANSFER",
-      number: "000",
-      title: "Transfer Credits (Test/AP)",
-      credits: result.transferCredits.total,
-      creditsEarned: result.transferCredits.total,
-      grade: null,
-      status: "transfer",
-    });
+    if (result.transferCredits.sources.length > 0) {
+      // One placeholder per source
+      for (const src of result.transferCredits.sources) {
+        const title = src.type === "test"
+          ? "Test/AP Credits"
+          : `Transfer Credits from ${src.name || "Unknown Institution"}`;
+        result.transferCredits.items.push({
+          code: "TRANSFER",
+          department: "TRANSFER",
+          number: "000",
+          title,
+          credits: src.credits,
+          creditsEarned: src.credits,
+          grade: null,
+          status: "transfer",
+        });
+      }
+    } else {
+      // Backward compat: single generic placeholder
+      result.transferCredits.items.push({
+        code: "TRANSFER",
+        department: "TRANSFER",
+        number: "000",
+        title: "Transfer Credits (Test/AP)",
+        credits: result.transferCredits.total,
+        creditsEarned: result.transferCredits.total,
+        grade: null,
+        status: "transfer",
+      });
+    }
   }
 
   // Validate
@@ -190,7 +257,38 @@ function parseConcatLine(line) {
   // Must end with decimal patterns: attempted + earned + optional grade + points
   // Work backwards: find the credit decimals in the rest
   const backMatch = rest.match(/^(.+?)(\d+\.\d{3})(\d+\.\d{3})\s{0,3}([A-Z][+-]?|P|W|WF|I|AU|NR)?\s*(\d+\.\d{3})$/);
-  if (!backMatch) return null;
+  if (!backMatch) {
+    // Fallback: line has dept + number + title but no numeric columns
+    // (common in official transcripts for some course lines)
+    let fallbackTitle;
+    let fallbackNum;
+    if (maybeSuffix) {
+      if (rest.length > 0 && rest[0] === rest[0].toLowerCase() && rest[0] !== rest[0].toUpperCase()) {
+        fallbackNum = num;
+        fallbackTitle = maybeSuffix + rest;
+      } else {
+        fallbackNum = num + maybeSuffix;
+        fallbackTitle = rest;
+      }
+    } else {
+      fallbackNum = num;
+      fallbackTitle = rest;
+    }
+    fallbackTitle = fallbackTitle.trim();
+    // Require title length >= 3 to avoid false positives on noise lines
+    if (fallbackTitle.length < 3) return null;
+    return {
+      code: `${dept} ${fallbackNum}`,
+      department: dept,
+      number: fallbackNum,
+      title: fallbackTitle,
+      credits: null,
+      creditsEarned: null,
+      grade: null,
+      status: null,
+      inferred: true,
+    };
+  }
 
   const [, rawTitle, attempted, earned, grade, points] = backMatch;
 

@@ -64,6 +64,7 @@ router.post("/parse", upload.single("file"), async (req, res) => {
         matchedTitle: m.match?.title || null,
         matchType: m.matchType,
         confidence: m.confidence,
+        inferred: m.parsed.inferred || false,
       });
     }
 
@@ -86,6 +87,7 @@ router.post("/parse", upload.single("file"), async (req, res) => {
     const exact = matches.filter(m => m.matchType === "exact").length;
     const fuzzy = matches.filter(m => ["suffix_strip", "suffix_add", "cross_listing", "fts_fuzzy"].includes(m.matchType)).length;
     const unmatched = matches.filter(m => m.matchType === "unmatched").length;
+    const inferred = matches.filter(m => m.parsed.inferred).length;
 
     res.json({
       student: transcript.student,
@@ -93,7 +95,7 @@ router.post("/parse", upload.single("file"), async (req, res) => {
       transferCredits: transcript.transferCredits,
       cumGpa: transcript.cumGpa,
       cumCreditsEarned: transcript.cumCreditsEarned,
-      summary: { total, exact, fuzzy, unmatched },
+      summary: { total, exact, fuzzy, unmatched, inferred },
       warnings: transcript.warnings,
     });
   } catch (err) {
