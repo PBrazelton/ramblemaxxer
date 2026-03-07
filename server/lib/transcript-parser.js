@@ -71,6 +71,16 @@ async function parseTranscript(buffer) {
   const { text } = await pdfParse(buffer);
   const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
 
+  // Debug: dump raw lines to file for diagnosis
+  if (process.env.NODE_ENV !== "production") {
+    const fs = require("fs");
+    const path = require("path");
+    const debugPath = path.join(__dirname, "../../data/transcript-debug.txt");
+    const debugLines = lines.map((l, i) => `${i}: ${l}`).join("\n");
+    fs.writeFileSync(debugPath, `Total lines: ${lines.length}\n\n${debugLines}\n`);
+    console.log(`[transcript] wrote ${lines.length} raw lines to ${debugPath}`);
+  }
+
   const result = {
     student: { name: null, id: null },
     transferCredits: { total: 0, sources: [], items: [] },
@@ -168,11 +178,119 @@ async function parseTranscript(buffer) {
       }
     }
 
-    // Cumulative line
+    // Try multi-line course format (official transcripts — each field on its own line):
+    //   ENVS           <- dept (2-5 uppercase letters alone)
+    //   101            <- number (3 digits + optional suffix)
+    //   Title Text     <- title
+    //   3.000          <- attempted credits
+    //   3.000          <- earned credits
+    //   A-             <- grade (optional — missing for enrolled courses)
+    //   11.010         <- quality points
+    if ((currentTerm || inTransfer) && /^[A-Z]{2,5}$/.test(line)) {
+      const dept = line;
+      const numLine = lines[i + 1];
+      const titleLine = lines[i + 2];
+
+      if (numLine && /^\d{3}[A-Z]?$/.test(numLine) && titleLine && !/^\d+\.\d{3}$/.test(titleLine)) {
+        const number = numLine;
+        const title = titleLine;
+        let j = i + 3;
+
+        // Read attempted credits
+        const attemptedStr = lines[j];
+        if (!attemptedStr || !/^\d+\.\d{3}$/.test(attemptedStr)) {
+          // Not a valid multi-line course — fall through
+        } else {
+          const attempted = parseFloat(attemptedStr);
+          j++;
+
+          // Read earned credits
+          const earnedStr = lines[j];
+          const earned = (earnedStr && /^\d+\.\d{3}$/.test(earnedStr)) ? parseFloat(earnedStr) : 0;
+          if (earnedStr && /^\d+\.\d{3}$/.test(earnedStr)) j++;
+
+          // Next line: grade or quality points?
+          let grade = null;
+          const maybeGrade = lines[j];
+          if (maybeGrade && /^[A-Z][+-]?$|^P$|^W$|^WF$|^I$|^AU$|^NR$/.test(maybeGrade)) {
+            grade = maybeGrade;
+            j++;
+            // Skip quality points line
+            if (lines[j] && /^\d+\.\d{3}$/.test(lines[j])) j++;
+          } else if (maybeGrade && /^\d+\.\d{3}$/.test(maybeGrade)) {
+            // No grade, this is quality points — skip it
+            j++;
+          }
+
+          // Skip "Writing Intensive" annotation if present
+          if (lines[j] && /^Writing Intensive$/i.test(lines[j])) j++;
+
+          // Handle Topic: line
+          let topic = null;
+          if (lines[j] && /^Topic:/.test(lines[j])) {
+            topic = lines[j].replace(/^Topic:\s*/, "").trim();
+            j++;
+          }
+
+          let status;
+          if (grade === "W" || grade === "WF") {
+            status = "withdrawn";
+          } else if (earned > 0 && grade && grade !== "NR") {
+            status = "complete";
+          } else if (attempted > 0 && (!grade || grade === "NR")) {
+            status = "enrolled";
+          } else {
+            status = "enrolled";
+          }
+
+          const course = {
+            code: `${dept} ${number}`,
+            department: dept,
+            number,
+            title: title.trim(),
+            credits: attempted,
+            creditsEarned: earned,
+            grade,
+            status,
+          };
+          if (topic) course.topic = topic;
+
+          if (inTransfer) {
+            course.status = "transfer";
+            result.transferCredits.items.push(course);
+          } else if (currentTerm) {
+            currentTerm.courses.push(course);
+          }
+
+          // Advance i to just before the next unprocessed line (loop will i++)
+          i = j - 1;
+          continue;
+        }
+      }
+    }
+
+    // Cumulative line — single-line format
     const cumMatch = line.match(CUM_LINE);
     if (cumMatch) {
       result.cumGpa = parseFloat(cumMatch[1]);
       result.cumCreditsEarned = parseFloat(cumMatch[3]);
+      continue;
+    }
+
+    // Cumulative line — multi-line format:
+    //   "Cum GPA" / "3.868" / "Cum Totals" / "73.000" / "71.000" / "189.060"
+    if (/^Cum\s+GPA:?$/i.test(line) && lines[i + 1] && /^\d+\.\d{2,3}$/.test(lines[i + 1])) {
+      result.cumGpa = parseFloat(lines[i + 1]);
+      // Look for "Cum Totals" after the GPA value
+      if (lines[i + 2] && /^Cum\s+Totals/i.test(lines[i + 2])) {
+        // Skip attempted (i+3), read earned (i+4)
+        if (lines[i + 4] && /^\d+\.\d{3}$/.test(lines[i + 4])) {
+          result.cumCreditsEarned = parseFloat(lines[i + 4]);
+        }
+        i += 5; // skip past all cum lines
+      } else {
+        i += 1;
+      }
       continue;
     }
 

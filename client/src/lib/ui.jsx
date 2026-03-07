@@ -8,6 +8,7 @@ export const COLORS = {
   "PLSC-BA": "#c43b2d", "GLST-BA": "#1a7a5a", "CORE": "#7a4a1a",
   "CAS-GRAD": "#5a6a7a", "SPAN-LANG": "#6f42c1",
 };
+export const programColor = (code) => COLORS[code] || "#5a6a7a";
 export const STATUS_COLOR = {
   complete: "#22863a", enrolled: "#b08800",
   planned: "#6f42c1", transfer: "#5a6a7a", waived: "#bbb",

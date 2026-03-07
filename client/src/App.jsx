@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { COLORS, STATUS_COLOR, FONT, BG, BORDER, api, ProgressRing, BottomSheet, StickyHeader, sharedStyles, Input, Btn, SectionTitle, ErrMsg } from "./lib/ui.jsx";
+import { COLORS, programColor, STATUS_COLOR, FONT, BG, BORDER, api, ProgressRing, BottomSheet, StickyHeader, sharedStyles, Input, Btn, SectionTitle, ErrMsg } from "./lib/ui.jsx";
 import AdminPanel from "./pages/AdminPanel.jsx";
 
 // ── Helper functions ────────────────────────────────────────────────────────
@@ -258,7 +258,7 @@ function ResetPasswordPage() {
 }
 
 // ── SettingsSheet ───────────────────────────────────────────────────────────
-function SettingsSheet({ user, onClose, onUpdate }) {
+function SettingsSheet({ user, onClose, onUpdate, onReimport }) {
   const [name, setName] = useState(user.name);
   const [gradYear, setGradYear] = useState(user.grad_year || "");
   const [privacy, setPrivacy] = useState(user.privacy || "private");
@@ -353,6 +353,17 @@ function SettingsSheet({ user, onClose, onUpdate }) {
             Signed in with Google — password change not available
           </div>
         )}
+
+        <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: 16, marginBottom: 16 }}>
+          <SectionTitle>Transcript</SectionTitle>
+          <Btn onClick={() => { onClose(); onReimport(); }} full
+            style={{ background: "transparent", border: `2px solid ${BORDER}`, color: "#5a5550" }}>
+            re-import transcript
+          </Btn>
+          <div style={{ fontSize: 11, color: "#9a9590", marginTop: 6, fontFamily: FONT.mono }}>
+            Opens the transcript upload wizard — existing courses are kept
+          </div>
+        </div>
 
         {msg && <div style={{ color: "#22863a", fontSize: 13, fontFamily: FONT.mono,
           marginTop: 8 }}>{msg}</div>}
@@ -1307,7 +1318,9 @@ function TransferMappingSheet({ onClose, onSaved }) {
 function OnboardingWizard({ user, onComplete }) {
   const [step, setStep] = useState(1);
   const [gradYear, setGradYear] = useState(user.grad_year || "");
-  const [programs, setPrograms] = useState(["PLSC-BA", "GLST-BA"]);
+  const [programs, setPrograms] = useState([]);
+  const [programCatalog, setProgramCatalog] = useState([]);
+  const [programSearch, setProgramSearch] = useState("");
   const [uploading, setUploading] = useState(false);
   const [parseResult, setParseResult] = useState(null);
   const [reviewCourses, setReviewCourses] = useState([]);
@@ -1318,6 +1331,24 @@ function OnboardingWizard({ user, onComplete }) {
   const toggleProgram = (pid) => {
     setPrograms(prev => prev.includes(pid) ? prev.filter(p => p !== pid) : [...prev, pid]);
   };
+
+  useEffect(() => {
+    fetch("/api/programs/catalog").then(r => r.json()).then(setProgramCatalog).catch(() => {});
+  }, []);
+
+  const filteredPrograms = programCatalog.filter(p => {
+    if (!programSearch) return true;
+    const q = programSearch.toLowerCase();
+    return p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q) || p.department.toLowerCase().includes(q) || p.college.toLowerCase().includes(q);
+  });
+
+  // Selected programs float to top
+  const sortedPrograms = [...filteredPrograms].sort((a, b) => {
+    const aSelected = programs.includes(a.code) ? 0 : 1;
+    const bSelected = programs.includes(b.code) ? 0 : 1;
+    if (aSelected !== bSelected) return aSelected - bSelected;
+    return a.name.localeCompare(b.name);
+  });
 
   // Step 1: Save programs + grad year
   const saveStep1 = async () => {
@@ -1433,11 +1464,6 @@ function OnboardingWizard({ user, onComplete }) {
     return { symbol: "~", color: "#b08800", bg: "#fff8e1" };
   };
 
-  const programOptions = [
-    { id: "PLSC-BA", name: "Political Science (BA)", color: COLORS["PLSC-BA"] },
-    { id: "GLST-BA", name: "Global & International Studies (BA)", color: COLORS["GLST-BA"] },
-  ];
-
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 1000,
       display: "flex", alignItems: "flex-end", justifyContent: "center" }}
@@ -1495,39 +1521,73 @@ function OnboardingWizard({ user, onComplete }) {
 
             <div style={{ marginBottom: 24 }}>
               <div style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 600, marginBottom: 8 }}>
-                your programs
+                your major(s)
               </div>
-              {programOptions.map(p => (
-                <button key={p.id} onClick={() => toggleProgram(p.id)}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 10, width: "100%",
-                    padding: "12px 14px", marginBottom: 8, borderRadius: 8, cursor: "pointer",
-                    border: `2px solid ${programs.includes(p.id) ? p.color : BORDER}`,
-                    background: programs.includes(p.id) ? p.color + "11" : "transparent",
-                    textAlign: "left",
-                  }}>
-                  <div style={{
-                    width: 20, height: 20, borderRadius: 4,
-                    border: `2px solid ${programs.includes(p.id) ? p.color : "#ccc"}`,
-                    background: programs.includes(p.id) ? p.color : "transparent",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    color: "#fff", fontSize: 12, flexShrink: 0,
-                  }}>
-                    {programs.includes(p.id) && "\u2713"}
+              <input
+                type="text"
+                placeholder="search programs..."
+                value={programSearch}
+                onChange={e => setProgramSearch(e.target.value)}
+                style={{
+                  ...sharedStyles.input, width: "100%", boxSizing: "border-box",
+                  marginBottom: 10, fontSize: "0.8rem",
+                }}
+              />
+              <div style={{ maxHeight: 300, overflowY: "auto", border: `1px solid ${BORDER}`, borderRadius: 8, background: "#fff" }}>
+                {sortedPrograms.length === 0 && (
+                  <div style={{ padding: 16, textAlign: "center", fontFamily: FONT.mono, fontSize: "0.75rem", color: "#aaa" }}>
+                    {programCatalog.length === 0 ? "loading programs..." : "no programs match your search"}
                   </div>
-                  <div>
-                    <div style={{ fontFamily: FONT.mono, fontSize: "0.8rem", fontWeight: 600, color: p.color }}>{p.id}</div>
-                    <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#888" }}>{p.name}</div>
-                  </div>
-                </button>
-              ))}
-              <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#aaa", marginTop: 4 }}>
+                )}
+                {sortedPrograms.map(p => {
+                  const selected = programs.includes(p.code);
+                  const color = programColor(p.code);
+                  return (
+                    <button key={p.code} onClick={() => toggleProgram(p.code)}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 10, width: "100%",
+                        padding: "10px 12px", cursor: "pointer",
+                        borderBottom: `1px solid ${BORDER}`, borderTop: "none", borderLeft: "none", borderRight: "none",
+                        background: selected ? color + "0a" : "transparent",
+                        textAlign: "left",
+                      }}>
+                      <div style={{
+                        width: 18, height: 18, borderRadius: 4, flexShrink: 0,
+                        border: `2px solid ${selected ? color : "#ccc"}`,
+                        background: selected ? color : "transparent",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        color: "#fff", fontSize: 11,
+                      }}>
+                        {selected && "\u2713"}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                          <span style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 600, color: selected ? color : "#333" }}>{p.name}</span>
+                          <span style={{
+                            fontFamily: FONT.mono, fontSize: "0.55rem", padding: "1px 5px", borderRadius: 3,
+                            background: "#eee", color: "#666", flexShrink: 0,
+                          }}>{p.degree}</span>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
+                          <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#aaa" }}>{p.code}</span>
+                          {p.modeled ? (
+                            <span style={{ fontFamily: FONT.mono, fontSize: "0.5rem", padding: "1px 5px", borderRadius: 3, background: "#e8f5e9", color: "#22863a" }}>full tracking</span>
+                          ) : (
+                            <span style={{ fontFamily: FONT.mono, fontSize: "0.5rem", padding: "1px 5px", borderRadius: 3, background: "#f0f0f0", color: "#999" }}>credit tracking only</span>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+              <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#aaa", marginTop: 6 }}>
                 Core + CAS graduation requirements are tracked automatically
               </div>
             </div>
 
             {error && <ErrMsg>{error}</ErrMsg>}
-            <Btn onClick={saveStep1} full>continue</Btn>
+            <Btn onClick={saveStep1} full disabled={programs.length === 0}>continue</Btn>
           </div>
         )}
 
@@ -1871,7 +1931,8 @@ function Dashboard({ user, setUser, onLogout }) {
 
       {showSettings && (
         <SettingsSheet user={user} onClose={() => setShowSettings(false)}
-          onUpdate={(updated) => setUser(updated)} />
+          onUpdate={(updated) => setUser(updated)}
+          onReimport={() => setShowOnboarding(true)} />
       )}
 
       {showOnboarding && (

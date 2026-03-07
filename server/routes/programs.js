@@ -9,8 +9,19 @@
 
 const express = require("express");
 const db = require("../db/connection");
+const { programMap } = require("../lib/catalog");
 
 const router = express.Router();
+
+// Full catalog of all LUC undergrad programs (for onboarding picker)
+router.get("/catalog", (req, res) => {
+  const allPrograms = require("../../data/luc-programs.json");
+  const modeled = new Set([...programMap.keys()]);
+  const result = allPrograms
+    .map(p => ({ ...p, modeled: modeled.has(p.code) }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+  res.json(result);
+});
 
 // List active programs (summary)
 router.get("/", (req, res) => {
