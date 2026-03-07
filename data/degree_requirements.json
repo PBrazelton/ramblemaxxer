@@ -425,6 +425,997 @@
       }
     },
     {
+      "code": "PHIL-BA",
+      "name": "Philosophy (BA)",
+      "type": "major",
+      "department": "PHIL",
+      "total_credits": 33,
+      "unique_credits_required": 21,
+      "double_dip_policy": "CAS_DEFAULT",
+      "core_waivers": ["Philosophical/Ethical"],
+      "notes": [
+        "At least 7 of 11 courses must be 300-level (8 if PHIL 301 taken instead of PHIL 274).",
+        "At least 4 of 5 electives should be 300-level.",
+        "All 300-level courses require 2 prior philosophy courses.",
+        "Capstone seminars require 5 prior philosophy courses."
+      ],
+      "categories": [
+        {
+          "name": "Formal Logic",
+          "description": "Select one",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "PHIL 274",
+            "PHIL 301"
+          ]
+        },
+        {
+          "name": "History of Philosophy",
+          "description": "Both required",
+          "slots": 2,
+          "credits_per_slot": 3,
+          "eligible_courses_fixed": [
+            { "course": "PHIL 304", "required": true },
+            { "course": "PHIL 309", "required": true }
+          ]
+        },
+        {
+          "name": "Ethics Distribution",
+          "description": "Select one ethics course",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "PHIL 181",
+            "PHIL 182",
+            "PHIL 283",
+            "PHIL 284",
+            "PHIL 285",
+            "PHIL 286",
+            "PHIL 287",
+            "PHIL 288",
+            "PHIL 289",
+            "PHIL 321",
+            "PHIL 322",
+            "PHIL 324",
+            "PHIL 324B",
+            "PHIL 325",
+            "PHIL 329",
+            "PHIL 355",
+            "PHIL 369",
+            "PHIL 375",
+            "PHIL 385",
+            "PHIL 388"
+          ]
+        },
+        {
+          "name": "Metaphysics/Epistemology Distribution",
+          "description": "Select one metaphysics or epistemology course",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "PHIL 130",
+            "PHIL 271",
+            "PHIL 272",
+            "PHIL 273",
+            "PHIL 275",
+            "PHIL 276",
+            "PHIL 277",
+            "PHIL 279",
+            "PHIL 311",
+            "PHIL 325",
+            "PHIL 330",
+            "PHIL 380",
+            "PHIL 381",
+            "PHIL 382",
+            "PHIL 384",
+            "PHIL 386",
+            "PHIL 387",
+            "PHIL 391",
+            "PHIL 393"
+          ]
+        },
+        {
+          "name": "Capstone Seminar",
+          "description": "Select one capstone seminar (requires 5 prior PHIL courses)",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "PHIL 395",
+            "PHIL 396",
+            "PHIL 397",
+            "PHIL 398",
+            "PHIL 399"
+          ]
+        },
+        {
+          "name": "Philosophy Electives",
+          "description": "Five additional PHIL courses",
+          "slots": 5,
+          "credits_per_slot": 3,
+          "eligible_courses": "ANY_PHIL_ELECTIVE",
+          "notes": "Any PHIL course not already used in another PHIL-BA category."
+        }
+      ]
+    },
+    {
+      "code": "HIST-BA",
+      "name": "History (BA)",
+      "type": "major",
+      "department": "HIST",
+      "total_credits": 36,
+      "unique_credits_required": 21,
+      "double_dip_policy": "CAS_DEFAULT",
+      "notes": [
+        "Portfolio requirement: must submit a historiographical essay (typically from HIST 299) and a 300-level research paper.",
+        "Minimum 6 courses must be completed at Loyola Chicago.",
+        "Minimum 4 of the 300-level courses must be completed at Loyola Chicago.",
+        "HIST 398 (Internship) may count as one elective."
+      ],
+      "categories": [
+        {
+          "name": "Introductory Courses — Tier 1",
+          "description": "Select one foundational history course",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "HIST 101",
+            "HIST 102",
+            "HIST 103",
+            "HIST 104",
+            "HONR 101",
+            "HONR 102"
+          ]
+        },
+        {
+          "name": "Introductory Courses — Tier 2",
+          "description": "Select one Tier 2 history course",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "HIST 208",
+            "HIST 208X",
+            "HIST 208Z",
+            "HIST 209",
+            "HIST 210",
+            "HIST 211",
+            "HIST 212",
+            "HIST 213",
+            "HONR 203A",
+            "HONR 203B",
+            "HONR 203C",
+            "HONR 208A",
+            "HONR 208B",
+            "HONR 208C",
+            "HONR 209A",
+            "HONR 209B",
+            "HONR 209C",
+            "HONR 210A",
+            "HONR 210B",
+            "HONR 210C",
+            "HONR 212A",
+            "HONR 212B",
+            "HONR 212C"
+          ]
+        },
+        {
+          "name": "Methods",
+          "description": "Select one methods course",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "HIST 299",
+            "INDS 380"
+          ]
+        },
+        {
+          "name": "Upper-Level Pre-Modern History",
+          "description": "Select one upper-level pre-modern history course",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "HIST 253A",
+            "HIST 254A",
+            "HIST 257A",
+            "HIST 258A",
+            "HIST 300B",
+            "HIST 301",
+            "HIST 303",
+            "HIST 307",
+            "HIST 308A",
+            "HIST 308B",
+            "HIST 308C",
+            "HIST 308D",
+            "HIST 309",
+            "HIST 310",
+            "HIST 310A",
+            "HIST 310B",
+            "HIST 310C",
+            "HIST 310D",
+            "HIST 310F",
+            "HIST 310G",
+            "HIST 310L",
+            "HIST 311B",
+            "HIST 312",
+            "HIST 314",
+            "HIST 314A",
+            "HIST 315",
+            "HIST 316",
+            "HIST 317",
+            "HIST 318A",
+            "HIST 318B",
+            "HIST 318C",
+            "HIST 342A",
+            "HIST 345A",
+            "CLST 362",
+            "THEO 317"
+          ]
+        },
+        {
+          "name": "Upper-Level Modern European History",
+          "description": "Select one upper-level modern European history course",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "HIST 265A",
+            "HIST 267A",
+            "HIST 267B",
+            "HIST 300C",
+            "HIST 320",
+            "HIST 321",
+            "HIST 322",
+            "HIST 324",
+            "HIST 325",
+            "HIST 325A",
+            "HIST 326",
+            "HIST 327A",
+            "HIST 328",
+            "HIST 328A",
+            "HIST 329",
+            "HIST 329C",
+            "HIST 329N",
+            "HIST 330",
+            "HIST 330F",
+            "HIST 331A",
+            "HIST 334A",
+            "HIST 334B",
+            "HIST 335",
+            "HIST 336",
+            "HIST 337",
+            "HIST 337A",
+            "HIST 338A",
+            "HIST 338B",
+            "HIST 339C",
+            "HIST 339F",
+            "THEO 318"
+          ]
+        },
+        {
+          "name": "Upper-Level U.S. History",
+          "description": "Select one upper-level U.S. history course",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "HIST 280A",
+            "HIST 290A",
+            "HIST 291A",
+            "HIST 297E",
+            "HIST 298A",
+            "HIST 300D",
+            "HIST 360",
+            "HIST 360A",
+            "HIST 361",
+            "HIST 362",
+            "HIST 363",
+            "HIST 366A",
+            "HIST 367",
+            "HIST 369",
+            "HIST 370",
+            "HIST 372",
+            "HIST 373",
+            "HIST 373A",
+            "HIST 374",
+            "HIST 375",
+            "HIST 376",
+            "HIST 376A",
+            "HIST 377",
+            "HIST 378",
+            "HIST 379A",
+            "HIST 379B",
+            "HIST 380",
+            "HIST 380A",
+            "HIST 381",
+            "HIST 382",
+            "HIST 384",
+            "HIST 385",
+            "HIST 386",
+            "HIST 388",
+            "HIST 388A",
+            "HIST 389B",
+            "HIST 389C",
+            "HIST 389F",
+            "HIST 389K",
+            "HIST 389N",
+            "HIST 389W",
+            "ECON 327"
+          ]
+        },
+        {
+          "name": "Upper-Level World History",
+          "description": "Select one upper-level world history course",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "HIST 275A",
+            "HIST 278A",
+            "HIST 279C",
+            "HIST 279E",
+            "HIST 300E",
+            "HIST 340B",
+            "HIST 341",
+            "HIST 341B",
+            "HIST 341C",
+            "HIST 342B",
+            "HIST 342C",
+            "HIST 342D",
+            "HIST 342M",
+            "HIST 343",
+            "HIST 346A",
+            "HIST 346B",
+            "HIST 346C",
+            "HIST 347A",
+            "HIST 347C",
+            "HIST 347D",
+            "HIST 349",
+            "HIST 349A",
+            "HIST 350",
+            "HIST 351",
+            "HIST 352",
+            "HIST 353",
+            "HIST 355",
+            "HIST 356",
+            "HIST 357",
+            "HIST 358",
+            "HIST 359",
+            "HIST 359C",
+            "HIST 359D",
+            "HIST 359E",
+            "HIST 359F",
+            "HIST 359H"
+          ]
+        },
+        {
+          "name": "History Electives",
+          "description": "Five additional history courses not used elsewhere",
+          "slots": 5,
+          "credits_per_slot": 3,
+          "eligible_courses": "ANY_HIST_ELECTIVE",
+          "notes": "Any HIST course not already used in another HIST-BA category. HIST 398 (Internship) may count as one elective."
+        }
+      ]
+    },
+    {
+      "code": "ENGL-BA",
+      "name": "English (BA)",
+      "type": "major",
+      "department": "ENGL",
+      "total_credits": 36,
+      "unique_credits_required": 21,
+      "double_dip_policy": "CAS_DEFAULT",
+      "notes": [
+        "Nine of twelve courses (27 hours) must be at the 300-level.",
+        "ENGL 274 (Exploring Shakespeare) does NOT fulfill the Shakespeare requirement.",
+        "At least one course must be designated by the department as 'multicultural'.",
+        "Up to three elective courses (9 hours) may be drawn from UCLR 100E and advanced 200-level (ENGL 270+) courses."
+      ],
+      "categories": [
+        {
+          "name": "Literary Theory",
+          "description": "Select one",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "ENGL 354",
+            "ENGL 355"
+          ]
+        },
+        {
+          "name": "Shakespeare",
+          "description": "Select one",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "ENGL 326",
+            "ENGL 327"
+          ],
+          "notes": "ENGL 274 does NOT fulfill this requirement."
+        },
+        {
+          "name": "Capstone",
+          "description": "Advanced Seminar",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "eligible_courses_fixed": [
+            { "course": "ENGL 390", "required": true }
+          ]
+        },
+        {
+          "name": "English Literature Before 1700",
+          "description": "At least one course from the pre-1700 period",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "ENGL 306A",
+            "ENGL 312A",
+            "ENGL 313A",
+            "ENGL 320",
+            "ENGL 321",
+            "ENGL 322",
+            "ENGL 323",
+            "ENGL 325",
+            "ENGL 328",
+            "ENGL 329",
+            "ENGL 359A",
+            "ENGL 362A",
+            "ENGL 363A",
+            "ENGL 368A",
+            "ENGL 369A",
+            "ENGL 372A",
+            "ENGL 379A",
+            "ENGL 381A",
+            "ENGL 382A"
+          ]
+        },
+        {
+          "name": "English Literature 1700-1900",
+          "description": "At least one course from the 1700-1900 period",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "ENGL 306B",
+            "ENGL 312B",
+            "ENGL 313B",
+            "ENGL 335",
+            "ENGL 338",
+            "ENGL 340",
+            "ENGL 343",
+            "ENGL 359B",
+            "ENGL 362B",
+            "ENGL 368B",
+            "ENGL 369B",
+            "ENGL 372B",
+            "ENGL 375",
+            "ENGL 376",
+            "ENGL 379B",
+            "ENGL 381B",
+            "ENGL 382B",
+            "ENGL 384B"
+          ]
+        },
+        {
+          "name": "English Literature Before 1900 (Additional)",
+          "description": "One additional course from either pre-1700 or 1700-1900",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "ENGL 306A",
+            "ENGL 312A",
+            "ENGL 313A",
+            "ENGL 320",
+            "ENGL 321",
+            "ENGL 322",
+            "ENGL 323",
+            "ENGL 325",
+            "ENGL 328",
+            "ENGL 329",
+            "ENGL 359A",
+            "ENGL 362A",
+            "ENGL 363A",
+            "ENGL 368A",
+            "ENGL 369A",
+            "ENGL 372A",
+            "ENGL 379A",
+            "ENGL 381A",
+            "ENGL 382A",
+            "ENGL 306B",
+            "ENGL 312B",
+            "ENGL 313B",
+            "ENGL 335",
+            "ENGL 338",
+            "ENGL 340",
+            "ENGL 343",
+            "ENGL 359B",
+            "ENGL 362B",
+            "ENGL 368B",
+            "ENGL 369B",
+            "ENGL 372B",
+            "ENGL 375",
+            "ENGL 376",
+            "ENGL 379B",
+            "ENGL 381B",
+            "ENGL 382B",
+            "ENGL 384B"
+          ]
+        },
+        {
+          "name": "English Literature Since 1900",
+          "description": "Select one course from the post-1900 period",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "ENGL 306C",
+            "ENGL 311",
+            "ENGL 312C",
+            "ENGL 313C",
+            "ENGL 315C",
+            "ENGL 316C",
+            "ENGL 344",
+            "ENGL 345",
+            "ENGL 348",
+            "ENGL 351",
+            "ENGL 359C",
+            "ENGL 361",
+            "ENGL 362C",
+            "ENGL 363C",
+            "ENGL 367",
+            "ENGL 368C",
+            "ENGL 371",
+            "ENGL 372C",
+            "ENGL 377",
+            "ENGL 379C",
+            "ENGL 381C",
+            "ENGL 382C",
+            "ENGL 384C"
+          ]
+        },
+        {
+          "name": "ENGL Electives",
+          "description": "Five additional ENGL elective courses",
+          "slots": 5,
+          "credits_per_slot": 3,
+          "eligible_courses": "ANY_ENGL_ELECTIVE",
+          "notes": "Up to three electives may be drawn from UCLR 100E and advanced 200-level (ENGL 270+) courses. Remaining must be 300-level ENGL."
+        }
+      ]
+    },
+    {
+      "code": "SPAN-BA",
+      "name": "Spanish (BA)",
+      "type": "major",
+      "department": "SPAN",
+      "total_credits": 30,
+      "unique_credits_required": 21,
+      "double_dip_policy": "CAS_DEFAULT",
+      "notes": [
+        "Students must complete either the non-heritage sequence (SPAN 250 + SPAN 251) or the native-speaker sequence (SPAN 252 + SPAN 253).",
+        "Six 300-level courses required; at least one must focus exclusively on Latin America and one exclusively on Spain.",
+        "Completion and presentation of an e-portfolio with brief personal statement in Spanish required (no credit hours).",
+        "SPAN 395 (Internship) counts as a 300-level elective."
+      ],
+      "categories": [
+        {
+          "name": "Composition & Conversation",
+          "description": "Two courses from either the non-heritage or native-speaker sequence",
+          "slots": 2,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "SPAN 250",
+            "SPAN 251",
+            "SPAN 252",
+            "SPAN 253"
+          ],
+          "notes": "Non-heritage track: SPAN 250 + 251. Native-speaker track: SPAN 252 + 253. Complete one sequence."
+        },
+        {
+          "name": "Introduction to Critical Analysis",
+          "description": "Required gateway course",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "eligible_courses_fixed": [
+            { "course": "SPAN 270", "required": true }
+          ]
+        },
+        {
+          "name": "Introduction to Literature & Culture",
+          "description": "Select one introductory literature course",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "SPAN 271",
+            "SPAN 272"
+          ],
+          "notes": "SPAN 271 focuses on Iberian literature; SPAN 272 focuses on Spanish American literature."
+        },
+        {
+          "name": "Advanced Electives (300-Level)",
+          "description": "Six 300-level SPAN courses; at least one on Latin America, one on Spain",
+          "slots": 6,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "SPAN 300",
+            "SPAN 302",
+            "SPAN 305",
+            "SPAN 308",
+            "SPAN 311",
+            "SPAN 314",
+            "SPAN 319",
+            "SPAN 321",
+            "SPAN 326",
+            "SPAN 330",
+            "SPAN 331",
+            "SPAN 336",
+            "SPAN 339",
+            "SPAN 340",
+            "SPAN 341",
+            "SPAN 346",
+            "SPAN 347",
+            "SPAN 349",
+            "SPAN 352",
+            "SPAN 353",
+            "SPAN 360",
+            "SPAN 361",
+            "SPAN 362",
+            "SPAN 363",
+            "SPAN 364",
+            "SPAN 365",
+            "SPAN 366",
+            "SPAN 367",
+            "SPAN 368",
+            "SPAN 370",
+            "SPAN 371",
+            "SPAN 380",
+            "SPAN 381",
+            "SPAN 382",
+            "SPAN 385",
+            "SPAN 389",
+            "SPAN 390",
+            "SPAN 391",
+            "SPAN 395",
+            "SPAN 396",
+            "SPAN 397"
+          ],
+          "notes": "At least one must focus on Latin America and one on Spain."
+        }
+      ]
+    },
+    {
+      "code": "THEO-BA",
+      "name": "Theology (BA)",
+      "type": "major",
+      "department": "THEO",
+      "total_credits": 36,
+      "unique_credits_required": 21,
+      "double_dip_policy": "CAS_DEFAULT",
+      "notes": [
+        "Minimum 18 credit hours must be completed at Loyola.",
+        "At least 5 of 12 courses must be at the 300-level or higher.",
+        "With prior approval, up to two 200-level or above elective courses may be taken outside the Department of Theology.",
+        "THEO 280 must be taken as an Engaged Learning course when used for capstone."
+      ],
+      "categories": [
+        {
+          "name": "Doctrine Course",
+          "description": "Select one doctrine course",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "THEO 100",
+            "THEO 265",
+            "THEO 266",
+            "THEO 267"
+          ]
+        },
+        {
+          "name": "Hebrew Bible/Old Testament",
+          "description": "Select one Hebrew Bible/Old Testament course",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "THEO 231",
+            "THEO 302",
+            "THEO 303",
+            "THEO 304"
+          ]
+        },
+        {
+          "name": "New Testament",
+          "description": "Select one New Testament course",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "THEO 232",
+            "THEO 311",
+            "THEO 313"
+          ]
+        },
+        {
+          "name": "Christian Thought",
+          "description": "Select one Christian Thought course",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "THEO 317",
+            "THEO 318"
+          ]
+        },
+        {
+          "name": "Non-Christian Religious Tradition",
+          "description": "Select one course on a non-Christian religious tradition",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "THEO 107",
+            "THEO 272",
+            "THEO 282",
+            "THEO 295",
+            "THEO 297",
+            "THEO 299",
+            "THEO 350",
+            "THEO 352",
+            "THEO 353",
+            "THEO 356",
+            "THEO 365",
+            "THEO 366"
+          ]
+        },
+        {
+          "name": "Ethics",
+          "description": "Select one ethics course",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "THEO 185",
+            "THEO 186",
+            "THEO 203",
+            "THEO 204",
+            "THEO 293",
+            "THEO 340",
+            "THEO 342",
+            "THEO 343",
+            "THEO 344"
+          ]
+        },
+        {
+          "name": "Theology Capstone",
+          "description": "Select one capstone course",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "THEO 373",
+            "THEO 280",
+            "THEO 353"
+          ],
+          "notes": "THEO 353 requires prior approval. THEO 280 must be taken as Engaged Learning."
+        },
+        {
+          "name": "Theology Electives",
+          "description": "Five additional THEO courses at 200-level or above",
+          "slots": 5,
+          "credits_per_slot": 3,
+          "eligible_courses": "ANY_THEO_ELECTIVE",
+          "notes": "Any THEO course 200+ not already used. With approval, up to two electives may be outside Theology."
+        }
+      ]
+    },
+    {
+      "code": "ANTH-BA",
+      "name": "Anthropology (BA)",
+      "type": "major",
+      "department": "ANTH",
+      "total_credits": 36,
+      "unique_credits_required": 21,
+      "double_dip_policy": "CAS_DEFAULT",
+      "notes": [
+        "At least 18 credit hours must be completed at Loyola.",
+        "Students contemplating graduate studies should select ANTH 304 Anthropological Theory.",
+        "ANTH 396, 397, 398, and 399 may be taken more than once, but only one may count toward the major."
+      ],
+      "categories": [
+        {
+          "name": "Required Foundations",
+          "description": "ANTH 101 and ANTH 231 required",
+          "slots": 2,
+          "credits_per_slot": 3,
+          "eligible_courses_fixed": [
+            { "course": "ANTH 101", "required": true },
+            { "course": "ANTH 231", "required": true }
+          ]
+        },
+        {
+          "name": "Introductory Course",
+          "description": "Select one of ANTH 100 or ANTH 102",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "ANTH 100",
+            "ANTH 102"
+          ],
+          "notes": "The unchosen course can count as an elective."
+        },
+        {
+          "name": "Ethnographic Requirement",
+          "description": "Choose two ethnographic courses",
+          "slots": 2,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "ANTH 207",
+            "ANTH 208",
+            "ANTH 211",
+            "ANTH 212",
+            "ANTH 213",
+            "ANTH 214",
+            "ANTH 215",
+            "ANTH 216",
+            "ANTH 217",
+            "ANTH 220",
+            "ANTH 222",
+            "ANTH 224",
+            "ANTH 225"
+          ]
+        },
+        {
+          "name": "Theoretical Requirement",
+          "description": "Choose two theoretical courses",
+          "slots": 2,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "ANTH 303",
+            "ANTH 304",
+            "ANTH 305",
+            "ANTH 306",
+            "ANTH 307",
+            "ANTH 309",
+            "ANTH 314",
+            "ANTH 316",
+            "ANTH 317",
+            "ANTH 319",
+            "ANTH 321",
+            "ANTH 330",
+            "ANTH 332",
+            "ANTH 348",
+            "ANTH 361",
+            "ANTH 363"
+          ]
+        },
+        {
+          "name": "Archaeology Requirement",
+          "description": "Choose one archaeology course",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "ANTH 241",
+            "ANTH 242",
+            "ANTH 243",
+            "ANTH 244",
+            "ANTH 245",
+            "ANTH 246",
+            "ANTH 247"
+          ]
+        },
+        {
+          "name": "Bio-Anthropology Requirement",
+          "description": "Choose one biological anthropology course",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "ANTH 324",
+            "ANTH 325",
+            "ANTH 326",
+            "ANTH 327"
+          ]
+        },
+        {
+          "name": "Anthropology Electives",
+          "description": "Three additional ANTH electives",
+          "slots": 3,
+          "credits_per_slot": 3,
+          "eligible_courses": "ANY_ANTH_ELECTIVE",
+          "notes": "One elective may be 100-level; two must be 200+. Only one of ANTH 396/397/398/399 may count."
+        }
+      ]
+    },
+    {
+      "code": "FNAR-BA",
+      "name": "Fine Arts (BA)",
+      "type": "major",
+      "department": "FNAR",
+      "total_credits": 45,
+      "unique_credits_required": 21,
+      "double_dip_policy": "CAS_DEFAULT",
+      "notes": [
+        "LUC catalogs Fine Arts as four separate BA concentrations: Drawing/Painting/Printmaking (45cr), Photography/Video Art (45cr), Sculpture/Ceramics (42cr), and Visual Communication (45cr).",
+        "This definition models the shared structure of the three studio art concentrations (DPP, PVA, SC).",
+        "Sculpture/Ceramics is 42 total credits (7 applied courses instead of 8).",
+        "All concentrations require FNAR 115 (Foundations of Photography)."
+      ],
+      "categories": [
+        {
+          "name": "Foundation Courses",
+          "description": "Required introductory studio courses",
+          "slots": 2,
+          "credits_per_slot": 3,
+          "eligible_courses_fixed": [
+            { "course": "FNAR 110", "required": true },
+            { "course": "FNAR 113", "required": true }
+          ]
+        },
+        {
+          "name": "Art History",
+          "description": "Two art history courses (specific requirements vary by concentration)",
+          "slots": 2,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "FNAR 200",
+            "FNAR 201",
+            "FNAR 202",
+            "FNAR 306",
+            "FNAR 365"
+          ],
+          "notes": "DPP requires FNAR 201 + 202. PVA requires FNAR 365 + one of 202/306. SC requires one of 200/201 + 202."
+        },
+        {
+          "name": "Applied Courses",
+          "description": "Studio courses including Foundations of Photography plus concentration-specific work",
+          "slots": 8,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "FNAR 114",
+            "FNAR 115",
+            "FNAR 118",
+            "FNAR 120",
+            "FNAR 121",
+            "FNAR 124",
+            "FNAR 132",
+            "FNAR 190",
+            "FNAR 213",
+            "FNAR 214",
+            "FNAR 216",
+            "FNAR 219",
+            "FNAR 222",
+            "FNAR 233",
+            "FNAR 311",
+            "FNAR 315",
+            "FNAR 320",
+            "FNAR 322"
+          ],
+          "notes": "FNAR 115 required in all concentrations. SC has 7 applied courses (42cr total) instead of 8."
+        },
+        {
+          "name": "Synthesis Courses",
+          "description": "Critical approaches and capstone",
+          "slots": 2,
+          "credits_per_slot": 3,
+          "eligible_courses_fixed": [
+            { "course": "FNAR 388", "required": true },
+            { "course": "FNAR 398", "required": true }
+          ]
+        },
+        {
+          "name": "FNAR Electives",
+          "description": "One additional FNAR elective course",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "eligible_courses": [
+            "FNAR 114",
+            "FNAR 118",
+            "FNAR 120",
+            "FNAR 121",
+            "FNAR 123",
+            "FNAR 124",
+            "FNAR 132",
+            "FNAR 190",
+            "FNAR 202",
+            "FNAR 213",
+            "FNAR 218",
+            "FNAR 233",
+            "FNAR 306",
+            "FNAR 368"
+          ],
+          "notes": "Courses already counted in another category cannot be reused."
+        }
+      ]
+    },
+    {
       "code": "CORE",
       "name": "University Core Curriculum",
       "type": "core",

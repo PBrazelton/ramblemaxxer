@@ -54,6 +54,8 @@ function courseMatchesEligible(code, course, category, assignedInProgram, glstPo
     return course?.department === "PLSC" && course?.number >= 200 && !assignedInProgram.has(code);
   if (ec === "ANY_GLST_TAGGED")
     return (course?.interdisciplinary_options?.includes("Global Studies") || glstPool?.has(code)) ?? false;
+  const elecMatch = typeof ec === "string" && ec.match(/^ANY_([A-Z]+)_ELECTIVE$/);
+  if (elecMatch) return course?.department === elecMatch[1] && !assignedInProgram.has(code);
   return false;
 }
 
