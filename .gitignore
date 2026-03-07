@@ -6,3 +6,4 @@ server/public/
 .env
 *.log
 .DS_Store
+data/transcript-debug.txt
