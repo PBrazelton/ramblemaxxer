@@ -310,7 +310,9 @@ function solve(studentCourses, declaredPrograms, courseMap, programMap, degreeRe
   return result;
 }
 
-function getSuggestions(solverResult, courseMap, programMap, declaredPrograms) {
+function getSuggestions(solverResult, courseMap, programMap, declaredPrograms, opts = {}) {
+  const { minFills = 2, excludeCodes = new Set() } = opts;
+
   const takenCodes = new Set();
   for (const prog of Object.values(solverResult.programs))
     for (const cat of prog.categories)
@@ -331,13 +333,13 @@ function getSuggestions(solverResult, courseMap, programMap, declaredPrograms) {
 
   const suggestions = [];
   for (const [code, course] of courseMap) {
-    if (takenCodes.has(code) || code.startsWith("AP ")) continue;
+    if (takenCodes.has(code) || excludeCodes.has(code) || code.startsWith("AP ")) continue;
     const fills = [];
     for (const { progCode: pc, cat, progName } of unsatisfied) {
       const sgPool = pc === "GLST-BA" ? buildGlstElectivePool(programMap.get(pc)) : new Set();
       if (courseMatchesEligible(code, course, cat, takenCodes, sgPool)) fills.push(`${progName}: ${cat.name}`);
     }
-    if (fills.length >= 2) suggestions.push({ code, title: course.title, credits: course.credits,
+    if (fills.length >= minFills) suggestions.push({ code, title: course.title, credits: course.credits,
       department: course.department, fills, boxCount: fills.length,
       engaged_learning: course.engaged_learning, writing_intensive: course.writing_intensive });
   }

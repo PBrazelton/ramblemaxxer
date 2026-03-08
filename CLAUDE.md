@@ -3,7 +3,9 @@
 > Schedule optimizer for Loyola University Chicago students.
 > Built by Paul and Penelope. Penelope owns it now.
 
-## Plan Review (Codex)
+## Codex Reviews
+
+### Plan Review
 
 When in plan mode, **before presenting the plan to the user**, run Codex to
 review it:
@@ -25,6 +27,36 @@ review it:
 
 This runs in read-only sandbox so Codex can explore the codebase but can't
 modify anything. Skip this step for trivial changes (single-file, < 20 LOC).
+
+### Post-Implementation Code Review
+
+After finishing a non-trivial implementation (multi-file or > ~50 LOC changed),
+run Codex as a code reviewer **before reporting completion to the user**:
+
+1. Write the full diff + any new file contents to `/tmp/ramblemaxxer-review-input.md`:
+   ```bash
+   { git diff HEAD; for f in $(git ls-files --others --exclude-standard); do
+     echo "## New file: $f"; cat "$f"; done } > /tmp/ramblemaxxer-review-input.md
+   ```
+2. Run:
+   ```bash
+   codex exec --full-auto -s read-only \
+     -o /tmp/ramblemaxxer-codex-review.md \
+     "Review ALL code changes below for the Ramblemaxxer codebase. \
+      Check for: bugs, security issues, missed edge cases, performance concerns, \
+      UX problems, backward-compat risks, dead code, and simpler approaches. \
+      Be concise — bullet points only. Group by severity (critical / warning / nit)." \
+     < /tmp/ramblemaxxer-review-input.md
+   ```
+3. Read `/tmp/ramblemaxxer-codex-review.md` and evaluate each finding
+4. **Use judgment** — don't follow feedback slavishly:
+   - **Fix** findings that are clearly correct (real bugs, security holes, race conditions)
+   - **Skip** findings that are speculative, low-value, or would add complexity for
+     hypothetical scenarios (e.g., "add optimistic concurrency" for single-user features)
+   - **Note but defer** findings that are valid but out of scope for the current task
+5. Report to the user: what Codex found, what you fixed, and what you skipped (with reasoning)
+
+Skip this step for trivial changes (single-file, < 20 LOC, or purely cosmetic).
 
 ## What this is
 

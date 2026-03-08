@@ -298,6 +298,38 @@ db.exec(`
   )
 `);
 
+// Migration: create student_plans table
+db.exec(`
+  CREATE TABLE IF NOT EXISTS student_plans (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name        TEXT    NOT NULL DEFAULT 'My Plan',
+    is_active   INTEGER NOT NULL DEFAULT 1,
+    created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+    updated_at  TEXT    NOT NULL DEFAULT (datetime('now'))
+  )
+`);
+try {
+  db.prepare("CREATE INDEX IF NOT EXISTS idx_student_plans_user ON student_plans(user_id)").run();
+} catch (e) { /* already exists */ }
+
+// Migration: create plan_courses table
+db.exec(`
+  CREATE TABLE IF NOT EXISTS plan_courses (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    plan_id      INTEGER NOT NULL REFERENCES student_plans(id) ON DELETE CASCADE,
+    course_code  TEXT    NOT NULL,
+    term         TEXT    NOT NULL,
+    section      TEXT,
+    class_number TEXT,
+    created_at   TEXT    NOT NULL DEFAULT (datetime('now')),
+    UNIQUE(plan_id, course_code)
+  )
+`);
+try {
+  db.prepare("CREATE INDEX IF NOT EXISTS idx_plan_courses_plan ON plan_courses(plan_id)").run();
+} catch (e) { /* already exists */ }
+
 // Migration: fix UCLR 100 → UCLR 100C for Penelope
 try {
   const result = db.prepare("UPDATE student_courses SET course_code = 'UCLR 100C' WHERE course_code = 'UCLR 100'").run();

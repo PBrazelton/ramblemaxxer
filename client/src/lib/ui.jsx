@@ -52,7 +52,7 @@ export const sharedStyles = {
 };
 
 // ── Logo header ─────────────────────────────────────────────────────────────
-export function StickyHeader({ user, badge, onLogout, onSettings }) {
+export function StickyHeader({ user, badge, onLogout, onSettings, nav }) {
   return (
     <div style={{ position: "sticky", top: 0, zIndex: 50, background: BG, borderBottom: `1px solid ${BORDER}`, padding: "0.6rem 1rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
       <h1 style={{ fontFamily: FONT.serif, fontSize: "1.3rem", fontWeight: 700, margin: 0, letterSpacing: "-0.02em" }}>
@@ -60,6 +60,7 @@ export function StickyHeader({ user, badge, onLogout, onSettings }) {
         {badge && <span style={{ marginLeft: 8, fontSize: "0.6rem", fontFamily: FONT.mono, background: "#1a1a1a", color: "#fff", padding: "2px 8px", borderRadius: 3, verticalAlign: "middle" }}>{badge}</span>}
       </h1>
       <div style={{ display: "flex", gap: "0.6rem", alignItems: "center" }}>
+        {nav}
         <span style={{ fontFamily: FONT.mono, fontSize: "0.75rem", color: "#666" }}>{user.name}</span>
         {onSettings && (
           <button onClick={onSettings} style={{ fontFamily: FONT.mono, fontSize: "1rem", padding: "0.2rem 0.4rem", background: "transparent", border: "none", cursor: "pointer", color: "#666" }} title="Settings">

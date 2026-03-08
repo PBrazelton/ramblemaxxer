@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { COLORS, programColor, STATUS_COLOR, FONT, BG, BORDER, api, ProgressRing, BottomSheet, StickyHeader, sharedStyles, Input, Btn, SectionTitle, ErrMsg } from "./lib/ui.jsx";
 import AdminPanel from "./pages/AdminPanel.jsx";
+import Planner from "./pages/Planner.jsx";
 
 // ── Helper functions ────────────────────────────────────────────────────────
 function getCurrentAcademicTerm() {
@@ -27,6 +28,7 @@ function getPage() {
   if (hash.startsWith("/register")) return "register";
   if (hash.startsWith("/reset-password")) return "reset-password";
   if (hash.startsWith("/forgot-password")) return "forgot-password";
+  if (hash.startsWith("/planner")) return "planner";
   return hash === "/login" ? "login" : "dashboard";
 }
 
@@ -57,6 +59,7 @@ export default function App() {
   if (!user && page !== "register") return <LoginPage onLogin={setUser} />;
   if (page === "register") return <RegisterPage onRegister={setUser} />;
   if (user.role === "admin") return <AdminPanel user={user} onLogout={doLogout} />;
+  if (page === "planner") return <Planner user={user} onLogout={doLogout} />;
   return <Dashboard user={user} setUser={setUser} onLogout={doLogout} />;
 }
 
@@ -465,7 +468,18 @@ function NextStepsSection({ data, onAddCourses, onMapTransfer, onSuggestionTap }
     });
   }
 
-  // 4. Overlap warning (dynamic per pair)
+  // 4. Plan your next semester
+  if (data.remaining?.length > 0) {
+    cards.push({
+      key: "planner",
+      icon: "&#128197;",
+      title: "Plan your next semester",
+      subtitle: `${data.remaining.length} requirements remaining`,
+      action: () => { window.location.hash = "/planner"; },
+    });
+  }
+
+  // 5. Overlap warning (dynamic per pair)
   for (const [key, pair] of Object.entries(data.overlaps?.pairs || {})) {
     if (pair.max != null && pair.count >= pair.max) {
       const [a, b] = key.split("|");
@@ -501,6 +515,30 @@ function NextStepsSection({ data, onAddCourses, onMapTransfer, onSuggestionTap }
             {card.action && <span style={{ fontFamily: FONT.mono, fontSize: "1rem", color: "#c0b8b0" }}>&rsaquo;</span>}
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+// ── PlanPreview ─────────────────────────────────────────────────────────────
+function PlanPreview() {
+  const [planSummary, setPlanSummary] = useState(null);
+  useEffect(() => {
+    api.get("/api/students/me/plans").then(plans => {
+      if (plans.length > 0 && plans[0].course_count > 0) setPlanSummary(plans[0]);
+    }).catch(() => {});
+  }, []);
+
+  if (!planSummary) return null;
+
+  return (
+    <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 8, padding: "0.8rem 1rem", marginBottom: "0.75rem" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.2rem" }}>
+        <span style={{ fontFamily: FONT.serif, fontSize: "1rem", fontWeight: 600 }}>Your plan</span>
+        <a href="#/planner" style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#6f42c1", textDecoration: "none" }}>Open planner &rsaquo;</a>
+      </div>
+      <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#555" }}>
+        {planSummary.course_count} course{planSummary.course_count !== 1 ? "s" : ""} &middot; {planSummary.total_credits}cr planned
       </div>
     </div>
   );
@@ -1985,7 +2023,9 @@ function Dashboard({ user, setUser, onLogout }) {
 
   return (
     <div style={{ background: BG, minHeight: "100vh" }}>
-      <StickyHeader user={user} onLogout={onLogout} onSettings={() => setShowSettings(true)} />
+      <StickyHeader user={user} onLogout={onLogout} onSettings={() => setShowSettings(true)}
+        nav={<a href="#/planner" style={{ fontFamily: FONT.mono, fontSize: "0.7rem", padding: "0.3rem 0.6rem", background: "#6f42c1", color: "#fff", borderRadius: 4, textDecoration: "none" }}>plan</a>}
+      />
 
       {/* Content */}
       <div style={{ maxWidth: 680, margin: "0 auto", padding: "1rem" }}>
@@ -1999,6 +2039,8 @@ function Dashboard({ user, setUser, onLogout }) {
             onSuggestionTap={() => remainingRef.current?.scrollIntoView({ behavior: "smooth" })}
           />
         </div>
+
+        <PlanPreview />
 
         {Object.entries(data.overlaps?.pairs || {}).filter(([, p]) => p.max != null && p.count > p.max).map(([key, pair]) => {
           const [a, b] = key.split("|");
