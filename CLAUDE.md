@@ -3,6 +3,29 @@
 > Schedule optimizer for Loyola University Chicago students.
 > Built by Paul and Penelope. Penelope owns it now.
 
+## Plan Review (Codex)
+
+When in plan mode, **before presenting the plan to the user**, run Codex to
+review it:
+
+1. Write the plan to `/tmp/ramblemaxxer-plan.md`
+2. Run:
+   ```bash
+   codex exec --full-auto -s read-only \
+     -o /tmp/ramblemaxxer-review.md \
+     "Review this implementation plan for the Ramblemaxxer codebase. \
+      Check for: missed edge cases, files that should change but aren't listed, \
+      backward-compat risks, and simpler approaches. Be concise — bullet points only." \
+     < /tmp/ramblemaxxer-plan.md
+   ```
+3. Read `/tmp/ramblemaxxer-review.md` for Codex's feedback
+4. Incorporate valid feedback into the plan
+5. Present the final plan to the user with a short "Codex flagged:" section
+   summarizing what it caught and what you changed (or why you disagreed)
+
+This runs in read-only sandbox so Codex can explore the codebase but can't
+modify anything. Skip this step for trivial changes (single-file, < 20 LOC).
+
 ## What this is
 
 Ramblemaxxer helps LUC students figure out the most efficient path to

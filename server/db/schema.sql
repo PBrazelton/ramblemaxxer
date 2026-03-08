@@ -196,6 +196,36 @@ CREATE TABLE IF NOT EXISTS core_waivers (
   UNIQUE(program_code, waived_area)
 );
 
+-- Course offering sections scraped from LOCUS
+CREATE TABLE IF NOT EXISTS course_offerings (
+  id              INTEGER PRIMARY KEY AUTOINCREMENT,
+  course_code     TEXT NOT NULL,        -- e.g. 'PLSC 102'
+  term            TEXT NOT NULL,        -- e.g. 'Fall 2025', 'Spring 2026'
+  section         TEXT NOT NULL,        -- e.g. '001', '002'
+  instructor      TEXT,
+  days            TEXT,                 -- e.g. 'MWF', 'TR'
+  start_time      TEXT,                 -- e.g. '10:00'
+  end_time        TEXT,                 -- e.g. '10:50'
+  location        TEXT,
+  enrollment_cap  INTEGER,
+  enrollment_current INTEGER,
+  class_number    TEXT,                 -- PeopleSoft class_nbr
+  instruction_mode TEXT,               -- 'In Person', 'Online', 'Hybrid'
+  scraped_at      TEXT NOT NULL DEFAULT (datetime('now')),
+  UNIQUE(course_code, term, class_number)
+);
+
+CREATE INDEX IF NOT EXISTS idx_offerings_course ON course_offerings(course_code);
+CREATE INDEX IF NOT EXISTS idx_offerings_term ON course_offerings(term);
+
+-- Denormalized term availability (one row per course+term, faster lookups)
+CREATE TABLE IF NOT EXISTS course_terms (
+  course_code   TEXT NOT NULL,
+  term          TEXT NOT NULL,
+  section_count INTEGER NOT NULL DEFAULT 1,
+  PRIMARY KEY (course_code, term)
+);
+
 -- Invite tokens (Penelope invites her friends)
 CREATE TABLE IF NOT EXISTS invites (
   id          INTEGER PRIMARY KEY AUTOINCREMENT,

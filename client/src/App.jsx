@@ -848,9 +848,10 @@ function RemainingCard({ remaining, onSlotTap }) {
 }
 
 // ── SuggestionsCard ─────────────────────────────────────────────────────────
-function SuggestionsCard({ suggestions, remaining }) {
+function SuggestionsCard({ suggestions, remaining, scrapedTerms }) {
   if (!suggestions || suggestions.length === 0) return null;
-  const top = suggestions.slice(0, 8);
+
+  const [termFilter, setTermFilter] = useState("");
 
   // Build lookup: fill string → needed count from remaining
   const neededLookup = {};
@@ -860,9 +861,32 @@ function SuggestionsCard({ suggestions, remaining }) {
     }
   }
 
+  // Apply term filter
+  const filtered = termFilter
+    ? suggestions.filter(s => s.terms && s.terms.includes(termFilter))
+    : suggestions;
+  const top = filtered.slice(0, 8);
+
   return (
     <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 8, padding: "1rem", marginBottom: "0.75rem" }}>
-      <div style={{ fontFamily: FONT.serif, fontSize: "1rem", fontWeight: 600, marginBottom: "0.5rem" }}>High-Efficiency Suggestions</div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.5rem" }}>
+        <div style={{ fontFamily: FONT.serif, fontSize: "1rem", fontWeight: 600 }}>High-Efficiency Suggestions</div>
+        {scrapedTerms && scrapedTerms.length > 0 && (
+          <select
+            value={termFilter}
+            onChange={e => setTermFilter(e.target.value)}
+            style={{ fontFamily: FONT.mono, fontSize: "0.6rem", padding: "2px 6px", border: `1px solid ${BORDER}`, borderRadius: 4, background: "#fff", color: "#444" }}
+          >
+            <option value="">All terms</option>
+            {scrapedTerms.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+        )}
+      </div>
+      {top.length === 0 && termFilter && (
+        <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#999", padding: "0.5rem 0" }}>
+          No suggestions offered in {termFilter}
+        </div>
+      )}
       {top.map((s, i) => (
         <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem", padding: "0.4rem 0", borderTop: i ? `1px solid ${BORDER}` : "none" }}>
           <span style={{
@@ -886,6 +910,11 @@ function SuggestionsCard({ suggestions, remaining }) {
                   </span>
                 );
               })}
+              {s.terms && s.terms.length > 0 && s.terms.map((t, j) => (
+                <span key={`t${j}`} style={{ fontFamily: FONT.mono, fontSize: "0.55rem", background: "#e8f5e9", padding: "1px 5px", borderRadius: 3, color: "#2e7d32" }}>
+                  {t.replace(/\d{4}/, "").trim()}
+                </span>
+              ))}
             </div>
           </div>
         </div>
@@ -1995,7 +2024,7 @@ function Dashboard({ user, setUser, onLogout }) {
           <RemainingCard remaining={data.remaining} onSlotTap={handleSlotTap} />
         </div>
 
-        <SuggestionsCard suggestions={data.suggestions} remaining={data.remaining} />
+        <SuggestionsCard suggestions={data.suggestions} remaining={data.remaining} scrapedTerms={data.scrapedTerms} />
       </div>
 
       {pinModal && (

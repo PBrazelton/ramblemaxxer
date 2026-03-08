@@ -237,7 +237,14 @@ router.get("/:code", (req, res) => {
   if (dbMode) {
     const row = db.prepare("SELECT * FROM courses WHERE code = ?").get(code);
     if (!row) return res.status(404).json({ error: "Course not found" });
-    return res.json(hydrateCourse(row));
+    const course = hydrateCourse(row);
+    // Attach term availability from course_terms
+    try {
+      course.terms = db.prepare(
+        "SELECT term, section_count FROM course_terms WHERE course_code = ? ORDER BY term"
+      ).all(code);
+    } catch (e) { course.terms = []; }
+    return res.json(course);
   }
 
   const course = allCourses.get(code);

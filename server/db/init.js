@@ -263,6 +263,41 @@ db.exec(`
   )
 `);
 
+// Migration: create course_offerings table
+db.exec(`
+  CREATE TABLE IF NOT EXISTS course_offerings (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    course_code     TEXT NOT NULL,
+    term            TEXT NOT NULL,
+    section         TEXT NOT NULL,
+    instructor      TEXT,
+    days            TEXT,
+    start_time      TEXT,
+    end_time        TEXT,
+    location        TEXT,
+    enrollment_cap  INTEGER,
+    enrollment_current INTEGER,
+    class_number    TEXT,
+    instruction_mode TEXT,
+    scraped_at      TEXT NOT NULL DEFAULT (datetime('now')),
+    UNIQUE(course_code, term, class_number)
+  )
+`);
+try {
+  db.prepare("CREATE INDEX IF NOT EXISTS idx_offerings_course ON course_offerings(course_code)").run();
+  db.prepare("CREATE INDEX IF NOT EXISTS idx_offerings_term ON course_offerings(term)").run();
+} catch (e) { /* already exists */ }
+
+// Migration: create course_terms table
+db.exec(`
+  CREATE TABLE IF NOT EXISTS course_terms (
+    course_code   TEXT NOT NULL,
+    term          TEXT NOT NULL,
+    section_count INTEGER NOT NULL DEFAULT 1,
+    PRIMARY KEY (course_code, term)
+  )
+`);
+
 // Migration: fix UCLR 100 → UCLR 100C for Penelope
 try {
   const result = db.prepare("UPDATE student_courses SET course_code = 'UCLR 100C' WHERE course_code = 'UCLR 100'").run();

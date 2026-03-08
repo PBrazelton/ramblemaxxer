@@ -26,6 +26,7 @@ const adminRoutes = require("./routes/admin");
 const adminProgramRoutes = require("./routes/admin-programs");
 const transcriptRoutes = require("./routes/transcripts");
 const programRoutes = require("./routes/programs");
+const offeringsRoutes = require("./routes/offerings");
 
 const app = express();
 const PORT = process.env.PORT || 3006;
@@ -67,6 +68,7 @@ app.use("/api/admin/programs", adminProgramRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/transcript", transcriptRoutes);
 app.use("/api/programs", programRoutes);
+app.use("/api/offerings", offeringsRoutes);
 
 // Health check
 app.get("/api/health", (req, res) => {

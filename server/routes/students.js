@@ -211,13 +211,37 @@ router.get("/me/solve", (req, res) => {
   const result = solve(courseRows, declaredPrograms, courseMap, programMap, degreeRequirements);
   const suggestions = getSuggestions(result, courseMap, programMap, declaredPrograms);
 
+  // Augment suggestions with term offering data
+  const codes = suggestions.map(s => s.code);
+  if (codes.length > 0) {
+    try {
+      const placeholders = codes.map(() => "?").join(",");
+      const terms = db.prepare(
+        `SELECT course_code, term FROM course_terms WHERE course_code IN (${placeholders})`
+      ).all(...codes);
+      const termMap = {};
+      for (const t of terms) {
+        if (!termMap[t.course_code]) termMap[t.course_code] = [];
+        termMap[t.course_code].push(t.term);
+      }
+      for (const s of suggestions) s.terms = termMap[s.code] || [];
+    } catch (e) {
+      for (const s of suggestions) s.terms = [];
+    }
+  }
+
   // Augment with term info
   const semesters = [...new Set(courseRows.map(r => r.semester).filter(Boolean))];
   semesters.sort((a, b) => termOrder(a) - termOrder(b));
   const nonTransfer = semesters.filter(s => s !== "Transfer");
   const latestTerm = nonTransfer.length > 0 ? nonTransfer[nonTransfer.length - 1] : null;
 
-  res.json({ ...result, suggestions, latestTerm, semesters });
+  // Get available scraped terms for filter dropdown
+  let scrapedTerms = [];
+  try { scrapedTerms = db.prepare("SELECT DISTINCT term FROM course_terms ORDER BY term").all().map(r => r.term); }
+  catch (e) { /* table may not exist */ }
+
+  res.json({ ...result, suggestions, latestTerm, semesters, scrapedTerms });
 });
 
 // ── GET /api/students/me/programs ─────────────────────────────────────────
