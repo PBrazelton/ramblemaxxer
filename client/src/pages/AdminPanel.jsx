@@ -61,7 +61,7 @@ export default function AdminPanel({ user, onLogout }) {
       {/* Tab bar */}
       <div style={{ maxWidth: 680, margin: "0 auto", padding: "1rem 1rem 0" }}>
         <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
-          {["students", "invites", "programs"].map(t => (
+          {["students", "invites", "programs", "tools"].map(t => (
             <button key={t} onClick={() => setTab(t)} style={{
               fontFamily: FONT.mono, fontSize: "0.8rem", padding: "0.5rem 1rem",
               background: tab === t ? "#1a1a1a" : "#f5f0e8",
@@ -93,6 +93,7 @@ export default function AdminPanel({ user, onLogout }) {
           />
         )}
         {tab === "programs" && <ProgramsTab />}
+        {tab === "tools" && <ToolsTab />}
       </div>
 
       {/* Student dashboard modal */}
@@ -1111,6 +1112,104 @@ const sectionStyle = {
   background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 8,
   padding: "1rem", marginBottom: "1rem",
 };
+
+// ── Tools Tab ────────────────────────────────────────────────────────────────
+function ToolsTab() {
+  const [scrapeStatus, setScrapeStatus] = useState(null);
+  const [polling, setPolling] = useState(false);
+
+  const loadStatus = useCallback(async () => {
+    const data = await api.get("/api/admin/scrape-locus/status");
+    setScrapeStatus(data);
+    return data;
+  }, []);
+
+  useEffect(() => { loadStatus(); }, [loadStatus]);
+
+  // Poll while running
+  useEffect(() => {
+    if (!polling) return;
+    const id = setInterval(async () => {
+      const data = await loadStatus();
+      if (data.status !== "running") setPolling(false);
+    }, 3000);
+    return () => clearInterval(id);
+  }, [polling, loadStatus]);
+
+  const startScrape = async () => {
+    await api.post("/api/admin/scrape-locus");
+    setPolling(true);
+    loadStatus();
+  };
+
+  const isRunning = scrapeStatus?.status === "running";
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+      <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 8, padding: "1rem" }}>
+        <div style={{ fontFamily: FONT.serif, fontSize: "1rem", fontWeight: 600, marginBottom: "0.5rem" }}>
+          LOCUS Course Offerings
+        </div>
+        <p style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#666", marginBottom: "0.75rem", lineHeight: 1.5 }}>
+          Scrapes class schedules from Loyola's public search (molo.luc.edu).
+          Updates which courses are offered each term, with sections, instructors, and times.
+          Takes about 3 minutes. Run weekly during registration.
+        </p>
+
+        {scrapeStatus?.stats && (
+          <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#888", marginBottom: "0.75rem" }}>
+            {scrapeStatus.stats.offerings} sections, {scrapeStatus.stats.courseTerms} course-terms
+            {scrapeStatus.stats.terms?.map(t => (
+              <span key={t.term} style={{ marginLeft: 8, background: "#e8f5e9", padding: "1px 5px", borderRadius: 3, color: "#2e7d32" }}>
+                {t.term}: {t.c}
+              </span>
+            ))}
+            {scrapeStatus.finishedAt && (
+              <span style={{ marginLeft: 8 }}>
+                Last run: {new Date(scrapeStatus.finishedAt).toLocaleDateString()}
+              </span>
+            )}
+          </div>
+        )}
+
+        <button onClick={startScrape} disabled={isRunning} style={{
+          fontFamily: FONT.mono, fontSize: "0.75rem", padding: "0.5rem 1rem",
+          background: isRunning ? "#ccc" : "#1a7a5a", color: "#fff",
+          border: "none", borderRadius: 4, cursor: isRunning ? "not-allowed" : "pointer",
+        }}>
+          {isRunning ? "Scraping..." : "Refresh LOCUS Data"}
+        </button>
+
+        {isRunning && (
+          <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#888", marginTop: "0.5rem" }}>
+            Running — this page will update automatically.
+          </div>
+        )}
+
+        {scrapeStatus?.status === "error" && (
+          <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#c43b2d", marginTop: "0.5rem" }}>
+            Error: {scrapeStatus.error}
+          </div>
+        )}
+
+        {scrapeStatus?.log && scrapeStatus.status !== "idle" && (
+          <details style={{ marginTop: "0.75rem" }}>
+            <summary style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#888", cursor: "pointer" }}>
+              Scrape log
+            </summary>
+            <pre style={{
+              fontFamily: FONT.mono, fontSize: "0.55rem", background: "#1a1a1a", color: "#ccc",
+              padding: "0.5rem", borderRadius: 4, marginTop: "0.3rem", maxHeight: 300,
+              overflow: "auto", whiteSpace: "pre-wrap", wordBreak: "break-all",
+            }}>
+              {scrapeStatus.log}
+            </pre>
+          </details>
+        )}
+      </div>
+    </div>
+  );
+}
 
 const sectionLabel = {
   fontFamily: FONT.serif, fontSize: "1rem", fontWeight: 700, marginBottom: "0.8rem",

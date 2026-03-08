@@ -12,10 +12,15 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
+const { spawn } = require("child_process");
+const path = require("path");
 const db = require("../db/connection");
 const { solve, getSuggestions } = require("../../shared/solver");
 const { courseMap, programMap, degreeRequirements } = require("../lib/catalog");
 const { sendInviteEmail } = require("../lib/email");
+
+// In-memory scrape job status (survives across requests, not across restarts)
+let scrapeJob = { status: "idle", log: "", startedAt: null, finishedAt: null, error: null };
 
 const router = express.Router();
 
@@ -137,6 +142,58 @@ router.post("/users/:id/reset-password", (req, res) => {
   db.prepare("UPDATE users SET password_hash = ? WHERE id = ?")
     .run(hash, userId);
   res.json({ tempPassword, note: "Share this with the student. It cannot be retrieved again." });
+});
+
+// ── POST /api/admin/scrape-locus ─────────────────────────────────────────────
+router.post("/scrape-locus", (req, res) => {
+  if (scrapeJob.status === "running") {
+    return res.status(409).json({ error: "Scrape already in progress", ...scrapeJob });
+  }
+
+  scrapeJob = { status: "running", log: "", startedAt: new Date().toISOString(), finishedAt: null, error: null };
+
+  const script = path.join(__dirname, "../scripts/scrape-locus.js");
+  const child = spawn(process.execPath, [script], {
+    cwd: path.join(__dirname, ".."),
+    env: { ...process.env },
+  });
+
+  child.stdout.on("data", (data) => { scrapeJob.log += data.toString(); });
+  child.stderr.on("data", (data) => { scrapeJob.log += data.toString(); });
+
+  child.on("close", (code) => {
+    scrapeJob.finishedAt = new Date().toISOString();
+    if (code === 0) {
+      scrapeJob.status = "done";
+    } else {
+      scrapeJob.status = "error";
+      scrapeJob.error = `Process exited with code ${code}`;
+    }
+  });
+
+  child.on("error", (err) => {
+    scrapeJob.status = "error";
+    scrapeJob.error = err.message;
+    scrapeJob.finishedAt = new Date().toISOString();
+  });
+
+  res.json({ ok: true, message: "Scrape started" });
+});
+
+// ── GET /api/admin/scrape-locus/status ──────────────────────────────────────
+router.get("/scrape-locus/status", (req, res) => {
+  // Append DB stats if done
+  let stats = null;
+  if (scrapeJob.status === "done" || scrapeJob.status === "idle") {
+    try {
+      stats = {
+        offerings: db.prepare("SELECT COUNT(*) as c FROM course_offerings").get().c,
+        courseTerms: db.prepare("SELECT COUNT(*) as c FROM course_terms").get().c,
+        terms: db.prepare("SELECT term, COUNT(*) as c FROM course_offerings GROUP BY term").all(),
+      };
+    } catch (e) { /* tables may not exist */ }
+  }
+  res.json({ ...scrapeJob, stats });
 });
 
 module.exports = router;
