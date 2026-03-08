@@ -56,6 +56,7 @@ npm run db:seed      # seed Penelope + Paul's accounts
 npm run db:scrape    # scrape full catalog → data/scraped-catalog.json (~1 min)
 npm run db:seed-courses  # load scraped + enrichment data into courses table
 npm run db:seed-programs # load degree_requirements.json into programs tables
+npm run db:scrape-locus  # scrape LOCUS class schedules → DB (~3 min)
 ```
 
 Penelope's test login: `penelope@brazelton.net` / `peeps`
@@ -75,7 +76,8 @@ server/lib/catalog.js           # shared course/program maps (DB-backed with JSO
 server/lib/transcript-parser.js # PDF → structured transcript data
 server/lib/transcript-matcher.js # match parsed courses against DB
 server/db/                      # SQLite schema, init, seed
-server/scripts/                 # scrape-catalog.js, seed-courses.js
+server/routes/offerings.js      # course offering API endpoints
+server/scripts/                 # scrape-catalog.js, seed-courses.js, scrape-locus.js
 data/                           # course catalog + degree requirements JSON
 data/scraped-catalog.json       # full scraped catalog (~2000+ courses, committed)
 luc-handoff.md                  # full constraint model documentation — READ THIS
@@ -152,6 +154,34 @@ API endpoints (public, no auth):
 - `GET /api/programs` — list active programs (summary)
 - `GET /api/programs/:code` — full program with categories, eligible courses, overlap rules
 - `GET /api/programs/:code/eligible-courses/:categoryId` — eligible courses for one category
+
+## LOCUS course offerings pipeline
+
+Class schedules (sections, instructors, days/times) are scraped from molo.luc.edu
+into `course_offerings` and `course_terms` SQLite tables. The scraper uses a public
+REST API (POST with CSRF token) — no authentication required.
+
+```bash
+npm run db:scrape-locus                         # current + next academic term
+npm run db:scrape-locus --term "Spring 2026"    # specific term
+npm run db:scrape-locus --dept PLSC             # single department (testing)
+```
+
+**On production:** Use the admin panel → Tools tab → "Refresh LOCUS Data" button.
+Do NOT use `railway run` or `railway shell` — they run locally with Railway env vars,
+and the SQLite path (`/data/ramblemaxxer.db`) doesn't exist on the local machine.
+
+API endpoints:
+- `GET /api/offerings/terms` — list scraped terms
+- `GET /api/offerings/:code` — all offerings for a course
+- `GET /api/offerings/:code/:term` — offerings for a specific term
+- `GET /api/offerings/available?term=X&codes=Y` — batch availability (max 100 codes)
+- `POST /api/admin/scrape-locus` — trigger scrape (admin only)
+- `GET /api/admin/scrape-locus/status` — scrape progress + DB stats
+
+Term codes: 1266=Fall 2026, 1264=Summer 2026, 1262=Spring 2026, etc.
+142 subject codes (different from catalog's 174 departments).
+Offering data survives deploys — init.js uses CREATE IF NOT EXISTS, seed scripts don't touch it.
 
 ## Common tasks
 
