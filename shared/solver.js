@@ -98,7 +98,8 @@ function solve(studentCourses, declaredPrograms, courseMap, programMap, degreeRe
 
     const glstPool = progCode === "GLST-BA" ? buildGlstElectivePool(pd) : new Set();
     const progResult = { code: progCode, name: pd.name, type: pd.type,
-      totalCredits: pd.total_credits || null, categories: [], creditsApplied: 0, isComplete: true };
+      totalCredits: pd.total_credits || null, uniqueCreditsRequired: pd.unique_credits_required || null,
+      categories: [], creditsApplied: 0, isComplete: true };
     const assignedInProgram = new Set();
 
     // First pass: specific (non-wildcard) categories
@@ -260,11 +261,32 @@ function solve(studentCourses, declaredPrograms, courseMap, programMap, degreeRe
     result.programs[progCode] = progResult;
   }
 
-  // Overlap tracking
-  for (const [, assignments] of Object.entries(result.slotAssignments)) {
-    const progs = new Set(assignments.map(a => a.programCode));
-    if (progs.has("GLST-BA") && progs.has("PLSC-BA")) result.overlaps.glstMajorUsed++;
+  // Generic overlap: count courses shared between any two programs
+  result.overlaps.pairs = {};
+  for (const [code, assignments] of Object.entries(result.slotAssignments)) {
+    const progCodes = [...new Set(assignments.map(a => a.programCode))];
+    for (let i = 0; i < progCodes.length; i++) {
+      for (let j = i + 1; j < progCodes.length; j++) {
+        const key = [progCodes[i], progCodes[j]].sort().join("|");
+        if (!result.overlaps.pairs[key]) result.overlaps.pairs[key] = { count: 0, courses: [] };
+        result.overlaps.pairs[key].count++;
+        result.overlaps.pairs[key].courses.push(code);
+      }
+    }
   }
+  // Attach limits from overlap_rules
+  for (const pair of (degreeReqs.overlap_rules?.pairs || [])) {
+    if (!pair.programs || !pair.max_shared_courses) continue;
+    const key = [...pair.programs].sort().join("|");
+    if (result.overlaps.pairs[key]) result.overlaps.pairs[key].max = pair.max_shared_courses;
+  }
+
+  // Backward-compat shim for existing dashboard OverlapBudget component
+  const glstPlscKey = ["GLST-BA", "PLSC-BA"].sort().join("|");
+  result.overlaps.glstMajorUsed = result.overlaps.pairs[glstPlscKey]?.count || 0;
+  result.overlaps.glstMajorMax = result.overlaps.pairs[glstPlscKey]?.max || 4;
+  result.overlaps.glstElectiveDeptUsage = {};
+  result.overlaps.glstElectiveDeptMax = 3;
   const glstElectives = result.programs["GLST-BA"]?.categories.find(c => c.name === "GLST Electives");
   if (glstElectives) {
     for (const slot of glstElectives.slots) {

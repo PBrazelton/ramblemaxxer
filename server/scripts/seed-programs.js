@@ -1,10 +1,11 @@
 /**
  * server/scripts/seed-programs.js
- * Reads data/degree_requirements.json and populates the programs,
+ * Reads data/degree_requirements.json and upserts into the programs,
  * program_categories, category_eligible_courses, overlap_rules,
  * and core_waivers tables.
  *
- * Idempotent: deletes existing data and re-inserts in a transaction.
+ * Idempotent + additive: only touches programs defined in the JSON file.
+ * Admin-created programs (not in JSON) are preserved across deploys.
  *
  * Usage: node server/scripts/seed-programs.js
  */
@@ -53,13 +54,43 @@ const insertCoreWaiver = db.prepare(`
   VALUES (@program_code, @waived_area)
 `);
 
+const upsertProgram = db.prepare(`
+  INSERT INTO programs (code, name, type, department, college, total_credits,
+    unique_credits_required, double_dip_policy, core_waivers, notes,
+    elective_pool_by_region)
+  VALUES (@code, @name, @type, @department, @college, @total_credits,
+    @unique_credits_required, @double_dip_policy, @core_waivers, @notes,
+    @elective_pool_by_region)
+  ON CONFLICT(code) DO UPDATE SET
+    name=excluded.name, type=excluded.type, department=excluded.department,
+    college=excluded.college, total_credits=excluded.total_credits,
+    unique_credits_required=excluded.unique_credits_required,
+    double_dip_policy=excluded.double_dip_policy, core_waivers=excluded.core_waivers,
+    notes=excluded.notes, elective_pool_by_region=excluded.elective_pool_by_region,
+    updated_at=datetime('now')
+`);
+
 const seed = db.transaction(() => {
-  // Clear existing data (order matters for FK constraints)
-  db.prepare("DELETE FROM category_eligible_courses").run();
-  db.prepare("DELETE FROM program_categories").run();
-  db.prepare("DELETE FROM overlap_rules").run();
+  // Build set of JSON-defined program codes so we only touch those
+  const jsonCodes = degreeReqs.programs.map(p => p.code);
+  const placeholders = jsonCodes.map(() => "?").join(",");
+
+  // Clear children ONLY for JSON-defined programs (preserve admin-created ones)
+  if (jsonCodes.length > 0) {
+    db.prepare(`
+      DELETE FROM category_eligible_courses
+      WHERE category_id IN (SELECT id FROM program_categories WHERE program_code IN (${placeholders}))
+    `).run(...jsonCodes);
+    db.prepare(`DELETE FROM program_categories WHERE program_code IN (${placeholders})`).run(...jsonCodes);
+  }
+  // Overlap rules: delete JSON-sourced rules (CAS|DEFAULT + pair rules from JSON)
+  // Admin-created overlap rules are attached to admin-created programs, which aren't in jsonCodes
+  db.prepare("DELETE FROM overlap_rules WHERE program_b = 'DEFAULT'").run();
+  if (jsonCodes.length > 0) {
+    db.prepare(`DELETE FROM overlap_rules WHERE program_a IN (${placeholders}) OR program_b IN (${placeholders})`).run(...jsonCodes, ...jsonCodes);
+  }
+  // Core waivers: clear all (they include future programs and are cheap to rebuild)
   db.prepare("DELETE FROM core_waivers").run();
-  db.prepare("DELETE FROM programs").run();
 
   let programCount = 0;
   let categoryCount = 0;
@@ -67,7 +98,7 @@ const seed = db.transaction(() => {
 
   // 1. Programs + categories + eligible courses
   for (const prog of degreeReqs.programs) {
-    insertProgram.run({
+    upsertProgram.run({
       code: prog.code,
       name: prog.name,
       type: prog.type,

@@ -17,9 +17,32 @@ const router = express.Router();
 router.get("/catalog", (req, res) => {
   const allPrograms = require("../../data/luc-programs.json");
   const modeled = new Set([...programMap.keys()]);
-  const result = allPrograms
-    .map(p => ({ ...p, modeled: modeled.has(p.code) }))
-    .sort((a, b) => a.name.localeCompare(b.name));
+
+  // Build type lookup from DB for modeled programs
+  const typeMap = {};
+  try {
+    const dbProgs = db.prepare("SELECT code, type FROM programs WHERE is_active = 1").all();
+    for (const p of dbProgs) typeMap[p.code] = p.type;
+  } catch (e) { /* DB may not have programs table yet */ }
+
+  const result = allPrograms.map(p => ({
+    ...p,
+    modeled: modeled.has(p.code),
+    type: typeMap[p.code] || "major",
+  }));
+
+  // Merge in DB-only programs not in luc-programs.json (admin-created)
+  const inJson = new Set(allPrograms.map(p => p.code));
+  try {
+    const dbOnly = db.prepare("SELECT code, name, type, department FROM programs WHERE is_active = 1").all();
+    for (const p of dbOnly) {
+      if (!inJson.has(p.code)) {
+        result.push({ code: p.code, name: p.name, department: p.department || "", college: "", degree: "", modeled: true, type: p.type });
+      }
+    }
+  } catch (e) { /* ignore if DB not ready */ }
+
+  result.sort((a, b) => a.name.localeCompare(b.name));
   res.json(result);
 });
 

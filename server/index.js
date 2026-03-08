@@ -23,6 +23,7 @@ const studentRoutes = require("./routes/students");
 const coursesRoutes = require("./routes/courses");
 const requirementsRoutes = require("./routes/requirements");
 const adminRoutes = require("./routes/admin");
+const adminProgramRoutes = require("./routes/admin-programs");
 const transcriptRoutes = require("./routes/transcripts");
 const programRoutes = require("./routes/programs");
 
@@ -62,6 +63,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/students", studentRoutes);
 app.use("/api/courses", coursesRoutes);
 app.use("/api/requirements", requirementsRoutes);
+app.use("/api/admin/programs", adminProgramRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/transcript", transcriptRoutes);
 app.use("/api/programs", programRoutes);

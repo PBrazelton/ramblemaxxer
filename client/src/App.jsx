@@ -465,15 +465,20 @@ function NextStepsSection({ data, onAddCourses, onMapTransfer, onSuggestionTap }
     });
   }
 
-  // 4. Overlap warning
-  if (data.overlaps?.glstMajorUsed >= data.overlaps?.glstMajorMax && data.overlaps?.glstMajorMax > 0) {
-    cards.push({
-      key: "overlap",
-      icon: "&#9888;",
-      title: "Overlap budget full",
-      subtitle: `${data.overlaps.glstMajorUsed}/${data.overlaps.glstMajorMax} PLSC/GLST shared slots used`,
-      action: null,
-    });
+  // 4. Overlap warning (dynamic per pair)
+  for (const [key, pair] of Object.entries(data.overlaps?.pairs || {})) {
+    if (pair.max != null && pair.count >= pair.max) {
+      const [a, b] = key.split("|");
+      const nameA = data.programs[a]?.name || a;
+      const nameB = data.programs[b]?.name || b;
+      cards.push({
+        key: `overlap-${key}`,
+        icon: "&#9888;",
+        title: "Overlap budget full",
+        subtitle: `${pair.count}/${pair.max} ${nameA} / ${nameB} shared slots used`,
+        action: null,
+      });
+    }
   }
 
   if (cards.length === 0) return null;
@@ -662,76 +667,95 @@ function WaivedPip() {
 }
 
 // ── OverlapBudget ───────────────────────────────────────────────────────────
-function OverlapBudget({ overlaps, conflicts, onPipClick }) {
-  const { glstMajorUsed, glstMajorMax, glstElectiveDeptUsage, glstElectiveDeptMax } = overlaps;
-  const overBudget = glstMajorUsed > glstMajorMax;
-  const depts = Object.entries(glstElectiveDeptUsage);
-  const sharedCodes = Object.keys(conflicts);
+function OverlapBudget({ overlaps, programs, conflicts, onPipClick }) {
+  const pairs = overlaps?.pairs || {};
+  // Only show pairs that have an explicit max (i.e., a rule in overlap_rules)
+  const ruledPairs = Object.entries(pairs).filter(([, p]) => p.max != null);
 
-  // Contextual plain-English paragraph
-  const overlapExplain = glstMajorUsed === 0
-    ? "No courses are currently shared between your two majors. GLST allows up to " + glstMajorMax + " courses to count for both."
-    : overBudget
-      ? `You have ${glstMajorUsed} shared courses but GLST only allows ${glstMajorMax}. Pin some courses to one program to get back under budget.`
-      : glstMajorUsed === glstMajorMax
-        ? `All ${glstMajorMax} shared slots are used. Any new course counting for both PLSC and GLST will put you over budget.`
-        : `${glstMajorUsed} of ${glstMajorMax} shared slots used. You can double-count ${glstMajorMax - glstMajorUsed} more course${glstMajorMax - glstMajorUsed !== 1 ? "s" : ""}.`;
+  if (ruledPairs.length === 0) return null;
+
+  // Build shared-course-code → pair-keys map for chip display
+  const sharedCodes = Object.keys(conflicts);
 
   return (
     <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 8, padding: "1rem", marginBottom: "0.75rem" }}>
       <div style={{ fontFamily: FONT.serif, fontSize: "1rem", fontWeight: 600, marginBottom: "0.6rem" }}>Overlap Budget</div>
 
-      <div style={{ marginBottom: "0.8rem" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.3rem" }}>
-          <span style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 600 }}>PLSC &#x2194; GLST double-counts</span>
-          <span style={{ fontFamily: FONT.mono, fontSize: "0.65rem", padding: "1px 8px", borderRadius: 10, background: overBudget ? "#fde8e8" : "#e8f5e9", color: overBudget ? "#c43b2d" : "#22863a", fontWeight: 600 }}>
-            {glstMajorUsed}/{glstMajorMax}
-          </span>
-        </div>
-        <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#666", lineHeight: 1.5, marginBottom: "0.4rem" }}>
-          {overlapExplain}
-        </div>
-        <div style={{ display: "flex", gap: "0.3rem" }}>
-          {Array.from({ length: glstMajorMax }).map((_, i) => (
-            <div key={i} style={{
-              width: 32, height: 20, borderRadius: 4,
-              background: i < glstMajorUsed ? "linear-gradient(135deg, #c43b2d, #1a7a5a)" : "#eee",
-              border: `1px solid ${i < glstMajorUsed ? "#c43b2d40" : "#ddd"}`,
-            }} />
-          ))}
-          {overBudget && <div style={{ width: 32, height: 20, borderRadius: 4, background: "#c43b2d", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.55rem", color: "#fff", fontFamily: FONT.mono }}>!</div>}
-        </div>
+      {ruledPairs.map(([key, pair]) => {
+        const [a, b] = key.split("|");
+        const nameA = programs[a]?.name || a;
+        const nameB = programs[b]?.name || b;
+        const colorA = programColor(a);
+        const colorB = programColor(b);
+        const overBudget = pair.count > pair.max;
 
-        {/* Tappable shared course chips */}
-        {sharedCodes.length > 0 && (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem", marginTop: "0.5rem" }}>
-            {sharedCodes.map(code => (
-              <span key={code} onClick={() => onPipClick?.(code, "", conflicts[code])} style={{
-                fontFamily: FONT.mono, fontSize: "0.6rem", padding: "2px 8px", borderRadius: 4,
-                background: "#e8f0fe", border: "1px solid #b8d0f0", color: "#1a5276",
-                cursor: "pointer",
-              }}>
-                {code}
+        const explain = pair.count === 0
+          ? `No courses are currently shared. Up to ${pair.max} can count for both programs.`
+          : overBudget
+            ? `You have ${pair.count} shared courses but only ${pair.max} are allowed. Pin some courses to one program to get back under budget.`
+            : pair.count === pair.max
+              ? `All ${pair.max} shared slots are used. Any new course counting for both will put you over budget.`
+              : `${pair.count} of ${pair.max} shared slots used. You can double-count ${pair.max - pair.count} more course${pair.max - pair.count !== 1 ? "s" : ""}.`;
+
+        // Courses shared in this specific pair
+        const pairCourses = pair.courses || [];
+
+        return (
+          <div key={key} style={{ marginBottom: "0.8rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.3rem" }}>
+              <span style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 600 }}>
+                {nameA} &#x2194; {nameB}
               </span>
-            ))}
-          </div>
-        )}
-      </div>
+              <span style={{ fontFamily: FONT.mono, fontSize: "0.65rem", padding: "1px 8px", borderRadius: 10, background: overBudget ? "#fde8e8" : "#e8f5e9", color: overBudget ? "#c43b2d" : "#22863a", fontWeight: 600 }}>
+                {pair.count}/{pair.max}
+              </span>
+            </div>
+            <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#666", lineHeight: 1.5, marginBottom: "0.4rem" }}>
+              {explain}
+            </div>
+            <div style={{ display: "flex", gap: "0.3rem" }}>
+              {Array.from({ length: pair.max }).map((_, i) => (
+                <div key={i} style={{
+                  width: 32, height: 20, borderRadius: 4,
+                  background: i < pair.count ? `linear-gradient(135deg, ${colorA}, ${colorB})` : "#eee",
+                  border: `1px solid ${i < pair.count ? colorA + "40" : "#ddd"}`,
+                }} />
+              ))}
+              {overBudget && <div style={{ width: 32, height: 20, borderRadius: 4, background: "#c43b2d", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.55rem", color: "#fff", fontFamily: FONT.mono }}>!</div>}
+            </div>
 
-      {depts.length > 0 && (
+            {pairCourses.length > 0 && (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem", marginTop: "0.5rem" }}>
+                {pairCourses.map(code => (
+                  <span key={code} onClick={() => onPipClick?.(code, "", conflicts[code] || [a, b])} style={{
+                    fontFamily: FONT.mono, fontSize: "0.6rem", padding: "2px 8px", borderRadius: 4,
+                    background: "#e8f0fe", border: "1px solid #b8d0f0", color: "#1a5276",
+                    cursor: "pointer",
+                  }}>
+                    {code}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
+
+      {/* GLST dept spread — only show if GLST-BA is in a ruled pair */}
+      {overlaps.glstElectiveDeptUsage && Object.keys(overlaps.glstElectiveDeptUsage).length > 0 && ruledPairs.some(([k]) => k.includes("GLST-BA")) && (
         <div>
           <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", fontWeight: 600, marginBottom: "0.3rem" }}>
-            Dept spread ({depts.length} dept{depts.length !== 1 ? "s" : ""} · {glstElectiveDeptMax} max per dept)
+            GLST elective dept spread ({overlaps.glstElectiveDeptMax} max per dept)
           </div>
-          {depts.map(([dept, count]) => (
+          {Object.entries(overlaps.glstElectiveDeptUsage).map(([dept, count]) => (
             <div key={dept} style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.25rem" }}>
               <span style={{ fontFamily: FONT.mono, fontSize: "0.65rem", width: 40, textAlign: "right", color: "#666" }}>{dept}</span>
               <div style={{ display: "flex", gap: 2 }}>
-                {Array.from({ length: glstElectiveDeptMax }).map((_, i) => (
-                  <div key={i} style={{ width: 20, height: 10, borderRadius: 2, background: i < count ? (count >= glstElectiveDeptMax ? "#c43b2d" : COLORS["GLST-BA"]) : "#eee" }} />
+                {Array.from({ length: overlaps.glstElectiveDeptMax }).map((_, i) => (
+                  <div key={i} style={{ width: 20, height: 10, borderRadius: 2, background: i < count ? (count >= overlaps.glstElectiveDeptMax ? "#c43b2d" : programColor("GLST-BA")) : "#eee" }} />
                 ))}
               </div>
-              <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: count >= glstElectiveDeptMax ? "#c43b2d" : "#888" }}>{count}</span>
+              <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: count >= overlaps.glstElectiveDeptMax ? "#c43b2d" : "#888" }}>{count}</span>
             </div>
           ))}
         </div>
@@ -903,7 +927,16 @@ function RemainingPill({ count, remainingRef }) {
 // ── PinModal ────────────────────────────────────────────────────────────────
 function PinModal({ code, title, programs, onPin, onClose, slotAssignments, overlaps }) {
   const assignments = slotAssignments?.[code] || [];
-  const { glstMajorUsed, glstMajorMax } = overlaps || {};
+  const pairs = overlaps?.pairs || {};
+
+  // Find any overlap rules relevant to the programs this course is shared between
+  const relevantRules = [];
+  for (const [key, pair] of Object.entries(pairs)) {
+    if (pair.max != null && pair.courses?.includes(code)) {
+      const [a, b] = key.split("|");
+      relevantRules.push({ a, b, ...pair });
+    }
+  }
 
   return (
     <BottomSheet onClose={onClose}>
@@ -914,8 +947,8 @@ function PinModal({ code, title, programs, onPin, onClose, slotAssignments, over
       {/* Explanation block */}
       <div style={{ background: "#f8f6f2", border: `1px solid ${BORDER}`, borderRadius: 6, padding: "0.6rem 0.8rem", marginBottom: "0.8rem" }}>
         <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#555", lineHeight: 1.5 }}>
-          This course counts toward both programs.
-          {glstMajorMax != null && ` GLST allows up to ${glstMajorMax} shared (${glstMajorUsed || 0} used).`}
+          This course counts toward multiple programs.
+          {relevantRules.map(r => ` ${r.a}/${r.b} allows up to ${r.max} shared (${r.count} used).`).join("")}
         </div>
       </div>
 
@@ -1314,13 +1347,84 @@ function TransferMappingSheet({ onClose, onSaved }) {
   );
 }
 
+// ── ProgramPickerList ─────────────────────────────────────────────────────────
+function ProgramPickerList({ label, items, selected, onToggle, search, onSearch, loading, maxHeight = 300 }) {
+  return (
+    <div style={{ marginBottom: 24 }}>
+      <div style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 600, marginBottom: 8 }}>
+        {label}
+      </div>
+      <input
+        type="text"
+        placeholder="search programs..."
+        value={search}
+        onChange={e => onSearch(e.target.value)}
+        style={{
+          ...sharedStyles.input, width: "100%", boxSizing: "border-box",
+          marginBottom: 10, fontSize: "0.8rem",
+        }}
+      />
+      <div style={{ maxHeight, overflowY: "auto", border: `1px solid ${BORDER}`, borderRadius: 8, background: "#fff" }}>
+        {items.length === 0 && (
+          <div style={{ padding: 16, textAlign: "center", fontFamily: FONT.mono, fontSize: "0.75rem", color: "#aaa" }}>
+            {loading ? "loading programs..." : "no programs match your search"}
+          </div>
+        )}
+        {items.map(p => {
+          const isSelected = selected.includes(p.code);
+          const color = programColor(p.code);
+          return (
+            <button key={p.code} onClick={() => onToggle(p.code)}
+              style={{
+                display: "flex", alignItems: "center", gap: 10, width: "100%",
+                padding: "10px 12px", cursor: "pointer",
+                borderBottom: `1px solid ${BORDER}`, borderTop: "none", borderLeft: "none", borderRight: "none",
+                background: isSelected ? color + "0a" : "transparent",
+                textAlign: "left",
+              }}>
+              <div style={{
+                width: 18, height: 18, borderRadius: 4, flexShrink: 0,
+                border: `2px solid ${isSelected ? color : "#ccc"}`,
+                background: isSelected ? color : "transparent",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: "#fff", fontSize: 11,
+              }}>
+                {isSelected && "\u2713"}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 600, color: isSelected ? color : "#333" }}>{p.name}</span>
+                  {p.degree && <span style={{
+                    fontFamily: FONT.mono, fontSize: "0.55rem", padding: "1px 5px", borderRadius: 3,
+                    background: "#eee", color: "#666", flexShrink: 0,
+                  }}>{p.degree}</span>}
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
+                  <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#aaa" }}>{p.code}</span>
+                  {p.modeled ? (
+                    <span style={{ fontFamily: FONT.mono, fontSize: "0.5rem", padding: "1px 5px", borderRadius: 3, background: "#e8f5e9", color: "#22863a" }}>full tracking</span>
+                  ) : (
+                    <span style={{ fontFamily: FONT.mono, fontSize: "0.5rem", padding: "1px 5px", borderRadius: 3, background: "#f0f0f0", color: "#999" }}>credit tracking only</span>
+                  )}
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ── OnboardingWizard ─────────────────────────────────────────────────────────
 function OnboardingWizard({ user, onComplete }) {
   const [step, setStep] = useState(1);
   const [gradYear, setGradYear] = useState(user.grad_year || "");
   const [programs, setPrograms] = useState([]);
+  const [minors, setMinors] = useState([]);
   const [programCatalog, setProgramCatalog] = useState([]);
   const [programSearch, setProgramSearch] = useState("");
+  const [minorSearch, setMinorSearch] = useState("");
   const [uploading, setUploading] = useState(false);
   const [parseResult, setParseResult] = useState(null);
   const [reviewCourses, setReviewCourses] = useState([]);
@@ -1332,28 +1436,38 @@ function OnboardingWizard({ user, onComplete }) {
     setPrograms(prev => prev.includes(pid) ? prev.filter(p => p !== pid) : [...prev, pid]);
   };
 
+  const toggleMinor = (pid) => {
+    setMinors(prev => prev.includes(pid) ? prev.filter(p => p !== pid) : [...prev, pid]);
+  };
+
   useEffect(() => {
     fetch("/api/programs/catalog").then(r => r.json()).then(setProgramCatalog).catch(() => {});
   }, []);
 
-  const filteredPrograms = programCatalog.filter(p => {
-    if (!programSearch) return true;
-    const q = programSearch.toLowerCase();
-    return p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q) || p.department.toLowerCase().includes(q) || p.college.toLowerCase().includes(q);
-  });
+  const majorCatalog = programCatalog.filter(p => p.type !== "minor");
+  const minorCatalog = programCatalog.filter(p => p.type === "minor");
 
-  // Selected programs float to top
-  const sortedPrograms = [...filteredPrograms].sort((a, b) => {
-    const aSelected = programs.includes(a.code) ? 0 : 1;
-    const bSelected = programs.includes(b.code) ? 0 : 1;
-    if (aSelected !== bSelected) return aSelected - bSelected;
-    return a.name.localeCompare(b.name);
-  });
+  const filterAndSort = (catalog, searchStr, selectedList) => {
+    let filtered = catalog;
+    if (searchStr) {
+      const q = searchStr.toLowerCase();
+      filtered = catalog.filter(p => p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q) || (p.department || "").toLowerCase().includes(q) || (p.college || "").toLowerCase().includes(q));
+    }
+    return [...filtered].sort((a, b) => {
+      const aSelected = selectedList.includes(a.code) ? 0 : 1;
+      const bSelected = selectedList.includes(b.code) ? 0 : 1;
+      if (aSelected !== bSelected) return aSelected - bSelected;
+      return a.name.localeCompare(b.name);
+    });
+  };
+
+  const sortedPrograms = filterAndSort(majorCatalog, programSearch, programs);
+  const sortedMinors = filterAndSort(minorCatalog, minorSearch, minors);
 
   // Step 1: Save programs + grad year
   const saveStep1 = async () => {
     setError("");
-    const allProgs = [...new Set([...programs, "CORE", "CAS-GRAD"])];
+    const allProgs = [...new Set([...programs, ...minors, "CORE", "CAS-GRAD"])];
     try {
       await api.put("/api/students/me/programs", { programs: allProgs });
       if (gradYear) {
@@ -1416,7 +1530,7 @@ function OnboardingWizard({ user, onComplete }) {
     setError("");
     setConfirming(true);
 
-    const allProgs = [...new Set([...programs, "CORE", "CAS-GRAD"])];
+    const allProgs = [...new Set([...programs, ...minors, "CORE", "CAS-GRAD"])];
     const coursesToSend = reviewCourses
       .filter(c => c.included)
       .map(c => ({
@@ -1519,71 +1633,31 @@ function OnboardingWizard({ user, onComplete }) {
               </div>
             </div>
 
-            <div style={{ marginBottom: 24 }}>
-              <div style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 600, marginBottom: 8 }}>
-                your major(s)
-              </div>
-              <input
-                type="text"
-                placeholder="search programs..."
-                value={programSearch}
-                onChange={e => setProgramSearch(e.target.value)}
-                style={{
-                  ...sharedStyles.input, width: "100%", boxSizing: "border-box",
-                  marginBottom: 10, fontSize: "0.8rem",
-                }}
+            <ProgramPickerList
+              label="your major(s)"
+              items={sortedPrograms}
+              selected={programs}
+              onToggle={toggleProgram}
+              search={programSearch}
+              onSearch={setProgramSearch}
+              loading={programCatalog.length === 0}
+            />
+
+            {minorCatalog.length > 0 && (
+              <ProgramPickerList
+                label="your minor(s) (optional)"
+                items={sortedMinors}
+                selected={minors}
+                onToggle={toggleMinor}
+                search={minorSearch}
+                onSearch={setMinorSearch}
+                loading={false}
+                maxHeight={180}
               />
-              <div style={{ maxHeight: 300, overflowY: "auto", border: `1px solid ${BORDER}`, borderRadius: 8, background: "#fff" }}>
-                {sortedPrograms.length === 0 && (
-                  <div style={{ padding: 16, textAlign: "center", fontFamily: FONT.mono, fontSize: "0.75rem", color: "#aaa" }}>
-                    {programCatalog.length === 0 ? "loading programs..." : "no programs match your search"}
-                  </div>
-                )}
-                {sortedPrograms.map(p => {
-                  const selected = programs.includes(p.code);
-                  const color = programColor(p.code);
-                  return (
-                    <button key={p.code} onClick={() => toggleProgram(p.code)}
-                      style={{
-                        display: "flex", alignItems: "center", gap: 10, width: "100%",
-                        padding: "10px 12px", cursor: "pointer",
-                        borderBottom: `1px solid ${BORDER}`, borderTop: "none", borderLeft: "none", borderRight: "none",
-                        background: selected ? color + "0a" : "transparent",
-                        textAlign: "left",
-                      }}>
-                      <div style={{
-                        width: 18, height: 18, borderRadius: 4, flexShrink: 0,
-                        border: `2px solid ${selected ? color : "#ccc"}`,
-                        background: selected ? color : "transparent",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        color: "#fff", fontSize: 11,
-                      }}>
-                        {selected && "\u2713"}
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                          <span style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 600, color: selected ? color : "#333" }}>{p.name}</span>
-                          <span style={{
-                            fontFamily: FONT.mono, fontSize: "0.55rem", padding: "1px 5px", borderRadius: 3,
-                            background: "#eee", color: "#666", flexShrink: 0,
-                          }}>{p.degree}</span>
-                        </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
-                          <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#aaa" }}>{p.code}</span>
-                          {p.modeled ? (
-                            <span style={{ fontFamily: FONT.mono, fontSize: "0.5rem", padding: "1px 5px", borderRadius: 3, background: "#e8f5e9", color: "#22863a" }}>full tracking</span>
-                          ) : (
-                            <span style={{ fontFamily: FONT.mono, fontSize: "0.5rem", padding: "1px 5px", borderRadius: 3, background: "#f0f0f0", color: "#999" }}>credit tracking only</span>
-                          )}
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-              <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#aaa", marginTop: 6 }}>
-                Core + CAS graduation requirements are tracked automatically
-              </div>
+            )}
+
+            <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#aaa", marginBottom: 24 }}>
+              Core + CAS graduation requirements are tracked automatically
             </div>
 
             {error && <ErrMsg>{error}</ErrMsg>}
@@ -1829,12 +1903,22 @@ function Dashboard({ user, setUser, onLogout }) {
     }
   }, [data]);
 
+  // Build conflicts: courses shared between any two programs that have an overlap rule
   const conflicts = useMemo(() => {
     if (!data) return {};
+    const pairs = data.overlaps?.pairs || {};
+    const ruledKeys = new Set(Object.keys(pairs).filter(k => pairs[k].max != null));
     return Object.entries(data.slotAssignments || {}).reduce((acc, [code, asgns]) => {
-      const progs = new Set(asgns.map(a => a.programCode));
-      if (progs.has("PLSC-BA") && progs.has("GLST-BA")) {
-        acc[code] = [...progs].filter(p => p === "PLSC-BA" || p === "GLST-BA");
+      const progCodes = [...new Set(asgns.map(a => a.programCode))];
+      for (let i = 0; i < progCodes.length; i++) {
+        for (let j = i + 1; j < progCodes.length; j++) {
+          const key = [progCodes[i], progCodes[j]].sort().join("|");
+          if (ruledKeys.has(key)) {
+            if (!acc[code]) acc[code] = [];
+            if (!acc[code].includes(progCodes[i])) acc[code].push(progCodes[i]);
+            if (!acc[code].includes(progCodes[j])) acc[code].push(progCodes[j]);
+          }
+        }
       }
       return acc;
     }, {});
@@ -1887,18 +1971,23 @@ function Dashboard({ user, setUser, onLogout }) {
           />
         </div>
 
-        {data.overlaps.glstMajorUsed > data.overlaps.glstMajorMax && (
-          <div style={{ background: "#fde8e8", border: "1px solid #f5c6cb", borderRadius: 8, padding: "0.7rem 1rem", marginBottom: "0.75rem", fontFamily: FONT.mono, fontSize: "0.75rem", color: "#721c24" }}>
-            Over budget: {data.overlaps.glstMajorUsed} PLSC/GLST overlaps (max {data.overlaps.glstMajorMax}). Pin courses to fix.
-          </div>
-        )}
+        {Object.entries(data.overlaps?.pairs || {}).filter(([, p]) => p.max != null && p.count > p.max).map(([key, pair]) => {
+          const [a, b] = key.split("|");
+          const nameA = data.programs[a]?.name || a;
+          const nameB = data.programs[b]?.name || b;
+          return (
+            <div key={key} style={{ background: "#fde8e8", border: "1px solid #f5c6cb", borderRadius: 8, padding: "0.7rem 1rem", marginBottom: "0.75rem", fontFamily: FONT.mono, fontSize: "0.75rem", color: "#721c24" }}>
+              Over budget: {pair.count} {nameA}/{nameB} overlaps (max {pair.max}). Pin courses to fix.
+            </div>
+          );
+        })}
 
         {majors.map(prog => (
           <ProgramCard key={prog.code} prog={prog} conflicts={conflicts} onPipClick={handlePipClick} onSlotTap={handleSlotTap}
             defaultOpen={prog.code === "PLSC-BA" || prog.code === "GLST-BA"} />
         ))}
 
-        <OverlapBudget overlaps={data.overlaps} conflicts={conflicts} onPipClick={handlePipClick} />
+        <OverlapBudget overlaps={data.overlaps} programs={data.programs} conflicts={conflicts} onPipClick={handlePipClick} />
 
         <CASCard casGrad={data.programs["CAS-GRAD"]} spanLang={data.programs["SPAN-LANG"]} />
 
