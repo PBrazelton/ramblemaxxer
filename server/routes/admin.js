@@ -144,6 +144,20 @@ router.post("/users/:id/reset-password", (req, res) => {
   res.json({ tempPassword, note: "Share this with the student. It cannot be retrieved again." });
 });
 
+// ── POST /api/admin/users/:id/reset ──────────────────────────────────────────
+router.post("/users/:id/reset", (req, res) => {
+  const userId = parseInt(req.params.id);
+
+  db.transaction(() => {
+    db.prepare("DELETE FROM student_courses WHERE user_id = ?").run(userId);
+    db.prepare("DELETE FROM plan_courses WHERE plan_id IN (SELECT id FROM student_plans WHERE user_id = ?)").run(userId);
+    db.prepare("DELETE FROM student_plans WHERE user_id = ?").run(userId);
+    db.prepare("UPDATE users SET onboarding_step = NULL WHERE id = ?").run(userId);
+  })();
+
+  res.json({ ok: true });
+});
+
 // ── POST /api/admin/scrape-locus ─────────────────────────────────────────────
 router.post("/scrape-locus", (req, res) => {
   if (scrapeJob.status === "running") {

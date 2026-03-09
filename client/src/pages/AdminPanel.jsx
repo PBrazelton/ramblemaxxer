@@ -37,6 +37,12 @@ export default function AdminPanel({ user, onLogout }) {
     setTempPassword({ name, password: res.tempPassword });
   };
 
+  const resetUser = async (id, name) => {
+    if (!confirm(`Reset ALL course data for ${name}? This cannot be undone.`)) return;
+    await api.post(`/api/admin/users/${id}/reset`);
+    loadStudents();
+  };
+
   const toggleActive = async (id, name, currentActive) => {
     const action = currentActive ? "deactivate" : "reactivate";
     if (!confirm(`${action.charAt(0).toUpperCase() + action.slice(1)} ${name}?`)) return;
@@ -82,6 +88,7 @@ export default function AdminPanel({ user, onLogout }) {
             currentUserId={user.id}
             onView={viewDashboard}
             onResetPassword={resetPassword}
+            onResetUser={resetUser}
             onToggleActive={toggleActive}
           />
         )}
@@ -153,7 +160,7 @@ export default function AdminPanel({ user, onLogout }) {
 }
 
 // ── Students Tab ─────────────────────────────────────────────────────────────
-function StudentsTab({ students, currentUserId, onView, onResetPassword, onToggleActive }) {
+function StudentsTab({ students, currentUserId, onView, onResetPassword, onResetUser, onToggleActive }) {
   if (students.length === 0) {
     return (
       <div style={{ fontFamily: FONT.mono, fontSize: "0.8rem", color: "#888", textAlign: "center", padding: "2rem" }}>
@@ -195,6 +202,7 @@ function StudentsTab({ students, currentUserId, onView, onResetPassword, onToggl
             {s.id !== currentUserId && (
               <>
                 <button onClick={() => onResetPassword(s.id, s.name)} style={btnStyle("#5a6a7a")}>Reset PW</button>
+                <button onClick={() => onResetUser(s.id, s.name)} style={btnStyle("#c43b2d")}>Reset</button>
                 <button onClick={() => onToggleActive(s.id, s.name, s.active !== 0)} style={btnStyle(s.active === 0 ? "#22863a" : "#c43b2d")}>
                   {s.active === 0 ? "Activate" : "Deactivate"}
                 </button>

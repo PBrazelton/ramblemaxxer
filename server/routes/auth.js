@@ -21,7 +21,7 @@ const APP_URL = process.env.APP_URL || "http://localhost:5175";
 router.get("/me", (req, res) => {
   if (!req.session.userId) return res.status(401).json({ error: "Not logged in" });
   const user = db.prepare(
-    "SELECT id, email, name, role, grad_year, privacy, provider, avatar_url FROM users WHERE id = ?"
+    "SELECT id, email, name, role, grad_year, privacy, provider, avatar_url, onboarding_step FROM users WHERE id = ?"
   ).get(req.session.userId);
   if (!user) return res.status(401).json({ error: "Session invalid" });
   res.json(user);
@@ -41,7 +41,7 @@ router.post("/login", (req, res) => {
   }
 
   req.session.userId = user.id;
-  res.json({ id: user.id, email: user.email, name: user.name, role: user.role, grad_year: user.grad_year });
+  res.json({ id: user.id, email: user.email, name: user.name, role: user.role, grad_year: user.grad_year, onboarding_step: user.onboarding_step });
 });
 
 // ── POST /api/auth/logout ──────────────────────────────────────────────────
@@ -86,7 +86,7 @@ router.post("/register", (req, res) => {
 
   const userId = registerAndMarkUsed();
   req.session.userId = userId;
-  res.status(201).json({ id: userId, email, name, role: "student" });
+  res.status(201).json({ id: userId, email, name, role: "student", onboarding_step: null });
 });
 
 // ── POST /api/auth/invite ──────────────────────────────────────────────────

@@ -330,6 +330,12 @@ try {
   db.prepare("CREATE INDEX IF NOT EXISTS idx_plan_courses_plan ON plan_courses(plan_id)").run();
 } catch (e) { /* already exists */ }
 
+// Migration: add onboarding_step column to users
+try {
+  db.prepare("ALTER TABLE users ADD COLUMN onboarding_step INTEGER").run();
+  console.log("  Migrated: added onboarding_step column");
+} catch (e) { /* already exists */ }
+
 // Migration: fix UCLR 100 → UCLR 100C for Penelope
 try {
   const result = db.prepare("UPDATE student_courses SET course_code = 'UCLR 100C' WHERE course_code = 'UCLR 100'").run();

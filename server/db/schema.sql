@@ -13,7 +13,8 @@ CREATE TABLE IF NOT EXISTS users (
   invited_by  INTEGER REFERENCES users(id),
   provider    TEXT    NOT NULL DEFAULT 'local',  -- 'local' | 'google'
   provider_id TEXT,
-  avatar_url  TEXT
+  avatar_url  TEXT,
+  onboarding_step INTEGER
 );
 
 -- Password reset tokens

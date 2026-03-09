@@ -322,4 +322,57 @@ router.put("/me/programs", (req, res) => {
   res.json({ ok: true });
 });
 
+// ── PUT /api/students/me/onboarding ────────────────────────────────────────
+router.put("/me/onboarding", (req, res) => {
+  const { step } = req.body;
+  if (step === undefined || step === null || step < 0 || step > 7) {
+    return res.status(400).json({ error: "step must be 0-7" });
+  }
+  db.prepare("UPDATE users SET onboarding_step = ? WHERE id = ?")
+    .run(step, req.session.userId);
+  res.json({ ok: true });
+});
+
+// ── POST /api/students/me/courses/bulk-update ─────────────────────────────
+router.post("/me/courses/bulk-update", (req, res) => {
+  const { updates } = req.body;
+  if (!Array.isArray(updates) || updates.length === 0) {
+    return res.status(400).json({ error: "updates array required" });
+  }
+
+  db.transaction(() => {
+    for (const u of updates) {
+      if (!u.code) continue;
+      const code = u.code.toUpperCase();
+      if (u.status === "remove") {
+        db.prepare("DELETE FROM student_courses WHERE user_id = ? AND course_code = ?")
+          .run(req.session.userId, code);
+      } else if (u.status) {
+        db.prepare("UPDATE student_courses SET status = ? WHERE user_id = ? AND course_code = ?")
+          .run(u.status, req.session.userId, code);
+      }
+    }
+  })();
+
+  res.json({ ok: true });
+});
+
+// ── POST /api/students/me/reset ───────────────────────────────────────────
+router.post("/me/reset", (req, res) => {
+  const { confirm } = req.body;
+  if (!confirm) {
+    return res.status(400).json({ error: "confirm: true required" });
+  }
+
+  const userId = req.session.userId;
+  db.transaction(() => {
+    db.prepare("DELETE FROM student_courses WHERE user_id = ?").run(userId);
+    db.prepare("DELETE FROM plan_courses WHERE plan_id IN (SELECT id FROM student_plans WHERE user_id = ?)").run(userId);
+    db.prepare("DELETE FROM student_plans WHERE user_id = ?").run(userId);
+    db.prepare("UPDATE users SET onboarding_step = NULL WHERE id = ?").run(userId);
+  })();
+
+  res.json({ ok: true });
+});
+
 module.exports = router;
