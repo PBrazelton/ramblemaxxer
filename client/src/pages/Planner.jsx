@@ -197,10 +197,12 @@ export default function Planner({ user, onLogout }) {
     }
   }, [plan]);
 
-  // Load section data for a course+term
+  // Load section data for a course+term (ref-based to avoid re-triggering effects)
+  const sectionDataRef = useRef(sectionData);
+  sectionDataRef.current = sectionData;
   const loadSections = useCallback(async (courseCode, term) => {
     const key = `${courseCode}|${term}`;
-    if (sectionData[key]) return sectionData[key];
+    if (sectionDataRef.current[key]) return sectionDataRef.current[key];
     try {
       const data = await api.get(`/api/offerings/${encodeURIComponent(courseCode)}/${encodeURIComponent(term)}`);
       const sections = Array.isArray(data) ? data : data.sections || [];
@@ -209,7 +211,7 @@ export default function Planner({ user, onLogout }) {
     } catch {
       return [];
     }
-  }, [sectionData]);
+  }, []);
 
   // Placed course codes
   const placedCodes = useMemo(() => new Set(plan?.courses?.map(c => c.course_code) || []), [plan]);
@@ -881,7 +883,7 @@ function WeeklyScheduleView({ plan, coursesByTerm, planTerms, weeklyTerm, setWee
         }
       } else if (chosen && (!chosen.days || chosen.days === "TBA")) {
         tba.push(c);
-      } else if (!c.section) {
+      } else {
         tba.push(c);
       }
     }
