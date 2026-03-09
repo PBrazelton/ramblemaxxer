@@ -602,15 +602,7 @@ function CompletedCategoriesGroup({ categories, color, conflicts, onPipClick }) 
         <span style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#aaa", transform: expanded ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>&#9660;</span>
       </div>
       {expanded && categories.map((cat, i) => (
-        <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.3rem 0", borderTop: `1px solid ${BORDER}` }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-            <span style={{ color: "#22863a", fontSize: "0.6rem" }}>&#10003;</span>
-            <span style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#444" }}>{cat.name}</span>
-          </div>
-          <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#22863a" }}>
-            {cat.filledCount || 0}/{cat.slotsNeeded}
-          </span>
-        </div>
+        <CategoryRow key={`comp-${i}`} cat={cat} color={color} conflicts={conflicts} onPipClick={onPipClick} />
       ))}
     </div>
   );
@@ -632,13 +624,13 @@ function CategoryRow({ cat, color, conflicts, onPipClick, onSlotTap }) {
       const isConflict = conflicts[slot.code];
       const label = i === (pips.length) ? "T1" : "T2";
       pips.push(<FilledPip key={i} slot={slot} color={color} isConflict={!!isConflict} label={label}
-        onClick={isConflict ? () => onPipClick(slot.code, slot.title, isConflict) : undefined} />);
+        onClick={() => onPipClick(slot.code, slot.title, isConflict || null)} />);
       if (label === "T2") slotIdx++;
       continue;
     }
     const isConflict = conflicts[slot.code];
     pips.push(<FilledPip key={i} slot={slot} color={color} isConflict={!!isConflict}
-      onClick={isConflict ? () => onPipClick(slot.code, slot.title, isConflict) : undefined} />);
+      onClick={() => onPipClick(slot.code, slot.title, isConflict || null)} />);
     slotIdx++;
   }
 
@@ -671,7 +663,7 @@ function FilledPip({ slot, color, isConflict, onClick, label }) {
       display: "inline-flex", alignItems: "center", gap: 4,
       padding: "3px 8px", borderRadius: 4, fontSize: "0.65rem", fontFamily: FONT.mono,
       background: `${color}12`, border: `1px solid ${isConflict ? "#ffc107" : color + "40"}`,
-      cursor: isConflict ? "pointer" : "default", boxShadow: isConflict ? "0 0 0 1px #ffc107" : "none",
+      cursor: "pointer", boxShadow: isConflict ? "0 0 0 1px #ffc107" : "none",
     }}>
       <span style={{ width: 6, height: 6, borderRadius: "50%", background: STATUS_COLOR[slot.status] || "#888", flexShrink: 0 }} />
       {slot.code}
@@ -1189,6 +1181,74 @@ function DetailItem({ label, value }) {
       <div style={{ fontFamily: FONT.mono, fontSize: "0.55rem", color: "#888", marginBottom: 1 }}>{label}</div>
       <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#444" }}>{value}</div>
     </div>
+  );
+}
+
+// ── CourseDetailModal (standalone, for pip taps) ────────────────────────────
+function CourseDetailModal({ code, onClose }) {
+  const [course, setCourse] = useState(null);
+  const [studentCourse, setStudentCourse] = useState(null);
+
+  useEffect(() => {
+    api.get(`/api/courses/${encodeURIComponent(code)}`).then(setCourse).catch(() => {});
+    api.get("/api/students/me/courses").then(courses => {
+      const match = courses.find(c => c.code === code || c.course_code === code);
+      setStudentCourse(match || null);
+    }).catch(() => {});
+  }, [code]);
+
+  return (
+    <BottomSheet onClose={onClose} maxWidth={480}>
+      {!course ? (
+        <div style={{ fontFamily: FONT.mono, fontSize: "0.8rem", color: "#888", padding: "2rem", textAlign: "center" }}>loading...</div>
+      ) : (
+        <div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.3rem" }}>
+            <span style={{ fontFamily: FONT.mono, fontSize: "1rem", fontWeight: 700 }}>{course.code}</span>
+            <span style={{ fontFamily: FONT.mono, fontSize: "0.8rem", color: "#888" }}>{course.credits} credits</span>
+          </div>
+          <div style={{ fontFamily: FONT.serif, fontSize: "1.1rem", fontWeight: 600, marginBottom: "1rem" }}>{course.title}</div>
+
+          {studentCourse?.semester && (
+            <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#444", marginBottom: "0.8rem" }}>
+              <strong>Term:</strong> {studentCourse.semester}
+              {studentCourse.status && <span style={{ marginLeft: "0.5rem", fontSize: "0.6rem", background: `${STATUS_COLOR[studentCourse.status] || "#888"}18`, color: STATUS_COLOR[studentCourse.status] || "#888", padding: "1px 6px", borderRadius: 3 }}>{studentCourse.status}</span>}
+            </div>
+          )}
+
+          {course.description && (
+            <div style={{ marginBottom: "0.8rem" }}>
+              <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", fontWeight: 600, marginBottom: "0.2rem" }}>Description</div>
+              <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#444", lineHeight: 1.5 }}>{course.description}</div>
+            </div>
+          )}
+
+          {course.prerequisites && (
+            <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#666", marginBottom: "0.5rem" }}>
+              <strong>Prerequisites:</strong> {course.prerequisites}
+            </div>
+          )}
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.4rem", marginBottom: "0.8rem" }}>
+            <DetailItem label="Knowledge Area" value={course.knowledge_area || "--"} />
+            <DetailItem label="Department" value={course.department || "--"} />
+            <DetailItem label="Writing Intensive" value={course.writing_intensive ? "Yes" : "No"} />
+            <DetailItem label="Engaged Learning" value={course.engaged_learning ? "Yes" : "No"} />
+          </div>
+
+          {course.interdisciplinary_options?.length > 0 && (
+            <div style={{ marginBottom: "0.8rem" }}>
+              <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", fontWeight: 600, marginBottom: "0.2rem" }}>Interdisciplinary</div>
+              <div style={{ display: "flex", gap: "0.3rem", flexWrap: "wrap" }}>
+                {course.interdisciplinary_options.map(opt => (
+                  <span key={opt} style={{ fontFamily: FONT.mono, fontSize: "0.55rem", background: "#f5f0e8", padding: "1px 5px", borderRadius: 3, color: "#666" }}>{opt}</span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </BottomSheet>
   );
 }
 
@@ -1951,6 +2011,7 @@ function Dashboard({ user, setUser, onLogout }) {
   const [data, setData] = useState(null);
   const [pinModal, setPinModal] = useState(null);
   const [slotModal, setSlotModal] = useState(null);
+  const [courseDetailModal, setCourseDetailModal] = useState(null); // { code }
   const [showSettings, setShowSettings] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [addCoursesSheet, setAddCoursesSheet] = useState(null); // null or { term }
@@ -2004,7 +2065,11 @@ function Dashboard({ user, setUser, onLogout }) {
   };
 
   const handlePipClick = (code, title, programs) => {
-    setPinModal({ code, title, programs });
+    if (programs) {
+      setPinModal({ code, title, programs });
+    } else {
+      setCourseDetailModal({ code });
+    }
   };
 
   const handleSlotTap = (programCode, categoryName) => {
@@ -2078,6 +2143,10 @@ function Dashboard({ user, setUser, onLogout }) {
       {slotModal && (
         <SlotModal programCode={slotModal.programCode} categoryName={slotModal.categoryName}
           onClose={() => setSlotModal(null)} />
+      )}
+
+      {courseDetailModal && (
+        <CourseDetailModal code={courseDetailModal.code} onClose={() => setCourseDetailModal(null)} />
       )}
 
       {addCoursesSheet && (
