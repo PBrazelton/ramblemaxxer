@@ -299,7 +299,7 @@ export default function Planner({ user, onLogout }) {
   );
 
   return (
-    <div style={{ background: BG, minHeight: "100vh" }}>
+    <div style={{ background: BG, height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       {/* Error banner */}
       {error && (
         <div style={{ background: "#fde8e8", borderBottom: "1px solid #f5c6cb", padding: "0.5rem 1rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -308,7 +308,7 @@ export default function Planner({ user, onLogout }) {
         </div>
       )}
       {/* Header */}
-      <div style={{ position: "sticky", top: 0, zIndex: 50, background: BG, borderBottom: `1px solid ${BORDER}`, padding: "0.6rem 1rem" }}>
+      <div style={{ flexShrink: 0, zIndex: 50, background: BG, borderBottom: `1px solid ${BORDER}`, padding: "0.6rem 1rem" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.8rem" }}>
             <h1 style={{ fontFamily: FONT.serif, fontSize: "1.3rem", fontWeight: 700, margin: 0, letterSpacing: "-0.02em" }}>
@@ -356,6 +356,7 @@ export default function Planner({ user, onLogout }) {
       </div>
 
       {/* Content */}
+      <div style={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
       {view === "semester" ? (
         <SemesterPlanView
           plan={plan} courseCatalog={browseCourses} filteredCourses={filteredCourses}
@@ -380,6 +381,7 @@ export default function Planner({ user, onLogout }) {
           assignSection={assignSection} isMobile={isMobile}
         />
       )}
+      </div>
 
       {/* Mobile: selected course sticky bar */}
       {isMobile && selectedCourse && (
@@ -477,7 +479,7 @@ function SemesterPlanView({
 
   // Desktop: three-panel layout
   return (
-    <div style={{ display: "flex", gap: "0.75rem", padding: "0.75rem", minHeight: "calc(100vh - 100px)" }}>
+    <div style={{ display: "flex", gap: "0.75rem", padding: "0.75rem", height: "100%", boxSizing: "border-box" }}>
       {/* Left: Course Browser */}
       <div style={{ width: 280, flexShrink: 0, display: "flex", flexDirection: "column" }}>
         <div style={{
@@ -505,7 +507,7 @@ function SemesterPlanView({
       </div>
 
       {/* Center: Semester Buckets */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "0.5rem", overflow: "auto" }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "0.5rem", overflow: "auto", minHeight: 0 }}>
         {planTerms.map(term => (
           <SemesterBucket key={term} term={term} courses={coursesByTerm[term] || []}
             selectedCourse={selectedCourse} placeCourse={placeCourse}
@@ -516,10 +518,10 @@ function SemesterPlanView({
       </div>
 
       {/* Right: Requirement Tracker */}
-      <div style={{ width: 220, flexShrink: 0 }}>
+      <div style={{ width: 220, flexShrink: 0, overflow: "auto", minHeight: 0 }}>
         <div style={{
           background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 8,
-          padding: "0.6rem 0.7rem", position: "sticky", top: 110,
+          padding: "0.6rem 0.7rem",
         }}>
           <div style={{ fontFamily: FONT.serif, fontSize: "0.9rem", fontWeight: 700, marginBottom: "0.4rem" }}>
             Requirements
