@@ -37,6 +37,7 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(getPage());
+  const [devPersona, setDevPersona] = useState(null);
 
   useEffect(() => {
     window.addEventListener("hashchange", () => setPage(getPage()));
@@ -44,6 +45,14 @@ export default function App() {
       .then(u => { setUser(u?.id ? u : false); setLoading(false); })
       .catch(() => { setUser(false); setLoading(false); });
   }, []);
+
+  // Check for active dev persona
+  useEffect(() => {
+    if (import.meta.env.PROD || !user) { setDevPersona(null); return; }
+    api.get("/api/dev/personas/current")
+      .then(d => setDevPersona(d?.persona || null))
+      .catch(() => {});
+  }, [user]);
 
   if (loading) return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: BG }}>
@@ -53,14 +62,123 @@ export default function App() {
   const doLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
     setUser(false);
+    setDevPersona(null);
   };
+  const switchPersona = () => { doLogout(); };
+  const resetPersona = async () => {
+    await api.post("/api/dev/personas/reset");
+    window.location.reload();
+  };
+
   if (page === "forgot-password") return <ForgotPasswordPage />;
   if (page === "reset-password") return <ResetPasswordPage />;
-  if (!user && page !== "register") return <LoginPage onLogin={setUser} />;
+  if (!user && page !== "register") return <LoginPage onLogin={setUser} setDevPersona={setDevPersona} />;
   if (page === "register") return <RegisterPage onRegister={setUser} />;
-  if (user.role === "admin") return <AdminPanel user={user} onLogout={doLogout} />;
-  if (page === "planner") return <Planner user={user} onLogout={doLogout} />;
-  return <Dashboard user={user} setUser={setUser} onLogout={doLogout} />;
+
+  const banner = devPersona ? <DevBanner persona={devPersona} onSwitch={switchPersona} onReset={resetPersona} /> : null;
+
+  if (user.role === "admin") return <>{banner}<AdminPanel user={user} onLogout={doLogout} /></>;
+  if (page === "planner") return <>{banner}<Planner user={user} onLogout={doLogout} /></>;
+  return <>{banner}<Dashboard user={user} setUser={setUser} onLogout={doLogout} /></>;
+}
+
+// ── DevBanner ───────────────────────────────────────────────────────────────
+function DevBanner({ persona, onSwitch, onReset }) {
+  if (!persona) return null;
+  return (
+    <>
+      <div style={{
+        position: "fixed", top: 0, left: 0, right: 0, zIndex: 9999,
+        background: "#c43b2d", color: "#fff", padding: "6px 16px",
+        fontFamily: FONT.mono, fontSize: "0.7rem",
+        display: "flex", alignItems: "center", justifyContent: "center", gap: 12,
+      }}>
+        <span>DEV MODE — Viewing as: {persona.name} ({persona.label})</span>
+        <button onClick={onSwitch} style={{
+          background: "rgba(255,255,255,0.2)", border: "none", color: "#fff",
+          padding: "2px 8px", borderRadius: 3, cursor: "pointer", fontFamily: FONT.mono, fontSize: "0.65rem",
+        }}>Switch</button>
+        <button onClick={onReset} style={{
+          background: "rgba(255,255,255,0.2)", border: "none", color: "#fff",
+          padding: "2px 8px", borderRadius: 3, cursor: "pointer", fontFamily: FONT.mono, fontSize: "0.65rem",
+        }}>Reset</button>
+      </div>
+      <div style={{ height: 30 }} />
+    </>
+  );
+}
+
+// ── PersonaPicker ───────────────────────────────────────────────────────────
+const PERSONA_COLORS = {
+  green: "#22863a", blue: "#0366d6", yellow: "#b08800",
+  red: "#c43b2d", purple: "#6f42c1", orange: "#e36209",
+};
+
+function PersonaPicker({ onLogin, setDevPersona }) {
+  const [personas, setPersonas] = useState([]);
+  const [loading, setLoading] = useState(null); // id of persona being loaded
+
+  useEffect(() => {
+    fetch("/api/dev/personas").then(r => r.json()).then(setPersonas).catch(() => {});
+  }, []);
+
+  if (personas.length === 0) return null;
+
+  const activate = async (id) => {
+    setLoading(id);
+    try {
+      const res = await fetch(`/api/dev/personas/${id}/activate`, {
+        method: "POST", credentials: "include",
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await res.json();
+      if (res.ok && data.user) {
+        setDevPersona({ id: data.persona, name: data.user.name, label: personas.find(p => p.id === id)?.label });
+        onLogin(data.user);
+      }
+    } catch (e) { /* ignore */ }
+    setLoading(null);
+  };
+
+  return (
+    <div style={{ marginTop: 24, borderTop: `1px solid ${BORDER}`, paddingTop: 16 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+        <div style={{ flex: 1, height: 1, background: BORDER }} />
+        <span style={{ fontSize: 11, color: "#b0a090", fontFamily: FONT.mono, whiteSpace: "nowrap" }}>development mode</span>
+        <div style={{ flex: 1, height: 1, background: BORDER }} />
+      </div>
+      <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#888", marginBottom: 12, textAlign: "center" }}>
+        Quick Login as Test Persona
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        {personas.map(p => (
+          <button key={p.id} onClick={() => activate(p.id)} disabled={!!loading}
+            style={{
+              display: "flex", alignItems: "center", gap: 10, padding: "10px 12px",
+              borderRadius: 8, border: `1px solid ${BORDER}`, background: "#fff",
+              cursor: loading ? "wait" : "pointer", textAlign: "left",
+              opacity: loading && loading !== p.id ? 0.5 : 1,
+            }}>
+            <span style={{
+              width: 10, height: 10, borderRadius: "50%", flexShrink: 0,
+              background: PERSONA_COLORS[p.color] || "#888",
+            }} />
+            <div style={{ flex: 1 }}>
+              <div style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 600 }}>
+                {p.label}
+              </div>
+              <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#888" }}>
+                {p.name} · {p.description}
+              </div>
+            </div>
+            {loading === p.id && (
+              <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#888" }}>loading...</span>
+            )}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 // ── AuthShell ───────────────────────────────────────────────────────────────
@@ -90,7 +208,7 @@ function GoogleIcon() {
 }
 
 // ── Login Page ──────────────────────────────────────────────────────────────
-function LoginPage({ onLogin }) {
+function LoginPage({ onLogin, setDevPersona }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -136,6 +254,7 @@ function LoginPage({ onLogin }) {
           forgot password?
         </button>
       </div>
+      {!import.meta.env.PROD && <PersonaPicker onLogin={onLogin} setDevPersona={setDevPersona} />}
     </AuthShell>
   );
 }

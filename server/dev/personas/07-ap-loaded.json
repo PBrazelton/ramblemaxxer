@@ -1,0 +1,19 @@
+{
+  "id": "ap-loaded",
+  "name": "Aisha Johnson",
+  "email": "aisha.johnson@dev.ramblemaxxer.com",
+  "label": "AP Loaded",
+  "color": "purple",
+  "description": "PSYC-BS · 24cr AP · No LUC courses yet",
+  "gradYear": 2029,
+  "programs": ["PSYC-BS"],
+  "transferCredits": [
+    { "code": "AP BIO", "credits": 8, "label": "AP Biology" },
+    { "code": "AP PSYCH", "credits": 3, "label": "AP Psychology" },
+    { "code": "XFER XXXX-1", "credits": 6, "label": "AP English Lit + Lang" },
+    { "code": "XFER XXXX-2", "credits": 4, "label": "AP Calculus AB" },
+    { "code": "XFER XXXX-3", "credits": 3, "label": "AP US History" }
+  ],
+  "courses": [],
+  "onboardingComplete": false
+}

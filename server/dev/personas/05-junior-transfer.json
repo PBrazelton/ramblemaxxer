@@ -1,0 +1,42 @@
+{
+  "id": "junior-transfer",
+  "name": "Maria Santos",
+  "email": "maria.santos@dev.ramblemaxxer.com",
+  "label": "Junior Transfer",
+  "color": "yellow",
+  "description": "HIST-BA · 42cr LUC + 45cr transfer",
+  "gradYear": 2027,
+  "programs": ["HIST-BA"],
+  "transferCredits": [
+    { "code": "XFER XXXX-1", "credits": 3, "label": "Intro to Sociology (CC)" },
+    { "code": "XFER XXXX-2", "credits": 3, "label": "English Comp I (CC)" },
+    { "code": "XFER XXXX-3", "credits": 3, "label": "English Comp II (CC)" },
+    { "code": "XFER XXXX-4", "credits": 3, "label": "US History I (CC)" },
+    { "code": "XFER XXXX-5", "credits": 3, "label": "US History II (CC)" },
+    { "code": "XFER XXXX-6", "credits": 3, "label": "World Civilizations I (CC)" },
+    { "code": "XFER XXXX-7", "credits": 3, "label": "World Civilizations II (CC)" },
+    { "code": "XFER XXXX-8", "credits": 3, "label": "Intro Psychology (CC)" },
+    { "code": "XFER XXXX-9", "credits": 3, "label": "College Algebra (CC)" },
+    { "code": "XFER XXXX-10", "credits": 3, "label": "Public Speaking (CC)" },
+    { "code": "XFER XXXX-11", "credits": 3, "label": "Art Appreciation (CC)" },
+    { "code": "XFER XXXX-12", "credits": 3, "label": "Intro Biology (CC)" },
+    { "code": "XFER XXXX-13", "credits": 3, "label": "Intro Chemistry (CC)" },
+    { "code": "XFER XXXX-14", "credits": 3, "label": "Spanish I (CC)" },
+    { "code": "XFER XXXX-15", "credits": 3, "label": "Spanish II (CC)" }
+  ],
+  "courses": [
+    { "code": "HIST 300", "term": "Fall 2025", "status": "complete" },
+    { "code": "HIST 322", "term": "Fall 2025", "status": "complete" },
+    { "code": "UCWR 110", "term": "Fall 2025", "status": "complete" },
+    { "code": "THEO 100", "term": "Fall 2025", "status": "complete" },
+    { "code": "HIST 353", "term": "Spring 2026", "status": "complete" },
+    { "code": "HIST 210", "term": "Spring 2026", "status": "complete" },
+    { "code": "PHIL 130", "term": "Spring 2026", "status": "complete" },
+    { "code": "ENGL 290", "term": "Spring 2026", "status": "complete" },
+    { "code": "HIST 355", "term": "Fall 2026", "status": "enrolled" },
+    { "code": "HIST 398", "term": "Fall 2026", "status": "enrolled" },
+    { "code": "THEO 231", "term": "Fall 2026", "status": "enrolled" },
+    { "code": "PLSC 102", "term": "Fall 2026", "status": "enrolled" }
+  ],
+  "onboardingComplete": true
+}
