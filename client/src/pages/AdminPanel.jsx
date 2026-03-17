@@ -14,6 +14,7 @@ export default function AdminPanel({ user, onLogout }) {
   const [studentData, setStudentData] = useState(null);
   const [tempPassword, setTempPassword] = useState(null);
   const [newInviteUrl, setNewInviteUrl] = useState(null);
+  const [feedbackCount, setFeedbackCount] = useState(0);
 
   const loadStudents = useCallback(() => {
     api.get("/api/admin/students").then(setStudents);
@@ -24,6 +25,12 @@ export default function AdminPanel({ user, onLogout }) {
   }, []);
 
   useEffect(() => { loadStudents(); loadInvites(); }, [loadStudents, loadInvites]);
+
+  // Load unreviewed feedback count
+  useEffect(() => {
+    fetch("/api/feedback/admin?status=new&limit=1", { credentials: "include" })
+      .then(r => r.json()).then(d => setFeedbackCount(d.total || 0)).catch(() => {});
+  }, []);
 
   const viewDashboard = async (id) => {
     setViewingStudent(id);
@@ -67,15 +74,24 @@ export default function AdminPanel({ user, onLogout }) {
       {/* Tab bar */}
       <div style={{ maxWidth: 680, margin: "0 auto", padding: "1rem 1rem 0" }}>
         <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
-          {["students", "invites", "programs", "tools"].map(t => (
+          {["students", "invites", "programs", "tools", "feedback"].map(t => (
             <button key={t} onClick={() => setTab(t)} style={{
               fontFamily: FONT.mono, fontSize: "0.8rem", padding: "0.5rem 1rem",
               background: tab === t ? "#1a1a1a" : "#f5f0e8",
               color: tab === t ? "#fff" : "#666",
               border: "none", borderRadius: 4, cursor: "pointer",
-              textTransform: "capitalize",
+              textTransform: "capitalize", position: "relative",
             }}>
               {t}
+              {t === "feedback" && feedbackCount > 0 && (
+                <span style={{
+                  position: "absolute", top: -4, right: -4,
+                  background: "#c43b2d", color: "#fff", fontSize: "0.55rem",
+                  fontFamily: FONT.mono, minWidth: 16, height: 16,
+                  borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center",
+                  padding: "0 4px",
+                }}>{feedbackCount}</span>
+              )}
             </button>
           ))}
         </div>
@@ -101,6 +117,7 @@ export default function AdminPanel({ user, onLogout }) {
         )}
         {tab === "programs" && <ProgramsTab />}
         {tab === "tools" && <ToolsTab />}
+        {tab === "feedback" && <FeedbackTab onCountChange={setFeedbackCount} />}
       </div>
 
       {/* Student dashboard modal */}
@@ -1228,3 +1245,294 @@ const tinyBtnStyle = {
   background: "#f5f0e8", color: "#666", border: `1px solid ${BORDER}`,
   borderRadius: 3, cursor: "pointer",
 };
+
+// ── FeedbackTab ─────────────────────────────────────────────────────────────
+function FeedbackTab({ onCountChange }) {
+  const [items, setItems] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [statusFilter, setStatusFilter] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [viewing, setViewing] = useState(null);
+  const [detail, setDetail] = useState(null);
+  const [saving, setSaving] = useState(false);
+
+  const load = useCallback(() => {
+    const params = new URLSearchParams({ page, limit: 20 });
+    if (statusFilter) params.set("status", statusFilter);
+    if (categoryFilter) params.set("category", categoryFilter);
+    fetch(`/api/feedback/admin?${params}`, { credentials: "include" })
+      .then(r => r.json())
+      .then(d => { setItems(d.items || []); setTotal(d.total || 0); })
+      .catch(() => {});
+  }, [page, statusFilter, categoryFilter]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const openDetail = async (id) => {
+    setViewing(id);
+    const res = await fetch(`/api/feedback/admin/${id}`, { credentials: "include" });
+    const data = await res.json();
+    setDetail(data);
+  };
+
+  const saveDetail = async () => {
+    if (!detail || saving) return;
+    setSaving(true);
+    await fetch(`/api/feedback/admin/${detail.id}`, {
+      method: "PATCH",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        status: detail.status,
+        adminNotes: detail.admin_notes,
+        githubIssueUrl: detail.github_issue_url,
+      }),
+    });
+    setSaving(false);
+    load();
+    // Update badge count
+    fetch("/api/feedback/admin?status=new&limit=1", { credentials: "include" })
+      .then(r => r.json()).then(d => onCountChange?.(d.total || 0)).catch(() => {});
+  };
+
+  const statusColors = { new: "#c43b2d", reviewed: "#b08800", filed: "#6f42c1", resolved: "#22863a", wontfix: "#999" };
+  const categoryLabels = { bug: "Bug", confusing: "Confusing", idea: "Idea", other: "Other" };
+
+  function timeAgo(ts) {
+    const ms = Date.now() - new Date(ts + (ts.includes("Z") ? "" : "Z")).getTime();
+    const mins = Math.floor(ms / 60000);
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    return `${Math.floor(hrs / 24)}d ago`;
+  }
+
+  return (
+    <>
+      {/* Filters */}
+      <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem", flexWrap: "wrap" }}>
+        <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1); }} style={{
+          fontFamily: FONT.mono, fontSize: "0.75rem", padding: "0.4rem 0.6rem",
+          borderRadius: 4, border: `1px solid ${BORDER}`, background: "#fff",
+        }}>
+          <option value="">All statuses</option>
+          {["new", "reviewed", "filed", "resolved", "wontfix"].map(s => (
+            <option key={s} value={s}>{s}</option>
+          ))}
+        </select>
+        <select value={categoryFilter} onChange={e => { setCategoryFilter(e.target.value); setPage(1); }} style={{
+          fontFamily: FONT.mono, fontSize: "0.75rem", padding: "0.4rem 0.6rem",
+          borderRadius: 4, border: `1px solid ${BORDER}`, background: "#fff",
+        }}>
+          <option value="">All categories</option>
+          {["bug", "confusing", "idea", "other"].map(c => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
+        <span style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#999", alignSelf: "center" }}>
+          {total} total
+        </span>
+      </div>
+
+      {/* List */}
+      {items.length === 0 && (
+        <div style={{ fontFamily: FONT.mono, fontSize: "0.8rem", color: "#999", padding: "2rem 0", textAlign: "center" }}>
+          No feedback yet
+        </div>
+      )}
+      {items.map(item => {
+        let ctx = {};
+        try { ctx = typeof item.context === "string" ? JSON.parse(item.context) : (item.context || {}); } catch {}
+        return (
+          <div key={item.id} onClick={() => openDetail(item.id)} style={{
+            background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 8,
+            padding: "0.8rem 1rem", marginBottom: "0.5rem", cursor: "pointer",
+            transition: "box-shadow 0.15s",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.4rem", flexWrap: "wrap" }}>
+              <span style={{
+                fontFamily: FONT.mono, fontSize: "0.6rem", padding: "2px 6px",
+                borderRadius: 3, color: "#fff", background: statusColors[item.status] || "#999",
+                textTransform: "uppercase",
+              }}>{item.status}</span>
+              {item.category && (
+                <span style={{
+                  fontFamily: FONT.mono, fontSize: "0.6rem", padding: "2px 6px",
+                  borderRadius: 3, background: "#f5f0e8", color: "#666",
+                }}>{categoryLabels[item.category] || item.category}</span>
+              )}
+              <span style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#999" }}>
+                {item.user_name}
+              </span>
+              <span style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#bbb", marginLeft: "auto" }}>
+                {timeAgo(item.created_at)}
+              </span>
+              {ctx.view && (
+                <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#bbb" }}>{ctx.view}</span>
+              )}
+            </div>
+            <div style={{
+              fontFamily: FONT.mono, fontSize: "0.8rem", color: "#333",
+              overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+            }}>"{item.message?.substring(0, 100)}{item.message?.length > 100 ? "..." : ""}"</div>
+          </div>
+        );
+      })}
+
+      {/* Pagination */}
+      {total > 20 && (
+        <div style={{ display: "flex", justifyContent: "center", gap: "1rem", marginTop: "1rem" }}>
+          <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} style={{
+            fontFamily: FONT.mono, fontSize: "0.75rem", padding: "0.4rem 0.8rem",
+            background: page <= 1 ? "#eee" : "#f5f0e8", border: `1px solid ${BORDER}`,
+            borderRadius: 4, cursor: page <= 1 ? "default" : "pointer",
+          }}>Prev</button>
+          <span style={{ fontFamily: FONT.mono, fontSize: "0.75rem", color: "#999", alignSelf: "center" }}>
+            {page} / {Math.ceil(total / 20)}
+          </span>
+          <button disabled={page >= Math.ceil(total / 20)} onClick={() => setPage(p => p + 1)} style={{
+            fontFamily: FONT.mono, fontSize: "0.75rem", padding: "0.4rem 0.8rem",
+            background: page >= Math.ceil(total / 20) ? "#eee" : "#f5f0e8", border: `1px solid ${BORDER}`,
+            borderRadius: 4, cursor: page >= Math.ceil(total / 20) ? "default" : "pointer",
+          }}>Next</button>
+        </div>
+      )}
+
+      {/* Detail sheet */}
+      {viewing && detail && (
+        <BottomSheet onClose={() => { setViewing(null); setDetail(null); }} maxWidth={680}>
+          <div style={{ fontFamily: FONT.serif, fontSize: "1.1rem", marginBottom: "0.3rem" }}>
+            {detail.user_name}
+          </div>
+          <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginBottom: "1rem", flexWrap: "wrap" }}>
+            {detail.category && (
+              <span style={{
+                fontFamily: FONT.mono, fontSize: "0.65rem", padding: "2px 6px",
+                borderRadius: 3, background: "#f5f0e8", color: "#666",
+              }}>{categoryLabels[detail.category] || detail.category}</span>
+            )}
+            <span style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#999" }}>
+              {detail.user_email}
+            </span>
+            <span style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#bbb" }}>
+              {detail.created_at?.replace("T", " ").substring(0, 16)}
+            </span>
+          </div>
+
+          {/* Message */}
+          <div style={{
+            background: "#faf8f4", border: `1px solid ${BORDER}`, borderRadius: 8,
+            padding: "1rem", fontFamily: FONT.mono, fontSize: "0.85rem", color: "#333",
+            marginBottom: "1rem", whiteSpace: "pre-wrap",
+          }}>{detail.message}</div>
+
+          {/* Screenshot */}
+          {detail.screenshot && (
+            <div style={{ marginBottom: "1rem" }}>
+              <img
+                src={`data:image/png;base64,${detail.screenshot}`}
+                alt="Screenshot"
+                style={{ width: "100%", borderRadius: 8, border: `1px solid ${BORDER}` }}
+              />
+            </div>
+          )}
+
+          {/* Errors */}
+          {detail.errors && detail.errors.length > 0 && (
+            <details style={{ marginBottom: "1rem" }}>
+              <summary style={{ fontFamily: FONT.mono, fontSize: "0.75rem", color: "#666", cursor: "pointer" }}>
+                Errors ({detail.errors.length})
+              </summary>
+              <div style={{
+                background: "#1a1a1a", color: "#e8e4df", borderRadius: 8, padding: "0.8rem",
+                fontFamily: FONT.mono, fontSize: "0.7rem", marginTop: "0.5rem",
+                maxHeight: 200, overflow: "auto",
+              }}>
+                {detail.errors.map((err, i) => (
+                  <div key={i} style={{ marginBottom: "0.4rem" }}>
+                    <span style={{ color: "#999" }}>{err.timestamp?.substring(11, 19)}</span>{" "}
+                    <span style={{ color: err.type === "error" ? "#c43b2d" : "#b08800" }}>{err.type}</span>{" "}
+                    <span>{err.message}</span>
+                  </div>
+                ))}
+              </div>
+            </details>
+          )}
+
+          {/* Context */}
+          {detail.context && (
+            <details style={{ marginBottom: "1rem" }}>
+              <summary style={{ fontFamily: FONT.mono, fontSize: "0.75rem", color: "#666", cursor: "pointer" }}>
+                Context
+              </summary>
+              <div style={{
+                background: "#faf8f4", borderRadius: 8, padding: "0.8rem",
+                fontFamily: FONT.mono, fontSize: "0.7rem", color: "#666", marginTop: "0.5rem",
+              }}>
+                {Object.entries(detail.context).map(([k, v]) => (
+                  <div key={k}><strong>{k}:</strong> {typeof v === "object" ? JSON.stringify(v) : String(v)}</div>
+                ))}
+              </div>
+            </details>
+          )}
+
+          {/* Status + Notes */}
+          <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginBottom: "0.8rem" }}>
+            <span style={{ fontFamily: FONT.mono, fontSize: "0.75rem", color: "#666" }}>Status:</span>
+            <select
+              value={detail.status}
+              onChange={e => setDetail({ ...detail, status: e.target.value })}
+              style={{
+                fontFamily: FONT.mono, fontSize: "0.75rem", padding: "0.3rem 0.5rem",
+                borderRadius: 4, border: `1px solid ${BORDER}`, background: "#fff",
+              }}
+            >
+              {["new", "reviewed", "filed", "resolved", "wontfix"].map(s => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </div>
+
+          <div style={{ marginBottom: "0.8rem" }}>
+            <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#999", marginBottom: "0.3rem" }}>
+              Admin notes
+            </div>
+            <textarea
+              value={detail.admin_notes || ""}
+              onChange={e => setDetail({ ...detail, admin_notes: e.target.value })}
+              placeholder="Triage notes..."
+              style={{
+                width: "100%", minHeight: 60, padding: "0.5rem", borderRadius: 6,
+                border: `1px solid ${BORDER}`, fontFamily: FONT.mono, fontSize: "0.8rem",
+                resize: "vertical", background: "#fff", boxSizing: "border-box",
+              }}
+            />
+          </div>
+
+          <div style={{ marginBottom: "1rem" }}>
+            <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#999", marginBottom: "0.3rem" }}>
+              GitHub Issue URL
+            </div>
+            <input
+              value={detail.github_issue_url || ""}
+              onChange={e => setDetail({ ...detail, github_issue_url: e.target.value })}
+              placeholder="https://github.com/..."
+              style={{
+                width: "100%", padding: "0.5rem", borderRadius: 6,
+                border: `1px solid ${BORDER}`, fontFamily: FONT.mono, fontSize: "0.8rem",
+                background: "#fff", boxSizing: "border-box",
+              }}
+            />
+          </div>
+
+          <button onClick={saveDetail} disabled={saving} style={{
+            width: "100%", padding: "0.7rem", borderRadius: 8, border: "none",
+            background: "#1a1a1a", color: "#fff", fontFamily: FONT.mono, fontSize: "0.85rem",
+            cursor: "pointer",
+          }}>{saving ? "Saving..." : "Save"}</button>
+        </BottomSheet>
+      )}
+    </>
+  );
+}

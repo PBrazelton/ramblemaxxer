@@ -342,5 +342,30 @@ try {
   if (result.changes > 0) console.log("  Migrated: UCLR 100 → UCLR 100C");
 } catch (e) { /* already fixed */ }
 
+// Migration: create feedback table
+db.exec(`
+  CREATE TABLE IF NOT EXISTS feedback (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    category TEXT,
+    message TEXT NOT NULL,
+    screenshot BLOB,
+    errors TEXT,
+    context TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'new',
+    admin_notes TEXT,
+    github_issue_url TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    resolved_at TEXT,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  )
+`);
+try {
+  db.prepare("CREATE INDEX IF NOT EXISTS idx_feedback_status ON feedback(status)").run();
+  db.prepare("CREATE INDEX IF NOT EXISTS idx_feedback_user ON feedback(user_id)").run();
+  db.prepare("CREATE INDEX IF NOT EXISTS idx_feedback_category ON feedback(category)").run();
+  db.prepare("CREATE INDEX IF NOT EXISTS idx_feedback_created ON feedback(created_at)").run();
+} catch (e) { /* already exist */ }
+
 db.close();
 console.log(`✓ Database initialized at ${DB_PATH}`);

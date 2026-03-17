@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { COLORS, programColor, STATUS_COLOR, FONT, BG, BORDER, api, ProgressRing, BottomSheet, StickyHeader, sharedStyles, Input, Btn, SectionTitle, ErrMsg } from "./lib/ui.jsx";
+import { getErrors } from "./lib/error-buffer.js";
 import AdminPanel from "./pages/AdminPanel.jsx";
 import Planner from "./pages/Planner.jsx";
 
@@ -38,6 +39,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(getPage());
   const [devPersona, setDevPersona] = useState(null);
+  const [onboardingActive, setOnboardingActive] = useState(false);
 
   useEffect(() => {
     window.addEventListener("hashchange", () => setPage(getPage()));
@@ -76,10 +78,225 @@ export default function App() {
   if (page === "register") return <RegisterPage onRegister={setUser} />;
 
   const banner = devPersona ? <DevBanner persona={devPersona} onSwitch={switchPersona} onReset={resetPersona} /> : null;
+  // Hide feedback widget during onboarding (only relevant on dashboard page)
+  const hideWidget = page === "dashboard" && onboardingActive;
+  const widget = user ? <FeedbackWidget user={user} hidden={hideWidget} /> : null;
 
-  if (user.role === "admin") return <>{banner}<AdminPanel user={user} onLogout={doLogout} /></>;
-  if (page === "planner") return <>{banner}<Planner user={user} onLogout={doLogout} /></>;
-  return <>{banner}<Dashboard user={user} setUser={setUser} onLogout={doLogout} /></>;
+  if (user.role === "admin") return <>{banner}{widget}<AdminPanel user={user} onLogout={doLogout} /></>;
+  if (page === "planner") return <>{banner}{widget}<Planner user={user} onLogout={doLogout} /></>;
+  return <>{banner}{widget}<Dashboard user={user} setUser={setUser} onLogout={doLogout} setOnboardingActive={setOnboardingActive} /></>;
+}
+
+// ── FeedbackWidget ──────────────────────────────────────────────────────────
+const FEEDBACK_PULSE_KEYFRAMES = `@keyframes feedbackPulse {
+  0% { box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+  50% { box-shadow: 0 2px 16px rgba(26,26,26,0.35); }
+  100% { box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+}`;
+
+function FeedbackWidget({ user, hidden }) {
+  const [open, setOpen] = useState(false);
+  const [message, setMessage] = useState("");
+  const [category, setCategory] = useState(null);
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [showCheck, setShowCheck] = useState(false);
+  const [showPulse, setShowPulse] = useState(false);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [lastSubmitTime, setLastSubmitTime] = useState(0);
+  const [rateLimitMsg, setRateLimitMsg] = useState(false);
+  const screenshotRef = useRef(null);
+  const styleRef = useRef(null);
+
+  // Inject pulse keyframes once
+  useEffect(() => {
+    if (styleRef.current) return;
+    const style = document.createElement("style");
+    style.textContent = FEEDBACK_PULSE_KEYFRAMES;
+    document.head.appendChild(style);
+    styleRef.current = style;
+  }, []);
+
+  // Pulse after 60s idle (only if never submitted)
+  useEffect(() => {
+    if (hasSubmitted || hidden) return;
+    const timer = setTimeout(() => setShowPulse(true), 60000);
+    return () => clearTimeout(timer);
+  }, [hasSubmitted, hidden]);
+
+  if (hidden || !user) return null;
+
+  const handleOpen = async () => {
+    if (open) { setOpen(false); return; }
+    // Capture screenshot BEFORE opening sheet so it shows the actual page
+    screenshotRef.current = null;
+    try {
+      const { default: html2canvas } = await import("html2canvas");
+      const canvas = await html2canvas(document.body, {
+        scale: 1,
+        logging: false,
+        useCORS: true,
+        ignoreElements: (el) => el.hasAttribute?.("data-feedback-widget"),
+      });
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png", 0.8));
+      screenshotRef.current = blob;
+    } catch (err) {
+      console.error("Screenshot capture failed:", err);
+    }
+    setOpen(true);
+  };
+
+  const handleSend = async () => {
+    if (message.length < 5 || sending) return;
+    if (Date.now() - lastSubmitTime < 60000) {
+      setRateLimitMsg(true);
+      setTimeout(() => setRateLimitMsg(false), 3000);
+      return;
+    }
+    setSending(true);
+    try {
+      const context = {
+        url: window.location.href,
+        view: getPage(),
+        userId: user.id,
+        userName: user.name,
+        screenWidth: window.innerWidth,
+        screenHeight: window.innerHeight,
+        devicePixelRatio: window.devicePixelRatio,
+        userAgent: navigator.userAgent,
+        timestamp: new Date().toISOString(),
+      };
+      const fd = new FormData();
+      fd.append("message", message);
+      if (category) fd.append("category", category);
+      fd.append("errors", JSON.stringify(getErrors()));
+      fd.append("context", JSON.stringify(context));
+      if (screenshotRef.current) fd.append("screenshot", screenshotRef.current, "screenshot.png");
+
+      const res = await fetch("/api/feedback", {
+        method: "POST",
+        credentials: "include",
+        body: fd,
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 429) {
+          setRateLimitMsg(true);
+          setTimeout(() => setRateLimitMsg(false), 3000);
+          setSending(false);
+          return;
+        }
+        throw new Error(data.error || "Failed to submit");
+      }
+      setSent(true);
+      setLastSubmitTime(Date.now());
+      setHasSubmitted(true);
+      setShowPulse(false);
+      setTimeout(() => {
+        setOpen(false);
+        setSent(false);
+        setMessage("");
+        setCategory(null);
+        setShowCheck(true);
+        setTimeout(() => setShowCheck(false), 2000);
+      }, 1500);
+    } catch (err) {
+      console.error("Feedback submit failed:", err);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const categories = [
+    { key: "bug", label: "Bug" },
+    { key: "confusing", label: "Confusing" },
+    { key: "idea", label: "Idea" },
+    { key: "other", label: "Other" },
+  ];
+
+  const buttonIcon = showCheck
+    ? <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 10l3.5 3.5L15 7" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+    : <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 10c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.3 0-2.52-.36-3.56-.98L3 17l.98-3.44A6.96 6.96 0 013 10z" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
+
+  return (
+    <>
+      {/* Floating trigger */}
+      <div data-feedback-widget style={{
+        position: "fixed", bottom: 20, right: 20, zIndex: 90,
+      }}>
+        {rateLimitMsg && (
+          <div style={{
+            position: "absolute", bottom: 52, right: 0, whiteSpace: "nowrap",
+            background: "#1a1a1a", color: "#fff", padding: "6px 12px", borderRadius: 6,
+            fontFamily: FONT.mono, fontSize: "0.7rem", boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+          }}>Please wait before sending another</div>
+        )}
+        <button onClick={handleOpen} style={{
+          width: 44, height: 44, borderRadius: "50%",
+          background: showCheck ? "#22863a" : "#1a1a1a", border: "none",
+          cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+          animation: showPulse && !open ? "feedbackPulse 2s ease-in-out infinite" : "none",
+          transition: "background 0.2s",
+        }}>{buttonIcon}</button>
+      </div>
+
+      {/* Feedback sheet */}
+      {open && (
+        <BottomSheet onClose={() => { if (!sending) { setOpen(false); setSent(false); setMessage(""); setCategory(null); } }} maxWidth={440}>
+          {sent ? (
+            <div style={{ textAlign: "center", padding: "2rem 0" }}>
+              <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="14" stroke="#22863a" strokeWidth="2"/><path d="M10 16l4 4 8-8" stroke="#22863a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </div>
+              <div style={{ fontFamily: FONT.serif, fontSize: "1.1rem", color: "#333" }}>Thanks! We got it.</div>
+            </div>
+          ) : (
+            <>
+              <div style={{ fontFamily: FONT.serif, fontSize: "1.2rem", color: "#1a1a1a", marginBottom: "1rem" }}>
+                What's on your mind?
+              </div>
+              <textarea
+                value={message}
+                onChange={e => setMessage(e.target.value)}
+                placeholder="Describe what happened or what you'd like to see..."
+                maxLength={2000}
+                style={{
+                  width: "100%", minHeight: 90, padding: "0.7rem", borderRadius: 8,
+                  border: `1px solid ${BORDER}`, fontFamily: FONT.mono, fontSize: "0.85rem",
+                  resize: "vertical", background: "#faf8f4", boxSizing: "border-box",
+                }}
+              />
+              <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", margin: "0.8rem 0" }}>
+                {categories.map(c => (
+                  <button key={c.key} onClick={() => setCategory(category === c.key ? null : c.key)} style={{
+                    padding: "0.35rem 0.75rem", borderRadius: 16, cursor: "pointer",
+                    fontFamily: FONT.mono, fontSize: "0.75rem",
+                    background: category === c.key ? "#1a1a1a" : "#f5f0e8",
+                    color: category === c.key ? "#fff" : "#666",
+                    border: "none", transition: "all 0.15s",
+                  }}>{c.label}</button>
+                ))}
+              </div>
+              <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#999", marginBottom: "1rem" }}>
+                A screenshot of this page will be attached
+              </div>
+              <button onClick={handleSend} disabled={message.length < 5 || sending} style={{
+                width: "100%", padding: "0.7rem", borderRadius: 8, border: "none",
+                background: message.length < 5 ? "#ccc" : "#1a1a1a",
+                color: "#fff", fontFamily: FONT.mono, fontSize: "0.85rem",
+                cursor: message.length < 5 ? "default" : "pointer",
+                transition: "background 0.15s",
+              }}>{sending ? "Sending..." : "Send feedback"}</button>
+              <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#bbb", textAlign: "center", marginTop: "0.6rem" }}>
+                Your feedback goes directly to the team. We read every message.
+              </div>
+            </>
+          )}
+        </BottomSheet>
+      )}
+    </>
+  );
 }
 
 // ── DevBanner ───────────────────────────────────────────────────────────────
@@ -2553,7 +2770,7 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
 }
 
 // ── Dashboard ───────────────────────────────────────────────────────────────
-function Dashboard({ user, setUser, onLogout }) {
+function Dashboard({ user, setUser, onLogout, setOnboardingActive }) {
   const [data, setData] = useState(null);
   const [pinModal, setPinModal] = useState(null);
   const [slotModal, setSlotModal] = useState(null);
@@ -2574,11 +2791,16 @@ function Dashboard({ user, setUser, onLogout }) {
   useEffect(() => {
     if (showOnboarding) return;
     if (user.onboarding_step === null && data && data.credits.total === 0) {
-      setShowOnboarding(true); // new user
+      setShowOnboarding(true);
     } else if (user.onboarding_step > 0) {
-      setShowOnboarding(true); // resume interrupted
+      setShowOnboarding(true);
     }
   }, [data, user.onboarding_step]);
+
+  // Notify parent when onboarding is active (hides feedback widget)
+  useEffect(() => {
+    setOnboardingActive?.(showOnboarding);
+  }, [showOnboarding]);
 
   // Build conflicts: courses shared between any two programs that have an overlap rule
   const conflicts = useMemo(() => {
