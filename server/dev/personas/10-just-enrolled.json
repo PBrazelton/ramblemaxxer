@@ -1,0 +1,14 @@
+{
+  "id": "just-enrolled",
+  "name": "Casey Kim",
+  "email": "casey.kim@dev.ramblemaxxer.com",
+  "label": "Just Enrolled",
+  "color": "green",
+  "description": "PLSC-BA · 0 courses · Programs picked, no transcript",
+  "gradYear": 2029,
+  "programs": ["PLSC-BA"],
+  "transferCredits": [],
+  "courses": [],
+  "onboardingComplete": false,
+  "onboardingStep": 2
+}

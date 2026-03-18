@@ -28,6 +28,8 @@ const transcriptRoutes = require("./routes/transcripts");
 const programRoutes = require("./routes/programs");
 const offeringsRoutes = require("./routes/offerings");
 const plansRoutes = require("./routes/plans");
+const feedbackRoutes = require("./routes/feedback");
+const devRoutes = require("./routes/dev");
 
 const app = express();
 const PORT = process.env.PORT || 3006;
@@ -71,6 +73,10 @@ app.use("/api/transcript", transcriptRoutes);
 app.use("/api/programs", programRoutes);
 app.use("/api/offerings", offeringsRoutes);
 app.use("/api/students", plansRoutes);
+app.use("/api/feedback", feedbackRoutes);
+
+// Dev-only routes (personas) — blocked in production by the route itself
+app.use("/api/dev", devRoutes);
 
 // Health check
 app.get("/api/health", (req, res) => {

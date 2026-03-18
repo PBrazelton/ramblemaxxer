@@ -1,0 +1,32 @@
+{
+  "id": "summer-student",
+  "name": "Alex Novak",
+  "email": "alex.novak@dev.ramblemaxxer.com",
+  "label": "Summer Student",
+  "color": "yellow",
+  "description": "GLST-BA · 52cr · Has summer terms",
+  "gradYear": 2028,
+  "programs": ["GLST-BA"],
+  "transferCredits": [],
+  "courses": [
+    { "code": "UCWR 110", "term": "Fall 2024", "status": "complete" },
+    { "code": "UCLR 100C", "term": "Fall 2024", "status": "complete" },
+    { "code": "THEO 100", "term": "Fall 2024", "status": "complete" },
+    { "code": "HIST 104", "term": "Fall 2024", "status": "complete" },
+    { "code": "UNIV 101", "term": "Fall 2024", "status": "complete" },
+    { "code": "GLST 101", "term": "Spring 2025", "status": "complete" },
+    { "code": "PLSC 101", "term": "Spring 2025", "status": "complete" },
+    { "code": "PHIL 130", "term": "Spring 2025", "status": "complete" },
+    { "code": "SPAN 101", "term": "Spring 2025", "status": "complete" },
+    { "code": "ANTH 100", "term": "Spring 2025", "status": "complete" },
+    { "code": "PLSC 102", "term": "Summer 2025", "status": "complete" },
+    { "code": "SPAN 102", "term": "Summer 2025", "status": "complete" },
+    { "code": "ANTH 216", "term": "Fall 2025", "status": "complete" },
+    { "code": "HIST 210", "term": "Fall 2025", "status": "complete" },
+    { "code": "PSYC 101", "term": "Fall 2025", "status": "complete" },
+    { "code": "THEO 186", "term": "Fall 2025", "status": "complete" },
+    { "code": "ENGL 210", "term": "Summer 2026", "status": "enrolled" },
+    { "code": "GLST 301", "term": "Summer 2026", "status": "enrolled" }
+  ],
+  "onboardingComplete": true
+}

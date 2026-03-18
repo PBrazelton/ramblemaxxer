@@ -13,7 +13,8 @@ CREATE TABLE IF NOT EXISTS users (
   invited_by  INTEGER REFERENCES users(id),
   provider    TEXT    NOT NULL DEFAULT 'local',  -- 'local' | 'google'
   provider_id TEXT,
-  avatar_url  TEXT
+  avatar_url  TEXT,
+  onboarding_step INTEGER
 );
 
 -- Password reset tokens
@@ -248,6 +249,28 @@ CREATE TABLE IF NOT EXISTS plan_courses (
   UNIQUE(plan_id, course_code)
 );
 CREATE INDEX IF NOT EXISTS idx_plan_courses_plan ON plan_courses(plan_id);
+
+-- User feedback submissions
+CREATE TABLE IF NOT EXISTS feedback (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  category TEXT,                         -- 'bug', 'confusing', 'idea', 'other'
+  message TEXT NOT NULL,
+  screenshot BLOB,                       -- PNG image data
+  errors TEXT,                           -- JSON array of error buffer entries
+  context TEXT NOT NULL,                 -- JSON object with metadata
+  status TEXT NOT NULL DEFAULT 'new',    -- 'new', 'reviewed', 'filed', 'resolved', 'wontfix'
+  admin_notes TEXT,
+  github_issue_url TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  resolved_at TEXT,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_feedback_status ON feedback(status);
+CREATE INDEX IF NOT EXISTS idx_feedback_user ON feedback(user_id);
+CREATE INDEX IF NOT EXISTS idx_feedback_category ON feedback(category);
+CREATE INDEX IF NOT EXISTS idx_feedback_created ON feedback(created_at);
 
 -- Invite tokens (Penelope invites her friends)
 CREATE TABLE IF NOT EXISTS invites (

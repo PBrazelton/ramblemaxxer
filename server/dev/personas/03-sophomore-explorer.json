@@ -1,0 +1,25 @@
+{
+  "id": "sophomore-explorer",
+  "name": "Jordan Rivera",
+  "email": "jordan.rivera@dev.ramblemaxxer.com",
+  "label": "Sophomore Explorer",
+  "color": "blue",
+  "description": "Undeclared · 32cr · Core only",
+  "gradYear": 2028,
+  "programs": [],
+  "transferCredits": [],
+  "courses": [
+    { "code": "UCWR 110", "term": "Fall 2026", "status": "complete" },
+    { "code": "UCLR 100", "term": "Fall 2026", "status": "complete" },
+    { "code": "THEO 100", "term": "Fall 2026", "status": "complete" },
+    { "code": "HIST 104", "term": "Fall 2026", "status": "complete" },
+    { "code": "UNIV 101", "term": "Fall 2026", "status": "complete" },
+    { "code": "PHIL 130", "term": "Fall 2026", "status": "complete" },
+    { "code": "PLSC 101", "term": "Spring 2027", "status": "complete" },
+    { "code": "PSYC 101", "term": "Spring 2027", "status": "complete" },
+    { "code": "ENGL 210", "term": "Spring 2027", "status": "complete" },
+    { "code": "THEO 186", "term": "Spring 2027", "status": "complete" },
+    { "code": "SPAN 102", "term": "Spring 2027", "status": "complete" }
+  ],
+  "onboardingComplete": true
+}

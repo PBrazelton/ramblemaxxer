@@ -330,11 +330,42 @@ try {
   db.prepare("CREATE INDEX IF NOT EXISTS idx_plan_courses_plan ON plan_courses(plan_id)").run();
 } catch (e) { /* already exists */ }
 
+// Migration: add onboarding_step column to users
+try {
+  db.prepare("ALTER TABLE users ADD COLUMN onboarding_step INTEGER").run();
+  console.log("  Migrated: added onboarding_step column");
+} catch (e) { /* already exists */ }
+
 // Migration: fix UCLR 100 → UCLR 100C for Penelope
 try {
   const result = db.prepare("UPDATE student_courses SET course_code = 'UCLR 100C' WHERE course_code = 'UCLR 100'").run();
   if (result.changes > 0) console.log("  Migrated: UCLR 100 → UCLR 100C");
 } catch (e) { /* already fixed */ }
+
+// Migration: create feedback table
+db.exec(`
+  CREATE TABLE IF NOT EXISTS feedback (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    category TEXT,
+    message TEXT NOT NULL,
+    screenshot BLOB,
+    errors TEXT,
+    context TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'new',
+    admin_notes TEXT,
+    github_issue_url TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    resolved_at TEXT,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  )
+`);
+try {
+  db.prepare("CREATE INDEX IF NOT EXISTS idx_feedback_status ON feedback(status)").run();
+  db.prepare("CREATE INDEX IF NOT EXISTS idx_feedback_user ON feedback(user_id)").run();
+  db.prepare("CREATE INDEX IF NOT EXISTS idx_feedback_category ON feedback(category)").run();
+  db.prepare("CREATE INDEX IF NOT EXISTS idx_feedback_created ON feedback(created_at)").run();
+} catch (e) { /* already exist */ }
 
 db.close();
 console.log(`✓ Database initialized at ${DB_PATH}`);

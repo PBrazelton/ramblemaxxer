@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { COLORS, programColor, STATUS_COLOR, FONT, BG, BORDER, api, ProgressRing, BottomSheet, StickyHeader, sharedStyles, Input, Btn, SectionTitle, ErrMsg } from "./lib/ui.jsx";
+import { getErrors } from "./lib/error-buffer.js";
 import AdminPanel from "./pages/AdminPanel.jsx";
 import Planner from "./pages/Planner.jsx";
 
@@ -37,6 +38,8 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(getPage());
+  const [devPersona, setDevPersona] = useState(null);
+  const [onboardingActive, setOnboardingActive] = useState(false);
 
   useEffect(() => {
     window.addEventListener("hashchange", () => setPage(getPage()));
@@ -44,6 +47,14 @@ export default function App() {
       .then(u => { setUser(u?.id ? u : false); setLoading(false); })
       .catch(() => { setUser(false); setLoading(false); });
   }, []);
+
+  // Check for active dev persona
+  useEffect(() => {
+    if (import.meta.env.PROD || !user) { setDevPersona(null); return; }
+    api.get("/api/dev/personas/current")
+      .then(d => setDevPersona(d?.persona || null))
+      .catch(() => {});
+  }, [user]);
 
   if (loading) return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: BG }}>
@@ -53,14 +64,338 @@ export default function App() {
   const doLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
     setUser(false);
+    setDevPersona(null);
   };
+  const switchPersona = () => { doLogout(); };
+  const resetPersona = async () => {
+    await api.post("/api/dev/personas/reset");
+    window.location.reload();
+  };
+
   if (page === "forgot-password") return <ForgotPasswordPage />;
   if (page === "reset-password") return <ResetPasswordPage />;
-  if (!user && page !== "register") return <LoginPage onLogin={setUser} />;
+  if (!user && page !== "register") return <LoginPage onLogin={setUser} setDevPersona={setDevPersona} />;
   if (page === "register") return <RegisterPage onRegister={setUser} />;
-  if (user.role === "admin") return <AdminPanel user={user} onLogout={doLogout} />;
-  if (page === "planner") return <Planner user={user} onLogout={doLogout} />;
-  return <Dashboard user={user} setUser={setUser} onLogout={doLogout} />;
+
+  const banner = devPersona ? <DevBanner persona={devPersona} onSwitch={switchPersona} onReset={resetPersona} /> : null;
+  // Hide feedback widget during onboarding (only relevant on dashboard page)
+  const hideWidget = page === "dashboard" && onboardingActive;
+  const widget = user ? <FeedbackWidget user={user} hidden={hideWidget} /> : null;
+
+  if (user.role === "admin") return <>{banner}{widget}<AdminPanel user={user} onLogout={doLogout} /></>;
+  if (page === "planner") return <>{banner}{widget}<Planner user={user} onLogout={doLogout} /></>;
+  return <>{banner}{widget}<Dashboard user={user} setUser={setUser} onLogout={doLogout} setOnboardingActive={setOnboardingActive} /></>;
+}
+
+// ── FeedbackWidget ──────────────────────────────────────────────────────────
+const FEEDBACK_PULSE_KEYFRAMES = `@keyframes feedbackPulse {
+  0% { box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+  50% { box-shadow: 0 2px 16px rgba(26,26,26,0.35); }
+  100% { box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+}`;
+
+function FeedbackWidget({ user, hidden }) {
+  const [open, setOpen] = useState(false);
+  const [message, setMessage] = useState("");
+  const [category, setCategory] = useState(null);
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [showCheck, setShowCheck] = useState(false);
+  const [showPulse, setShowPulse] = useState(false);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [lastSubmitTime, setLastSubmitTime] = useState(0);
+  const [rateLimitMsg, setRateLimitMsg] = useState(false);
+  const screenshotRef = useRef(null);
+  const styleRef = useRef(null);
+
+  // Inject pulse keyframes once
+  useEffect(() => {
+    if (styleRef.current) return;
+    const style = document.createElement("style");
+    style.textContent = FEEDBACK_PULSE_KEYFRAMES;
+    document.head.appendChild(style);
+    styleRef.current = style;
+  }, []);
+
+  // Pulse after 60s idle (only if never submitted)
+  useEffect(() => {
+    if (hasSubmitted || hidden) return;
+    const timer = setTimeout(() => setShowPulse(true), 60000);
+    return () => clearTimeout(timer);
+  }, [hasSubmitted, hidden]);
+
+  if (hidden || !user) return null;
+
+  const handleOpen = async () => {
+    if (open) { setOpen(false); return; }
+    // Capture screenshot BEFORE opening sheet so it shows the actual page
+    screenshotRef.current = null;
+    try {
+      const { default: html2canvas } = await import("html2canvas");
+      const canvas = await html2canvas(document.body, {
+        scale: 1,
+        logging: false,
+        useCORS: true,
+        ignoreElements: (el) => el.hasAttribute?.("data-feedback-widget"),
+      });
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png", 0.8));
+      screenshotRef.current = blob;
+    } catch (err) {
+      console.error("Screenshot capture failed:", err);
+    }
+    setOpen(true);
+  };
+
+  const handleSend = async () => {
+    if (message.length < 5 || sending) return;
+    if (Date.now() - lastSubmitTime < 60000) {
+      setRateLimitMsg(true);
+      setTimeout(() => setRateLimitMsg(false), 3000);
+      return;
+    }
+    setSending(true);
+    try {
+      const context = {
+        url: window.location.href,
+        view: getPage(),
+        userId: user.id,
+        userName: user.name,
+        screenWidth: window.innerWidth,
+        screenHeight: window.innerHeight,
+        devicePixelRatio: window.devicePixelRatio,
+        userAgent: navigator.userAgent,
+        timestamp: new Date().toISOString(),
+      };
+      const fd = new FormData();
+      fd.append("message", message);
+      if (category) fd.append("category", category);
+      fd.append("errors", JSON.stringify(getErrors()));
+      fd.append("context", JSON.stringify(context));
+      if (screenshotRef.current) fd.append("screenshot", screenshotRef.current, "screenshot.png");
+
+      const res = await fetch("/api/feedback", {
+        method: "POST",
+        credentials: "include",
+        body: fd,
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 429) {
+          setRateLimitMsg(true);
+          setTimeout(() => setRateLimitMsg(false), 3000);
+          setSending(false);
+          return;
+        }
+        throw new Error(data.error || "Failed to submit");
+      }
+      setSent(true);
+      setLastSubmitTime(Date.now());
+      setHasSubmitted(true);
+      setShowPulse(false);
+      setTimeout(() => {
+        setOpen(false);
+        setSent(false);
+        setMessage("");
+        setCategory(null);
+        setShowCheck(true);
+        setTimeout(() => setShowCheck(false), 2000);
+      }, 1500);
+    } catch (err) {
+      console.error("Feedback submit failed:", err);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const categories = [
+    { key: "bug", label: "Bug" },
+    { key: "confusing", label: "Confusing" },
+    { key: "idea", label: "Idea" },
+    { key: "other", label: "Other" },
+  ];
+
+  const buttonIcon = showCheck
+    ? <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 10l3.5 3.5L15 7" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+    : <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 10c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.3 0-2.52-.36-3.56-.98L3 17l.98-3.44A6.96 6.96 0 013 10z" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
+
+  return (
+    <>
+      {/* Floating trigger */}
+      <div data-feedback-widget style={{
+        position: "fixed", bottom: 20, right: 20, zIndex: 90,
+      }}>
+        {rateLimitMsg && (
+          <div style={{
+            position: "absolute", bottom: 52, right: 0, whiteSpace: "nowrap",
+            background: "#1a1a1a", color: "#fff", padding: "6px 12px", borderRadius: 6,
+            fontFamily: FONT.mono, fontSize: "0.7rem", boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+          }}>Please wait before sending another</div>
+        )}
+        <button onClick={handleOpen} style={{
+          width: 44, height: 44, borderRadius: "50%",
+          background: showCheck ? "#22863a" : "#1a1a1a", border: "none",
+          cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+          animation: showPulse && !open ? "feedbackPulse 2s ease-in-out infinite" : "none",
+          transition: "background 0.2s",
+        }}>{buttonIcon}</button>
+      </div>
+
+      {/* Feedback sheet */}
+      {open && (
+        <BottomSheet onClose={() => { if (!sending) { setOpen(false); setSent(false); setMessage(""); setCategory(null); } }} maxWidth={440}>
+          {sent ? (
+            <div style={{ textAlign: "center", padding: "2rem 0" }}>
+              <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="14" stroke="#22863a" strokeWidth="2"/><path d="M10 16l4 4 8-8" stroke="#22863a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </div>
+              <div style={{ fontFamily: FONT.serif, fontSize: "1.1rem", color: "#333" }}>Thanks! We got it.</div>
+            </div>
+          ) : (
+            <>
+              <div style={{ fontFamily: FONT.serif, fontSize: "1.2rem", color: "#1a1a1a", marginBottom: "1rem" }}>
+                What's on your mind?
+              </div>
+              <textarea
+                value={message}
+                onChange={e => setMessage(e.target.value)}
+                placeholder="Describe what happened or what you'd like to see..."
+                maxLength={2000}
+                style={{
+                  width: "100%", minHeight: 90, padding: "0.7rem", borderRadius: 8,
+                  border: `1px solid ${BORDER}`, fontFamily: FONT.mono, fontSize: "0.85rem",
+                  resize: "vertical", background: "#faf8f4", boxSizing: "border-box",
+                }}
+              />
+              <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", margin: "0.8rem 0" }}>
+                {categories.map(c => (
+                  <button key={c.key} onClick={() => setCategory(category === c.key ? null : c.key)} style={{
+                    padding: "0.35rem 0.75rem", borderRadius: 16, cursor: "pointer",
+                    fontFamily: FONT.mono, fontSize: "0.75rem",
+                    background: category === c.key ? "#1a1a1a" : "#f5f0e8",
+                    color: category === c.key ? "#fff" : "#666",
+                    border: "none", transition: "all 0.15s",
+                  }}>{c.label}</button>
+                ))}
+              </div>
+              <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#999", marginBottom: "1rem" }}>
+                A screenshot of this page will be attached
+              </div>
+              <button onClick={handleSend} disabled={message.length < 5 || sending} style={{
+                width: "100%", padding: "0.7rem", borderRadius: 8, border: "none",
+                background: message.length < 5 ? "#ccc" : "#1a1a1a",
+                color: "#fff", fontFamily: FONT.mono, fontSize: "0.85rem",
+                cursor: message.length < 5 ? "default" : "pointer",
+                transition: "background 0.15s",
+              }}>{sending ? "Sending..." : "Send feedback"}</button>
+              <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#bbb", textAlign: "center", marginTop: "0.6rem" }}>
+                Your feedback goes directly to the team. We read every message.
+              </div>
+            </>
+          )}
+        </BottomSheet>
+      )}
+    </>
+  );
+}
+
+// ── DevBanner ───────────────────────────────────────────────────────────────
+function DevBanner({ persona, onSwitch, onReset }) {
+  if (!persona) return null;
+  return (
+    <>
+      <div style={{
+        position: "fixed", top: 0, left: 0, right: 0, zIndex: 9999,
+        background: "#c43b2d", color: "#fff", padding: "6px 16px",
+        fontFamily: FONT.mono, fontSize: "0.7rem",
+        display: "flex", alignItems: "center", justifyContent: "center", gap: 12,
+      }}>
+        <span>DEV MODE — Viewing as: {persona.name} ({persona.label})</span>
+        <button onClick={onSwitch} style={{
+          background: "rgba(255,255,255,0.2)", border: "none", color: "#fff",
+          padding: "2px 8px", borderRadius: 3, cursor: "pointer", fontFamily: FONT.mono, fontSize: "0.65rem",
+        }}>Switch</button>
+        <button onClick={onReset} style={{
+          background: "rgba(255,255,255,0.2)", border: "none", color: "#fff",
+          padding: "2px 8px", borderRadius: 3, cursor: "pointer", fontFamily: FONT.mono, fontSize: "0.65rem",
+        }}>Reset</button>
+      </div>
+      <div style={{ height: 30 }} />
+    </>
+  );
+}
+
+// ── PersonaPicker ───────────────────────────────────────────────────────────
+const PERSONA_COLORS = {
+  green: "#22863a", blue: "#0366d6", yellow: "#b08800",
+  red: "#c43b2d", purple: "#6f42c1", orange: "#e36209",
+};
+
+function PersonaPicker({ onLogin, setDevPersona }) {
+  const [personas, setPersonas] = useState([]);
+  const [loading, setLoading] = useState(null); // id of persona being loaded
+
+  useEffect(() => {
+    fetch("/api/dev/personas").then(r => r.json()).then(setPersonas).catch(() => {});
+  }, []);
+
+  if (personas.length === 0) return null;
+
+  const activate = async (id) => {
+    setLoading(id);
+    try {
+      const res = await fetch(`/api/dev/personas/${id}/activate`, {
+        method: "POST", credentials: "include",
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await res.json();
+      if (res.ok && data.user) {
+        setDevPersona({ id: data.persona, name: data.user.name, label: personas.find(p => p.id === id)?.label });
+        onLogin(data.user);
+      }
+    } catch (e) { /* ignore */ }
+    setLoading(null);
+  };
+
+  return (
+    <div style={{ marginTop: 24, borderTop: `1px solid ${BORDER}`, paddingTop: 16 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+        <div style={{ flex: 1, height: 1, background: BORDER }} />
+        <span style={{ fontSize: 11, color: "#b0a090", fontFamily: FONT.mono, whiteSpace: "nowrap" }}>development mode</span>
+        <div style={{ flex: 1, height: 1, background: BORDER }} />
+      </div>
+      <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#888", marginBottom: 12, textAlign: "center" }}>
+        Quick Login as Test Persona
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        {personas.map(p => (
+          <button key={p.id} onClick={() => activate(p.id)} disabled={!!loading}
+            style={{
+              display: "flex", alignItems: "center", gap: 10, padding: "10px 12px",
+              borderRadius: 8, border: `1px solid ${BORDER}`, background: "#fff",
+              cursor: loading ? "wait" : "pointer", textAlign: "left",
+              opacity: loading && loading !== p.id ? 0.5 : 1,
+            }}>
+            <span style={{
+              width: 10, height: 10, borderRadius: "50%", flexShrink: 0,
+              background: PERSONA_COLORS[p.color] || "#888",
+            }} />
+            <div style={{ flex: 1 }}>
+              <div style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 600 }}>
+                {p.label}
+              </div>
+              <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#888" }}>
+                {p.name} · {p.description}
+              </div>
+            </div>
+            {loading === p.id && (
+              <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#888" }}>loading...</span>
+            )}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 // ── AuthShell ───────────────────────────────────────────────────────────────
@@ -90,7 +425,7 @@ function GoogleIcon() {
 }
 
 // ── Login Page ──────────────────────────────────────────────────────────────
-function LoginPage({ onLogin }) {
+function LoginPage({ onLogin, setDevPersona }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -136,6 +471,7 @@ function LoginPage({ onLogin }) {
           forgot password?
         </button>
       </div>
+      {!import.meta.env.PROD && <PersonaPicker onLogin={onLogin} setDevPersona={setDevPersona} />}
     </AuthShell>
   );
 }
@@ -260,6 +596,34 @@ function ResetPasswordPage() {
   );
 }
 
+// ── SettingsResetSection ─────────────────────────────────────────────────────
+function SettingsResetSection({ onClose, onReimport }) {
+  const [resetConfirm, setResetConfirm] = useState("");
+  const [resetting, setResetting] = useState(false);
+
+  return (
+    <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: 16, marginBottom: 16 }}>
+      <SectionTitle>Reset</SectionTitle>
+      <p style={{ fontSize: 11, color: "#c43b2d", fontFamily: FONT.mono, marginBottom: 8 }}>
+        Delete all course data and start over. Programs and account info are kept.
+      </p>
+      <Input placeholder='Type "RESET" to confirm' value={resetConfirm}
+        onChange={e => setResetConfirm(e.target.value)} />
+      <Btn onClick={async () => {
+        if (resetConfirm !== "RESET") return;
+        setResetting(true);
+        await api.post("/api/students/me/reset", { confirm: true });
+        setResetting(false);
+        onClose();
+        onReimport();
+      }} full disabled={resetConfirm !== "RESET" || resetting}
+        style={{ marginTop: 8, background: "#c43b2d" }}>
+        {resetting ? "resetting..." : "reset all course data"}
+      </Btn>
+    </div>
+  );
+}
+
 // ── SettingsSheet ───────────────────────────────────────────────────────────
 function SettingsSheet({ user, onClose, onUpdate, onReimport }) {
   const [name, setName] = useState(user.name);
@@ -367,6 +731,8 @@ function SettingsSheet({ user, onClose, onUpdate, onReimport }) {
             Opens the transcript upload wizard — existing courses are kept
           </div>
         </div>
+
+        <SettingsResetSection onClose={onClose} onReimport={onReimport} />
 
         {msg && <div style={{ color: "#22863a", fontSize: 13, fontFamily: FONT.mono,
           marginTop: 8 }}>{msg}</div>}
@@ -1544,8 +1910,8 @@ function ProgramPickerList({ label, items, selected, onToggle, search, onSearch,
 }
 
 // ── OnboardingWizard ─────────────────────────────────────────────────────────
-function OnboardingWizard({ user, onComplete }) {
-  const [step, setStep] = useState(1);
+function OnboardingWizard({ user, onComplete, initialStep }) {
+  const [step, setStep] = useState(initialStep || 1);
   const [gradYear, setGradYear] = useState(user.grad_year || "");
   const [programs, setPrograms] = useState([]);
   const [minors, setMinors] = useState([]);
@@ -1558,6 +1924,17 @@ function OnboardingWizard({ user, onComplete }) {
   const [reviewTransfer, setReviewTransfer] = useState([]);
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState("");
+  // Steps 4-7 state
+  const [solveResult, setSolveResult] = useState(null);
+  const [pastEnrolled, setPastEnrolled] = useState([]);
+  const [courseUpdates, setCourseUpdates] = useState({});
+  const [adjustMode, setAdjustMode] = useState(false);
+  const [currentTermSearch, setCurrentTermSearch] = useState("");
+  const [currentTermResults, setCurrentTermResults] = useState([]);
+  const [currentTermSelected, setCurrentTermSelected] = useState([]);
+  const [transferRows, setTransferRows] = useState([]);
+  const [transferTotal, setTransferTotal] = useState(0);
+  const searchTimer = useRef(null);
 
   const toggleProgram = (pid) => {
     setPrograms(prev => prev.includes(pid) ? prev.filter(p => p !== pid) : [...prev, pid]);
@@ -1570,6 +1947,56 @@ function OnboardingWizard({ user, onComplete }) {
   useEffect(() => {
     fetch("/api/programs/catalog").then(r => r.json()).then(setProgramCatalog).catch(() => {});
   }, []);
+
+  // Skip logic — accepts overrides for state that may not be committed yet
+  const shouldSkip = (s, overrides = {}) => {
+    if (s === 4) return (overrides.pastEnrolled ?? pastEnrolled).length === 0;
+    if (s === 5) {
+      const currentTerm = getCurrentAcademicTerm();
+      return (overrides.solveResult ?? solveResult)?.semesters?.includes(currentTerm);
+    }
+    if (s === 6) return (overrides.reviewTransfer ?? reviewTransfer).length === 0 && (overrides.transferTotal ?? transferTotal) === 0;
+    return false; // step 7 never skipped
+  };
+
+  const advanceFrom = (current, overrides = {}) => {
+    let next = current + 1;
+    while (next < 7 && shouldSkip(next, overrides)) next++;
+    setStep(next);
+    api.put("/api/students/me/onboarding", { step: next });
+  };
+
+  // Auto-populate transfer rows when step 6 is entered
+  useEffect(() => {
+    if (step === 6 && transferRows.length === 0 && reviewTransfer.filter(t => t.included).length > 0) {
+      setTransferRows(reviewTransfer.filter(t => t.included).map(t => ({
+        code: t.code, label: t.title || "", credits: t.credits || 3, satisfiesCode: "",
+      })));
+    }
+  }, [step, reviewTransfer]);
+
+  // Fetch fresh solve data when reaching step 7 (or any step needing it)
+  useEffect(() => {
+    if (step === 7) {
+      api.get("/api/students/me/solve").then(setSolveResult);
+    }
+  }, [step]);
+
+  // Resume logic: when initialStep >= 4, fetch data from server
+  useEffect(() => {
+    if (!initialStep || initialStep < 4) return;
+    api.get("/api/students/me/courses").then(courses => {
+      const currentTerm = getCurrentAcademicTerm();
+      const past = courses.filter(c => c.status === "enrolled"
+        && termOrderClient(c.semester) < termOrderClient(currentTerm))
+        .map(c => ({ ...c, dbCode: c.code }));
+      setPastEnrolled(past);
+      const xfer = courses.filter(c => c.semester === "Transfer");
+      setReviewTransfer(xfer.map(c => ({ code: c.code, included: true, credits: c.credits_override || 3, title: c.note || "" })));
+      setTransferTotal(xfer.reduce((s, c) => s + (c.credits_override || 3), 0));
+    });
+    api.get("/api/students/me/solve").then(setSolveResult);
+  }, [initialStep]);
 
   const majorCatalog = programCatalog.filter(p => p.type !== "minor");
   const minorCatalog = programCatalog.filter(p => p.type === "minor");
@@ -1692,7 +2119,17 @@ function OnboardingWizard({ user, onComplete }) {
         setConfirming(false);
         return;
       }
-      onComplete();
+      setSolveResult(data);
+      // Compute past enrolled courses
+      const currentTerm = getCurrentAcademicTerm();
+      const past = reviewCourses.filter(c => c.included && c.status === "enrolled"
+        && termOrderClient(c.semester) < termOrderClient(currentTerm))
+        .map(c => ({ ...c, dbCode: c.matchedCode || c.code }));
+      setPastEnrolled(past);
+      const xferTotal = parseResult?.transferCredits?.total || 0;
+      setTransferTotal(xferTotal);
+      const xfer = reviewTransfer.filter(t => t.included);
+      advanceFrom(3, { solveResult: data, pastEnrolled: past, reviewTransfer: xfer, transferTotal: xferTotal });
     } catch (e) {
       setError("Failed to save courses");
       setConfirming(false);
@@ -1721,7 +2158,7 @@ function OnboardingWizard({ user, onComplete }) {
 
         {/* Step indicator */}
         <div style={{ display: "flex", gap: 6, justifyContent: "center", marginBottom: 24 }}>
-          {[1, 2, 3].map(s => (
+          {[1, 2, 3, 4, 5, 6, 7].filter(s => s <= 3 || !shouldSkip(s)).map(s => (
             <div key={s} style={{
               width: s === step ? 24 : 8, height: 8, borderRadius: 4,
               background: s === step ? "#1a1a1a" : s < step ? "#22863a" : "#d0ccc6",
@@ -1829,7 +2266,10 @@ function OnboardingWizard({ user, onComplete }) {
 
             {error && <div style={{ marginTop: 12 }}><ErrMsg>{error}</ErrMsg></div>}
 
-            <button onClick={onComplete}
+            <button onClick={() => {
+              api.put("/api/students/me/onboarding", { step: 0 });
+              onComplete();
+            }}
               style={{
                 display: "block", width: "100%", marginTop: 20, padding: 12,
                 background: "transparent", border: "none", cursor: "pointer",
@@ -2001,13 +2441,336 @@ function OnboardingWizard({ user, onComplete }) {
             </button>
           </div>
         )}
+
+        {/* ── Step 4: Are these done? ─────────────────────────────────── */}
+        {step === 4 && (
+          <div>
+            <h2 style={{ fontFamily: FONT.serif, fontSize: "1.3rem", fontWeight: 700, marginBottom: 4 }}>
+              quick check on past courses
+            </h2>
+            <p style={{ fontFamily: FONT.mono, fontSize: "0.75rem", color: "#888", marginBottom: 20 }}>
+              these courses are from past terms but still marked "enrolled" — did you complete them?
+            </p>
+
+            {pastEnrolled.map((c, i) => {
+              const chosen = courseUpdates[c.dbCode] || "complete";
+              return (
+                <div key={i} style={{
+                  display: "flex", alignItems: "center", gap: 8, padding: "10px 0",
+                  borderTop: i ? `1px solid ${BORDER}` : "none",
+                }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 600 }}>
+                      {c.matchedCode || c.code}
+                    </div>
+                    <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#888", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {c.matchedTitle || c.title} · {c.semester}
+                    </div>
+                  </div>
+                  {adjustMode && (
+                    <div style={{ display: "flex", gap: 4 }}>
+                      {[["complete", "#22863a"], ["enrolled", "#b08800"], ["remove", "#c43b2d"]].map(([st, col]) => (
+                        <button key={st} onClick={() => setCourseUpdates(prev => ({ ...prev, [c.dbCode]: st }))}
+                          style={{
+                            padding: "4px 8px", borderRadius: 4, cursor: "pointer",
+                            fontFamily: FONT.mono, fontSize: "0.6rem",
+                            border: `1px solid ${chosen === st ? col : BORDER}`,
+                            background: chosen === st ? col + "18" : "transparent",
+                            color: chosen === st ? col : "#888",
+                          }}>
+                          {st === "remove" ? "withdrew" : st}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            {error && <ErrMsg>{error}</ErrMsg>}
+
+            {!adjustMode ? (
+              <>
+                <Btn onClick={async () => {
+                  const updates = pastEnrolled.map(c => ({ code: c.dbCode, status: "complete" }));
+                  await api.post("/api/students/me/courses/bulk-update", { updates });
+                  advanceFrom(4);
+                }} full style={{ marginTop: 12 }}>yes, all complete</Btn>
+                <button onClick={() => setAdjustMode(true)}
+                  style={{
+                    display: "block", width: "100%", marginTop: 12, padding: 8,
+                    background: "transparent", border: "none", cursor: "pointer",
+                    fontFamily: FONT.mono, fontSize: "0.7rem", color: "#9a9590", textAlign: "center",
+                  }}>
+                  let me adjust
+                </button>
+              </>
+            ) : (
+              <Btn onClick={async () => {
+                const updates = pastEnrolled.map(c => ({
+                  code: c.dbCode,
+                  status: courseUpdates[c.dbCode] || "complete",
+                }));
+                await api.post("/api/students/me/courses/bulk-update", { updates });
+                advanceFrom(4);
+              }} full style={{ marginTop: 12 }}>continue</Btn>
+            )}
+          </div>
+        )}
+
+        {/* ── Step 5: What are you taking now? ────────────────────────── */}
+        {step === 5 && (
+          <div>
+            <h2 style={{ fontFamily: FONT.serif, fontSize: "1.3rem", fontWeight: 700, marginBottom: 4 }}>
+              what are you taking this semester?
+            </h2>
+            <p style={{ fontFamily: FONT.mono, fontSize: "0.75rem", color: "#888", marginBottom: 20 }}>
+              it's {getCurrentAcademicTerm()} — add your current courses
+            </p>
+
+            <Input placeholder="search courses..."
+              value={currentTermSearch}
+              onChange={e => {
+                const q = e.target.value;
+                setCurrentTermSearch(q);
+                clearTimeout(searchTimer.current);
+                if (q.length >= 2) {
+                  searchTimer.current = setTimeout(() => {
+                    api.get(`/api/courses/search?q=${encodeURIComponent(q)}`).then(setCurrentTermResults);
+                  }, 250);
+                } else {
+                  setCurrentTermResults([]);
+                }
+              }}
+              style={{ marginBottom: 12 }}
+            />
+
+            {currentTermResults.length > 0 && (
+              <div style={{ maxHeight: 200, overflowY: "auto", marginBottom: 12,
+                border: `1px solid ${BORDER}`, borderRadius: 8, background: "#fff" }}>
+                {currentTermResults.filter(c => !currentTermSelected.find(s => s.code === c.code)).map(c => (
+                  <button key={c.code} onClick={() => {
+                    setCurrentTermSelected(prev => [...prev, c]);
+                    setCurrentTermSearch("");
+                    setCurrentTermResults([]);
+                  }} style={{
+                    display: "block", width: "100%", textAlign: "left", padding: "10px 12px",
+                    border: "none", borderBottom: `1px solid ${BORDER}`, background: "transparent",
+                    cursor: "pointer", fontFamily: FONT.mono, fontSize: "0.75rem",
+                  }}>
+                    <strong>{c.code}</strong> — {c.title}
+                    <span style={{ color: "#888", marginLeft: 8 }}>{c.credits || 3}cr</span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {currentTermSelected.length > 0 && (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
+                {currentTermSelected.map(c => (
+                  <span key={c.code} onClick={() => setCurrentTermSelected(prev => prev.filter(s => s.code !== c.code))}
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 4,
+                      padding: "6px 10px", borderRadius: 6, cursor: "pointer",
+                      fontFamily: FONT.mono, fontSize: "0.7rem",
+                      background: "#1a1a1a", color: "#fff",
+                    }}>
+                    {c.code} · {c.credits || 3}cr ×
+                  </span>
+                ))}
+                <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#888", width: "100%", marginTop: 4 }}>
+                  {currentTermSelected.reduce((s, c) => s + (c.credits || 3), 0)} credits selected
+                </div>
+              </div>
+            )}
+
+            {error && <ErrMsg>{error}</ErrMsg>}
+
+            <Btn onClick={async () => {
+              if (currentTermSelected.length > 0) {
+                const courses = currentTermSelected.map(c => ({
+                  code: c.code,
+                  semester: getCurrentAcademicTerm(),
+                  status: "enrolled",
+                }));
+                await api.post("/api/students/me/courses/bulk", { courses });
+              }
+              advanceFrom(5);
+            }} full disabled={currentTermSelected.length === 0}>save and continue</Btn>
+
+            <button onClick={() => advanceFrom(5)}
+              style={{
+                display: "block", width: "100%", marginTop: 12, padding: 8,
+                background: "transparent", border: "none", cursor: "pointer",
+                fontFamily: FONT.mono, fontSize: "0.7rem", color: "#9a9590", textAlign: "center",
+              }}>
+              skip for now
+            </button>
+          </div>
+        )}
+
+        {/* ── Step 6: Transfer Credits ────────────────────────────────── */}
+        {step === 6 && (
+          <div>
+            <h2 style={{ fontFamily: FONT.serif, fontSize: "1.3rem", fontWeight: 700, marginBottom: 4 }}>
+              let's map your transfer credits
+            </h2>
+            <p style={{ fontFamily: FONT.mono, fontSize: "0.75rem", color: "#888", marginBottom: 20 }}>
+              your transcript shows {transferTotal} transfer credits
+            </p>
+
+            {transferRows.map((row, i) => (
+              <div key={i} style={{
+                display: "flex", gap: 8, alignItems: "center", padding: "8px 0",
+                borderTop: i ? `1px solid ${BORDER}` : "none",
+              }}>
+                <Input placeholder="label" value={row.label}
+                  onChange={e => {
+                    const next = [...transferRows];
+                    next[i] = { ...next[i], label: e.target.value };
+                    setTransferRows(next);
+                  }}
+                  style={{ flex: 2, fontSize: "0.7rem" }} />
+                <Input placeholder="cr" value={row.credits} type="number"
+                  onChange={e => {
+                    const next = [...transferRows];
+                    next[i] = { ...next[i], credits: parseInt(e.target.value) || 0 };
+                    setTransferRows(next);
+                  }}
+                  style={{ width: 50, fontSize: "0.7rem" }} />
+                <Input placeholder="satisfies (optional)" value={row.satisfiesCode}
+                  onChange={e => {
+                    const next = [...transferRows];
+                    next[i] = { ...next[i], satisfiesCode: e.target.value };
+                    setTransferRows(next);
+                  }}
+                  style={{ flex: 1, fontSize: "0.7rem" }} />
+              </div>
+            ))}
+
+            <button onClick={() => setTransferRows(prev => [...prev, { code: "", label: "", credits: 3, satisfiesCode: "" }])}
+              style={{
+                fontFamily: FONT.mono, fontSize: "0.7rem", color: "#5a5550",
+                padding: "8px 0", background: "transparent", border: "none", cursor: "pointer",
+              }}>
+              + add another
+            </button>
+
+            <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#888", marginBottom: 12 }}>
+              accounted for: {transferRows.reduce((s, r) => s + (r.credits || 0), 0)} / {transferTotal} credits
+            </div>
+
+            {error && <ErrMsg>{error}</ErrMsg>}
+
+            <Btn onClick={async () => {
+              for (const row of transferRows) {
+                if (!row.code) continue;
+                const safeCode = row.code.replace(" ", "-");
+                if (row.satisfiesCode) {
+                  // Delete old XFER entry and insert real code
+                  await fetch(`/api/students/me/courses/${safeCode}`, {
+                    method: "DELETE", credentials: "include",
+                  });
+                  await api.post("/api/students/me/courses", {
+                    code: row.satisfiesCode.toUpperCase(),
+                    semester: "Transfer",
+                    status: "transfer",
+                    creditsOverride: row.credits,
+                    note: row.label,
+                  });
+                } else {
+                  await api.put(`/api/students/me/courses/${safeCode}`, {
+                    note: row.label,
+                    creditsOverride: row.credits,
+                  });
+                }
+              }
+              advanceFrom(6);
+            }} full>save and continue</Btn>
+
+            <button onClick={() => advanceFrom(6)}
+              style={{
+                display: "block", width: "100%", marginTop: 12, padding: 8,
+                background: "transparent", border: "none", cursor: "pointer",
+                fontFamily: FONT.mono, fontSize: "0.7rem", color: "#9a9590", textAlign: "center",
+              }}>
+              skip for now
+            </button>
+          </div>
+        )}
+
+        {/* ── Step 7: You're all set ──────────────────────────────────── */}
+        {step === 7 && (() => {
+          if (!solveResult) {
+            return (
+              <div style={{ textAlign: "center", padding: "2rem", fontFamily: FONT.mono, color: "#888" }}>
+                computing your progress...
+              </div>
+            );
+          }
+
+          const totalCredits = solveResult.credits?.total || 0;
+          const creditPct = Math.min((totalCredits / 120) * 100, 100);
+          const remainingCount = solveResult.remaining?.length || 0;
+
+          return (
+            <div>
+              <h2 style={{ fontFamily: FONT.serif, fontSize: "1.5rem", fontWeight: 700, marginBottom: 4, textAlign: "center" }}>
+                you're all set
+              </h2>
+              <p style={{ fontFamily: FONT.mono, fontSize: "0.75rem", color: "#888", marginBottom: 24, textAlign: "center" }}>
+                here's where you stand
+              </p>
+
+              {/* Credit progress bar */}
+              <div style={{ marginBottom: 20 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontFamily: FONT.mono, fontSize: "0.7rem", marginBottom: 6 }}>
+                  <span>credits</span>
+                  <span>{totalCredits} / 120</span>
+                </div>
+                <div style={{ height: 10, borderRadius: 5, background: "#e8e4df", overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: `${creditPct}%`, borderRadius: 5, background: "#22863a", transition: "width 0.5s" }} />
+                </div>
+              </div>
+
+              {/* Per-program progress */}
+              {Object.entries(solveResult.programs || {}).map(([code, prog]) => {
+                const filled = prog.categories?.reduce((s, c) => s + c.filled, 0) || 0;
+                const total = prog.categories?.reduce((s, c) => s + c.slots, 0) || 0;
+                const pct = total > 0 ? Math.min((filled / total) * 100, 100) : 0;
+                return (
+                  <div key={code} style={{ marginBottom: 12 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontFamily: FONT.mono, fontSize: "0.65rem", marginBottom: 4 }}>
+                      <span style={{ color: programColor(code) }}>{prog.name || code}</span>
+                      <span>{filled}/{total} slots</span>
+                    </div>
+                    <div style={{ height: 6, borderRadius: 3, background: "#e8e4df", overflow: "hidden" }}>
+                      <div style={{ height: "100%", width: `${pct}%`, borderRadius: 3, background: programColor(code), transition: "width 0.5s" }} />
+                    </div>
+                  </div>
+                );
+              })}
+
+              {remainingCount > 0 && (
+                <div style={{ fontFamily: FONT.mono, fontSize: "0.75rem", color: "#888", textAlign: "center", margin: "16px 0" }}>
+                  {remainingCount} requirement{remainingCount !== 1 ? "s" : ""} remaining
+                </div>
+              )}
+
+              <Btn onClick={() => {
+                api.put("/api/students/me/onboarding", { step: 0 });
+                onComplete();
+              }} full style={{ marginTop: 16 }}>go to dashboard</Btn>
+            </div>
+          );
+        })()}
       </div>
     </div>
   );
 }
 
 // ── Dashboard ───────────────────────────────────────────────────────────────
-function Dashboard({ user, setUser, onLogout }) {
+function Dashboard({ user, setUser, onLogout, setOnboardingActive }) {
   const [data, setData] = useState(null);
   const [pinModal, setPinModal] = useState(null);
   const [slotModal, setSlotModal] = useState(null);
@@ -2024,12 +2787,20 @@ function Dashboard({ user, setUser, onLogout }) {
   }, []);
   useEffect(() => { refresh(); }, [refresh]);
 
-  // Show onboarding for new users with zero courses
+  // Show onboarding for new users or resume interrupted onboarding
   useEffect(() => {
-    if (data && data.credits.total === 0 && !showOnboarding) {
+    if (showOnboarding) return;
+    if (user.onboarding_step === null && data && data.credits.total === 0) {
+      setShowOnboarding(true);
+    } else if (user.onboarding_step > 0) {
       setShowOnboarding(true);
     }
-  }, [data]);
+  }, [data, user.onboarding_step]);
+
+  // Notify parent when onboarding is active (hides feedback widget)
+  useEffect(() => {
+    setOnboardingActive?.(showOnboarding);
+  }, [showOnboarding]);
 
   // Build conflicts: courses shared between any two programs that have an overlap rule
   const conflicts = useMemo(() => {
@@ -2165,7 +2936,13 @@ function Dashboard({ user, setUser, onLogout }) {
       )}
 
       {showOnboarding && (
-        <OnboardingWizard user={user} onComplete={() => { setShowOnboarding(false); refresh(); }} />
+        <OnboardingWizard user={user} initialStep={user.onboarding_step || 1}
+          onComplete={() => {
+            setShowOnboarding(false);
+            refresh();
+            // Refresh user to update onboarding_step
+            api.get("/api/auth/me").then(u => { if (u?.id) setUser(u); });
+          }} />
       )}
 
       <RemainingPill count={remainingCount} remainingRef={remainingRef} />

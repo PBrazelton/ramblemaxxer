@@ -148,6 +148,9 @@ router.post("/confirm", (req, res) => {
           insertCourse.run(userId, code, "Transfer", "transfer");
         }
       }
+
+      // 5. Set onboarding_step = 4 (server-authoritative)
+      db.prepare("UPDATE users SET onboarding_step = 4 WHERE id = ?").run(userId);
     })();
 
     // 5. Run solver
