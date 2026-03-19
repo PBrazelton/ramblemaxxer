@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS student_courses (
   note        TEXT,
   satisfies_json TEXT,           -- JSON array of {program, category} for transfer credit requirement mappings
   created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
-  UNIQUE(user_id, course_code)
+  UNIQUE(user_id, course_code, semester)
 );
 
 -- Slot assignments: which requirement slot does a course fill for a student?

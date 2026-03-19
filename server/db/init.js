@@ -35,6 +35,46 @@ try {
   console.log("  Migrated: added satisfies_json column");
 } catch (e) { /* already exists */ }
 
+// Migration: widen unique constraint from (user_id, course_code) to (user_id, course_code, semester)
+// SQLite can't ALTER constraints, so rebuild the table if the old constraint exists
+try {
+  // Check if the old constraint is still in place by trying a dummy duplicate
+  const testRow = db.prepare("SELECT id, user_id, course_code, semester FROM student_courses LIMIT 1").get();
+  if (testRow) {
+    // Try inserting a duplicate (user_id, course_code) with different semester — if it fails, old constraint is active
+    const testStmt = db.prepare("INSERT INTO student_courses (user_id, course_code, semester, status) VALUES (?, ?, ?, ?)");
+    try {
+      testStmt.run(testRow.user_id, testRow.course_code, "__MIGRATION_TEST__", "planned");
+      // If we get here, constraint already allows it (or was already migrated) — clean up test row
+      db.prepare("DELETE FROM student_courses WHERE user_id = ? AND course_code = ? AND semester = '__MIGRATION_TEST__'").run(testRow.user_id, testRow.course_code);
+    } catch (e) {
+      if (e.code === "SQLITE_CONSTRAINT_UNIQUE") {
+        // Old constraint is active — rebuild table
+        console.log("  Migrating: widening student_courses unique constraint to include semester...");
+        db.exec(`
+          CREATE TABLE student_courses_new (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            course_code TEXT NOT NULL,
+            semester TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'planned',
+            credits_override INTEGER,
+            note TEXT,
+            satisfies_json TEXT,
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            pinned_program TEXT,
+            UNIQUE(user_id, course_code, semester)
+          );
+          INSERT INTO student_courses_new SELECT id, user_id, course_code, semester, status, credits_override, note, satisfies_json, created_at, pinned_program FROM student_courses;
+          DROP TABLE student_courses;
+          ALTER TABLE student_courses_new RENAME TO student_courses;
+        `);
+        console.log("  Migrated: student_courses unique constraint now includes semester");
+      }
+    }
+  }
+} catch (e) { /* table may not exist yet — schema.sql will create it correctly */ }
+
 // Migration: add active column to users
 try {
   db.prepare("ALTER TABLE users ADD COLUMN active INTEGER NOT NULL DEFAULT 1").run();
