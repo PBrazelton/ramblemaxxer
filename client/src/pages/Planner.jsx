@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { COLORS, programColor, FONT, BG, BORDER, api, ProgressRing } from "../lib/ui.jsx";
+import { COLORS, STATUS_COLOR, programColor, FONT, BG, BORDER, api, ProgressRing } from "../lib/ui.jsx";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -227,9 +227,23 @@ export default function Planner({ user, onLogout }) {
     return grouped;
   }, [plan]);
 
-  // Terms that have plan courses (sorted)
+  // Actual student courses (enrolled/complete) grouped by term — read-only layer
+  const actualByTerm = useMemo(() => {
+    const grouped = {};
+    for (const c of (plan?.studentCourses || [])) {
+      if (!c.term || c.term === "Transfer") continue;
+      if (!grouped[c.term]) grouped[c.term] = [];
+      grouped[c.term].push(c);
+    }
+    return grouped;
+  }, [plan?.studentCourses]);
+
+  // Terms that have plan courses or actual courses (sorted)
   const planTerms = useMemo(() => {
     const terms = new Set(plan?.courses?.map(c => c.term) || []);
+    for (const c of (plan?.studentCourses || [])) {
+      if (c.term && c.term !== "Transfer") terms.add(c.term);
+    }
     for (const t of futureTerms) terms.add(t);
     return [...terms].sort((a, b) => termOrder(a) - termOrder(b));
   }, [plan, futureTerms]);
@@ -362,7 +376,7 @@ export default function Planner({ user, onLogout }) {
       {view === "semester" ? (
         <SemesterPlanView
           plan={plan} courseCatalog={browseCourses} filteredCourses={filteredCourses}
-          placedCodes={placedCodes} coursesByTerm={coursesByTerm} planTerms={planTerms}
+          placedCodes={placedCodes} coursesByTerm={coursesByTerm} actualByTerm={actualByTerm} planTerms={planTerms}
           selectedCourse={selectedCourse} setSelectedCourse={setSelectedCourse}
           placeCourse={placeCourse} removeCourse={removeCourse}
           searchQuery={searchQuery} setSearchQuery={setSearchQuery}
@@ -377,7 +391,7 @@ export default function Planner({ user, onLogout }) {
         />
       ) : (
         <WeeklyScheduleView
-          plan={plan} coursesByTerm={coursesByTerm} planTerms={planTerms}
+          plan={plan} coursesByTerm={coursesByTerm} actualByTerm={actualByTerm} planTerms={planTerms}
           weeklyTerm={weeklyTerm} setWeeklyTerm={setWeeklyTerm}
           sectionData={sectionData} loadSections={loadSections}
           assignSection={assignSection} isMobile={isMobile}
@@ -409,7 +423,7 @@ export default function Planner({ user, onLogout }) {
 // ── Semester Plan View ───────────────────────────────────────────────────────
 
 function SemesterPlanView({
-  plan, filteredCourses, placedCodes, coursesByTerm, planTerms,
+  plan, filteredCourses, placedCodes, coursesByTerm, actualByTerm = {}, planTerms,
   selectedCourse, setSelectedCourse, placeCourse, removeCourse,
   searchQuery, setSearchQuery, programFilter, setProgramFilter,
   termFilter, setTermFilter, programNames, scrapedTerms,
@@ -450,6 +464,7 @@ function SemesterPlanView({
         {/* Semester buckets */}
         {planTerms.map(term => (
           <SemesterBucket key={term} term={term} courses={coursesByTerm[term] || []}
+            actualCourses={actualByTerm[term] || []}
             selectedCourse={selectedCourse} placeCourse={placeCourse}
             removeCourse={removeCourse} scrapedTerms={scrapedTerms}
           />
@@ -512,6 +527,7 @@ function SemesterPlanView({
       <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "0.5rem", overflow: "auto", minHeight: 0 }}>
         {planTerms.map(term => (
           <SemesterBucket key={term} term={term} courses={coursesByTerm[term] || []}
+            actualCourses={actualByTerm[term] || []}
             selectedCourse={selectedCourse} placeCourse={placeCourse}
             removeCourse={removeCourse} scrapedTerms={scrapedTerms}
           />
@@ -654,9 +670,14 @@ function CourseCard({ course, isPlaced, isSelected, onSelect }) {
 
 // ── Semester Bucket ──────────────────────────────────────────────────────────
 
-function SemesterBucket({ term, courses, selectedCourse, placeCourse, removeCourse, scrapedTerms }) {
+function SemesterBucket({ term, courses, actualCourses: rawActual = [], selectedCourse, placeCourse, removeCourse, scrapedTerms }) {
   const [dragOver, setDragOver] = useState(false);
-  const termCredits = courses.reduce((sum, c) => sum + (c.credits || 3), 0);
+  // Filter out actual courses that also exist in plan (avoid duplicate keys)
+  const actualCourses = rawActual.filter(a => !courses.some(p => p.course_code === a.course_code));
+  const actualCredits = actualCourses.reduce((sum, c) => sum + (c.credits || 3), 0);
+  const plannedCredits = courses.reduce((sum, c) => sum + (c.credits || 3), 0);
+  const termCredits = actualCredits + plannedCredits;
+  const totalCourseCount = courses.length + actualCourses.length;
   const hasData = scrapedTerms.includes(term);
 
   const handleDrop = (e) => {
@@ -682,17 +703,17 @@ function SemesterBucket({ term, courses, selectedCourse, placeCourse, removeCour
       onClick={selectedCourse ? handleTapPlace : undefined}
       style={{
         background: dragOver ? "#e8f5e9" : "#fff",
-        border: `1px ${courses.length === 0 ? "dashed" : "solid"} ${dragOver ? "#22863a" : selectedCourse ? "#6f42c1" : BORDER}`,
+        border: `1px ${totalCourseCount === 0 ? "dashed" : "solid"} ${dragOver ? "#22863a" : selectedCourse ? "#6f42c1" : BORDER}`,
         borderRadius: 8, padding: "0.6rem 0.7rem", marginBottom: "0.5rem",
         cursor: selectedCourse ? "pointer" : "default",
         transition: "background 0.15s, border-color 0.15s",
       }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: courses.length > 0 ? "0.4rem" : 0 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: totalCourseCount > 0 ? "0.4rem" : 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
           <span style={{ fontFamily: FONT.serif, fontSize: "0.85rem", fontWeight: 700 }}>{term}</span>
           <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#888" }}>
-            {courses.length} course{courses.length !== 1 ? "s" : ""} {"\u00B7"} {termCredits}cr
+            {totalCourseCount} course{totalCourseCount !== 1 ? "s" : ""} {"\u00B7"} {termCredits}cr
           </span>
         </div>
         <div style={{ display: "flex", gap: "0.3rem", alignItems: "center" }}>
@@ -707,12 +728,41 @@ function SemesterBucket({ term, courses, selectedCourse, placeCourse, removeCour
         </div>
       </div>
 
-      {courses.length === 0 && !selectedCourse && (
+      {/* Actual enrolled/complete courses (read-only) */}
+      {actualCourses.length > 0 && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem", marginBottom: courses.length > 0 ? "0.3rem" : 0 }}>
+          {actualCourses.map(c => {
+            const dept = c.department || c.course_code.split(" ")[0];
+            const color = COLORS[Object.keys(COLORS).find(k => k.startsWith(dept))] || "#5a6a7a";
+            const statusColor = c.status === "complete" ? STATUS_COLOR.complete : STATUS_COLOR.enrolled;
+            return (
+              <div key={c.course_code} style={{
+                display: "inline-flex", alignItems: "center", gap: "0.3rem",
+                background: `${color}18`, border: `1.5px solid ${color}40`,
+                borderRadius: 6, padding: "0.3rem 0.5rem",
+              }}>
+                <div>
+                  <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", fontWeight: 700, color }}>{c.course_code}</div>
+                  <div style={{ fontFamily: FONT.mono, fontSize: "0.5rem", color: "#666", maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {c.title || ""}
+                  </div>
+                </div>
+                <span style={{ fontFamily: FONT.mono, fontSize: "0.55rem", color: "#888" }}>{c.credits || 3}cr</span>
+                <span style={{ fontFamily: FONT.mono, fontSize: "0.45rem", background: `${statusColor}20`, color: statusColor, padding: "1px 4px", borderRadius: 3 }}>
+                  {c.status}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {courses.length === 0 && actualCourses.length === 0 && !selectedCourse && (
         <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#bbb", textAlign: "center", padding: "0.5rem" }}>
           drag or tap courses here
         </div>
       )}
-      {courses.length === 0 && selectedCourse && (
+      {courses.length === 0 && actualCourses.length === 0 && selectedCourse && (
         <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#6f42c1", textAlign: "center", padding: "0.5rem" }}>
           tap to place {selectedCourse.code}
         </div>
@@ -844,18 +894,24 @@ function ValidationSection({ warnings, onValidate }) {
 
 // ── Weekly Schedule View ─────────────────────────────────────────────────────
 
-function WeeklyScheduleView({ plan, coursesByTerm, planTerms, weeklyTerm, setWeeklyTerm, sectionData, loadSections, assignSection, isMobile }) {
-  // Terms that have courses
-  const termsWithCourses = planTerms.filter(t => coursesByTerm[t]?.length > 0);
+function WeeklyScheduleView({ plan, coursesByTerm, actualByTerm = {}, planTerms, weeklyTerm, setWeeklyTerm, sectionData, loadSections, assignSection, isMobile }) {
+  // Terms that have courses (plan or actual)
+  const termsWithCourses = planTerms.filter(t => (coursesByTerm[t]?.length > 0) || (actualByTerm[t]?.length > 0));
   const activeTerm = weeklyTerm || termsWithCourses[0] || planTerms[0];
-  const termCourses = coursesByTerm[activeTerm] || [];
+  // Plan courses for this term (editable, get section pickers)
+  const planCourses = coursesByTerm[activeTerm] || [];
+  // Actual enrolled/complete courses (read-only, shown on grid but no section pickers)
+  const actualCourses = (actualByTerm[activeTerm] || [])
+    .filter(c => !planCourses.some(p => p.course_code === c.course_code))
+    .map(c => ({ ...c, course_code: c.course_code, isActual: true }));
+  const termCourses = [...planCourses, ...actualCourses];
 
-  // Load sections for all courses in this term
+  // Load sections only for planned courses (actual courses don't need section pickers)
   useEffect(() => {
-    for (const c of termCourses) {
+    for (const c of planCourses) {
       loadSections(c.course_code, activeTerm);
     }
-  }, [termCourses, activeTerm, loadSections]);
+  }, [planCourses, activeTerm, loadSections]);
 
   // Gather scheduled blocks for the grid
   const blocks = useMemo(() => {
@@ -923,7 +979,7 @@ function WeeklyScheduleView({ plan, coursesByTerm, planTerms, weeklyTerm, setWee
       {/* Term selector */}
       <div style={{ display: "flex", gap: "0.3rem", marginBottom: "0.75rem", flexWrap: "wrap" }}>
         {planTerms.map(t => {
-          const count = coursesByTerm[t]?.length || 0;
+          const count = (coursesByTerm[t]?.length || 0) + (actualByTerm[t]?.length || 0);
           return (
             <button key={t} onClick={() => setWeeklyTerm(t)} style={{
               fontFamily: FONT.mono, fontSize: "0.7rem", padding: "0.3rem 0.6rem",
@@ -976,10 +1032,10 @@ function WeeklyScheduleView({ plan, coursesByTerm, planTerms, weeklyTerm, setWee
             </div>
           )}
 
-          {/* Section pickers */}
+          {/* Section pickers (only for planned courses, not actual enrolled/complete) */}
           <div style={{ fontFamily: FONT.serif, fontSize: "0.9rem", fontWeight: 700, marginBottom: "0.5rem" }}>Pick Sections</div>
           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: "0.5rem" }}>
-            {termCourses.map(c => (
+            {planCourses.map(c => (
               <SectionPicker key={c.course_code} course={c} term={activeTerm}
                 sections={sectionData[`${c.course_code}|${activeTerm}`] || []}
                 onSelect={(section, classNumber) => assignSection(c.course_code, section, classNumber)}

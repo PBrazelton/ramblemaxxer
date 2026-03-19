@@ -129,7 +129,8 @@ router.post("/me/courses/bulk", (req, res) => {
   const courseRows = db.prepare(`
     SELECT course_code as code, semester, status,
            credits_override as creditsOverride,
-           pinned_program as pinnedProgram
+           pinned_program as pinnedProgram,
+           satisfies_json as satisfiesJson
     FROM student_courses WHERE user_id = ?
   `).all(req.session.userId);
   const programRows = db.prepare(`
@@ -180,7 +181,8 @@ router.post("/me/transfer-credits", (req, res) => {
   const courseRows = db.prepare(`
     SELECT course_code as code, semester, status,
            credits_override as creditsOverride,
-           pinned_program as pinnedProgram
+           pinned_program as pinnedProgram,
+           satisfies_json as satisfiesJson
     FROM student_courses WHERE user_id = ?
   `).all(req.session.userId);
   const programRows = db.prepare(`
@@ -198,7 +200,8 @@ router.get("/me/solve", (req, res) => {
   const courseRows = db.prepare(`
     SELECT course_code as code, semester, status,
            credits_override as creditsOverride,
-           pinned_program as pinnedProgram
+           pinned_program as pinnedProgram,
+           satisfies_json as satisfiesJson
     FROM student_courses WHERE user_id = ?
   `).all(req.session.userId);
 

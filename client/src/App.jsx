@@ -2303,11 +2303,16 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
             </div>
 
             {/* Transfer credits */}
-            {reviewTransfer.length > 0 && (
+            {(reviewTransfer.length > 0 || parseResult.transferCredits?.total > 0) && (
               <div style={{ marginBottom: 16 }}>
-                <div style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 600, marginBottom: 8, color: COLORS["CAS-GRAD"] }}>
+                <div style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 600, marginBottom: 4, color: COLORS["CAS-GRAD"] }}>
                   Transfer Credits
                 </div>
+                {parseResult.transferCredits?.total > 0 && (
+                  <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#888", marginBottom: 8 }}>
+                    Your transcript shows {parseResult.transferCredits.total} transfer credits
+                  </div>
+                )}
                 {parseResult.transferCredits?.sources?.length > 0 && (
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
                     {parseResult.transferCredits.sources.map((src, i) => (
@@ -2735,8 +2740,8 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
 
               {/* Per-program progress */}
               {Object.entries(solveResult.programs || {}).map(([code, prog]) => {
-                const filled = prog.categories?.reduce((s, c) => s + c.filled, 0) || 0;
-                const total = prog.categories?.reduce((s, c) => s + c.slots, 0) || 0;
+                const filled = prog.categories?.reduce((s, c) => s + (c.filledCount || 0), 0) || 0;
+                const total = prog.categories?.reduce((s, c) => s + (c.slotsNeeded || 0), 0) || 0;
                 const pct = total > 0 ? Math.min((filled / total) * 100, 100) : 0;
                 return (
                   <div key={code} style={{ marginBottom: 12 }}>

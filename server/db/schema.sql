@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS student_courses (
   status      TEXT    NOT NULL DEFAULT 'planned', -- 'transfer' | 'complete' | 'enrolled' | 'planned'
   credits_override INTEGER,      -- override if transfer credit differs
   note        TEXT,
+  satisfies_json TEXT,           -- JSON array of {program, category} for transfer credit requirement mappings
   created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
   UNIQUE(user_id, course_code)
 );

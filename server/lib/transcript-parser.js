@@ -374,7 +374,7 @@ function parseConcatLine(line) {
 
   // Must end with decimal patterns: attempted + earned + optional grade + points
   // Work backwards: find the credit decimals in the rest
-  const backMatch = rest.match(/^(.+?)(\d+\.\d{3})(\d+\.\d{3})\s{0,3}([A-Z][+-]?|P|W|WF|I|AU|NR)?\s*(\d+\.\d{3})$/);
+  const backMatch = rest.match(/^(.+?)(\d{1,3}\.\d{3})(\d{1,3}\.\d{3})\s{0,3}([A-Z][+-]?|P|W|WF|I|AU|NR)?\s*(\d{1,3}\.\d{3})$/);
   if (!backMatch) {
     // Fallback: line has dept + number + title but no numeric columns
     // (common in official transcripts for some course lines)
