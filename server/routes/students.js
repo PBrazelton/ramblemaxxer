@@ -63,13 +63,22 @@ router.post("/me/courses", (req, res) => {
 });
 
 // ── PUT /api/students/me/courses/:code ────────────────────────────────────
+// Optional ?semester= query param to target a specific instance of a repeatable course
 router.put("/me/courses/:code", (req, res) => {
   const { semester, status, creditsOverride, note, pinnedProgram, satisfiesJson } = req.body;
   const code = req.params.code.toUpperCase().replace("-", " ");
+  const targetSemester = req.query.semester; // optional: disambiguate repeatable courses
+
+  const whereClause = targetSemester
+    ? "user_id = ? AND course_code = ? AND semester = ?"
+    : "user_id = ? AND course_code = ?";
+  const whereParams = targetSemester
+    ? [req.session.userId, code, targetSemester]
+    : [req.session.userId, code];
 
   const current = db.prepare(
-    "SELECT pinned_program, satisfies_json FROM student_courses WHERE user_id = ? AND course_code = ?"
-  ).get(req.session.userId, code);
+    `SELECT pinned_program, satisfies_json FROM student_courses WHERE ${whereClause}`
+  ).get(...whereParams);
 
   db.prepare(`
     UPDATE student_courses
@@ -79,22 +88,29 @@ router.put("/me/courses/:code", (req, res) => {
         note = COALESCE(?, note),
         pinned_program = ?,
         satisfies_json = ?
-    WHERE user_id = ? AND course_code = ?
+    WHERE ${whereClause}
   `).run(
     semester ?? null, status ?? null, creditsOverride ?? null, note ?? null,
     pinnedProgram !== undefined ? pinnedProgram : (current?.pinned_program ?? null),
     satisfiesJson !== undefined ? satisfiesJson : (current?.satisfies_json ?? null),
-    req.session.userId, code
+    ...whereParams
   );
 
   res.json({ ok: true });
 });
 
 // ── DELETE /api/students/me/courses/:code ─────────────────────────────────
+// Optional ?semester= query param to target a specific instance
 router.delete("/me/courses/:code", (req, res) => {
   const code = req.params.code.toUpperCase().replace("-", " ");
-  db.prepare("DELETE FROM student_courses WHERE user_id = ? AND course_code = ?")
-    .run(req.session.userId, code);
+  const targetSemester = req.query.semester;
+  if (targetSemester) {
+    db.prepare("DELETE FROM student_courses WHERE user_id = ? AND course_code = ? AND semester = ?")
+      .run(req.session.userId, code, targetSemester);
+  } else {
+    db.prepare("DELETE FROM student_courses WHERE user_id = ? AND course_code = ?")
+      .run(req.session.userId, code);
+  }
   res.json({ ok: true });
 });
 

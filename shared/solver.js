@@ -74,7 +74,9 @@ function solve(studentCourses, declaredPrograms, courseMap, programMap, degreeRe
       try { satisfies = typeof sc.satisfiesJson === "string" ? JSON.parse(sc.satisfiesJson) : sc.satisfiesJson; }
       catch { /* malformed JSON — ignore */ }
     }
-    taken.set(sc.code, { ...cat, ...sc, credits: sc.creditsOverride ?? cat.credits ?? 3, pinnedProgram: sc.pinnedProgram || null, satisfies });
+    // Use composite key for repeatable courses (same code, different semester)
+    const key = taken.has(sc.code) ? `${sc.code}|${sc.semester || ""}` : sc.code;
+    taken.set(key, { ...cat, ...sc, credits: sc.creditsOverride ?? cat.credits ?? 3, pinnedProgram: sc.pinnedProgram || null, satisfies });
   }
 
   const waivedCore = new Set();
