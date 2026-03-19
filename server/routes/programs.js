@@ -28,7 +28,7 @@ router.get("/catalog", (req, res) => {
   const result = allPrograms.map(p => ({
     ...p,
     modeled: modeled.has(p.code),
-    type: typeMap[p.code] || "major",
+    type: typeMap[p.code] || p.type || "major",
   }));
 
   // Merge in DB-only programs not in luc-programs.json (admin-created)

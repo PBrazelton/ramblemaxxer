@@ -17,6 +17,15 @@ function termOrder(semester) {
   return year * 3 + season;
 }
 
+function getCurrentAcademicTerm() {
+  const now = new Date();
+  const month = now.getMonth() + 1;
+  const year = now.getFullYear();
+  if (month >= 8) return `Fall ${year}`;
+  if (month >= 5) return `Summer ${year}`;
+  return `Spring ${year}`;
+}
+
 function termLabel(term) {
   const m = String(term).match(/^(Fall|Spring|Summer)\s+(\d{4})$/);
   if (!m) return term;
@@ -62,6 +71,7 @@ export default function Planner({ user, onLogout }) {
   const [programFilter, setProgramFilter] = useState("");
   const [termFilter, setTermFilter] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [catalogResults, setCatalogResults] = useState(null); // null = requirement-filtered mode
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [dirty, setDirty] = useState(false);
   const [saveStatus, setSaveStatus] = useState("saved"); // "saved" | "saving" | "dirty"
@@ -216,6 +226,19 @@ export default function Planner({ user, onLogout }) {
   // Placed course codes
   const placedCodes = useMemo(() => new Set(plan?.courses?.map(c => c.course_code) || []), [plan]);
 
+  // Full catalog search (debounced, with race-condition guard)
+  useEffect(() => {
+    if (searchQuery.length < 2) { setCatalogResults(null); return; }
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      try {
+        const results = await api.get(`/api/courses/search?q=${encodeURIComponent(searchQuery)}`);
+        if (!cancelled) setCatalogResults(Array.isArray(results) ? results : []);
+      } catch { if (!cancelled) setCatalogResults([]); }
+    }, 300);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [searchQuery]);
+
   // Courses grouped by term
   const coursesByTerm = useMemo(() => {
     if (!plan?.courses) return {};
@@ -279,8 +302,15 @@ export default function Planner({ user, onLogout }) {
     return { current: currentCredits, planned: plannedCredits, total: currentCredits + plannedCredits, goal: 120 };
   }, [solverData, plan]);
 
-  // Filtered browse courses
+  // Filtered browse courses (switches to full catalog when searching)
+  const isSearchingCatalog = catalogResults !== null;
   const filteredCourses = useMemo(() => {
+    if (isSearchingCatalog) {
+      // Full catalog mode — normalize shape, skip program/term filters
+      return catalogResults.map(c => ({
+        ...c, fills: [], terms: [], boxCount: 0, isFullCatalog: true,
+      })).filter(c => !placedCodes.has(c.code));
+    }
     let list = browseCourses;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
@@ -293,7 +323,7 @@ export default function Planner({ user, onLogout }) {
       list = list.filter(c => c.terms?.includes(termFilter));
     }
     return list;
-  }, [browseCourses, searchQuery, programFilter, termFilter]);
+  }, [browseCourses, catalogResults, isSearchingCatalog, searchQuery, programFilter, termFilter, placedCodes]);
 
   // Program names for filter
   const programNames = useMemo(() => {
@@ -382,12 +412,14 @@ export default function Planner({ user, onLogout }) {
           searchQuery={searchQuery} setSearchQuery={setSearchQuery}
           programFilter={programFilter} setProgramFilter={setProgramFilter}
           termFilter={termFilter} setTermFilter={setTermFilter}
+          isSearchingCatalog={isSearchingCatalog}
           programNames={programNames} scrapedTerms={scrapedTerms}
           requirementStatus={requirementStatus} solverData={solverData}
           creditStats={creditStats} isMobile={isMobile}
           showBrowser={showBrowser} setShowBrowser={setShowBrowser}
           showTracker={showTracker} setShowTracker={setShowTracker}
           warnings={warnings} runValidation={runValidation}
+          onSwitchToWeekly={(t) => { setView("weekly"); setWeeklyTerm(t); }}
         />
       ) : (
         <WeeklyScheduleView
@@ -426,10 +458,10 @@ function SemesterPlanView({
   plan, filteredCourses, placedCodes, coursesByTerm, actualByTerm = {}, planTerms,
   selectedCourse, setSelectedCourse, placeCourse, removeCourse,
   searchQuery, setSearchQuery, programFilter, setProgramFilter,
-  termFilter, setTermFilter, programNames, scrapedTerms,
+  termFilter, setTermFilter, isSearchingCatalog, programNames, scrapedTerms,
   requirementStatus, solverData, creditStats, isMobile,
   showBrowser, setShowBrowser, showTracker, setShowTracker,
-  warnings, runValidation,
+  warnings, runValidation, onSwitchToWeekly,
 }) {
   if (isMobile) {
     return (
@@ -452,6 +484,7 @@ function SemesterPlanView({
                 programFilter={programFilter} setProgramFilter={setProgramFilter}
                 termFilter={termFilter} setTermFilter={setTermFilter}
                 programNames={programNames} scrapedTerms={scrapedTerms}
+                isSearchingCatalog={isSearchingCatalog}
               />
               <CourseBrowserList
                 courses={filteredCourses} placedCodes={placedCodes}
@@ -467,6 +500,7 @@ function SemesterPlanView({
             actualCourses={actualByTerm[term] || []}
             selectedCourse={selectedCourse} placeCourse={placeCourse}
             removeCourse={removeCourse} scrapedTerms={scrapedTerms}
+            onSwitchToWeekly={onSwitchToWeekly}
           />
         ))}
 
@@ -512,6 +546,7 @@ function SemesterPlanView({
               programFilter={programFilter} setProgramFilter={setProgramFilter}
               termFilter={termFilter} setTermFilter={setTermFilter}
               programNames={programNames} scrapedTerms={scrapedTerms}
+              isSearchingCatalog={isSearchingCatalog}
             />
           </div>
           <div style={{ flex: 1, overflow: "auto", padding: "0.4rem" }}>
@@ -530,6 +565,7 @@ function SemesterPlanView({
             actualCourses={actualByTerm[term] || []}
             selectedCourse={selectedCourse} placeCourse={placeCourse}
             removeCourse={removeCourse} scrapedTerms={scrapedTerms}
+            onSwitchToWeekly={onSwitchToWeekly}
           />
         ))}
         <ValidationSection warnings={warnings} onValidate={runValidation} />
@@ -556,7 +592,7 @@ function SemesterPlanView({
 
 // ── Course Browser Filters ───────────────────────────────────────────────────
 
-function CourseBrowserFilters({ searchQuery, setSearchQuery, programFilter, setProgramFilter, termFilter, setTermFilter, programNames, scrapedTerms }) {
+function CourseBrowserFilters({ searchQuery, setSearchQuery, programFilter, setProgramFilter, termFilter, setTermFilter, programNames, scrapedTerms, isSearchingCatalog }) {
   const selectStyle = {
     fontFamily: FONT.mono, fontSize: "0.65rem", padding: "0.25rem 0.3rem",
     border: `1px solid ${BORDER}`, borderRadius: 4, background: "#fafaf8",
@@ -565,20 +601,22 @@ function CourseBrowserFilters({ searchQuery, setSearchQuery, programFilter, setP
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
       <input
-        type="text" placeholder="Search courses..."
+        type="text" placeholder={isSearchingCatalog ? "Searching full catalog..." : "Search courses..."}
         value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-        style={{ fontFamily: FONT.mono, fontSize: "0.7rem", padding: "0.3rem 0.5rem", border: `1px solid ${BORDER}`, borderRadius: 4, background: "#fafaf8", width: "100%", boxSizing: "border-box" }}
+        style={{ fontFamily: FONT.mono, fontSize: "0.7rem", padding: "0.3rem 0.5rem", border: `1px solid ${isSearchingCatalog ? "#6f42c1" : BORDER}`, borderRadius: 4, background: "#fafaf8", width: "100%", boxSizing: "border-box" }}
       />
-      <div style={{ display: "flex", gap: "0.3rem" }}>
-        <select value={programFilter} onChange={e => setProgramFilter(e.target.value)} style={selectStyle}>
-          <option value="">All programs</option>
-          {programNames.map(p => <option key={p.code} value={p.name}>{p.name}</option>)}
-        </select>
-        <select value={termFilter} onChange={e => setTermFilter(e.target.value)} style={selectStyle}>
-          <option value="">All terms</option>
-          {scrapedTerms.map(t => <option key={t} value={t}>{termLabel(t)}</option>)}
-        </select>
-      </div>
+      {!isSearchingCatalog && (
+        <div style={{ display: "flex", gap: "0.3rem" }}>
+          <select value={programFilter} onChange={e => setProgramFilter(e.target.value)} style={selectStyle}>
+            <option value="">All programs</option>
+            {programNames.map(p => <option key={p.code} value={p.name}>{p.name}</option>)}
+          </select>
+          <select value={termFilter} onChange={e => setTermFilter(e.target.value)} style={selectStyle}>
+            <option value="">All terms</option>
+            {scrapedTerms.map(t => <option key={t} value={t}>{termLabel(t)}</option>)}
+          </select>
+        </div>
+      )}
     </div>
   );
 }
@@ -664,13 +702,18 @@ function CourseCard({ course, isPlaced, isSelected, onSelect }) {
           {course.fills.slice(0, 2).join(", ")}
         </div>
       )}
+      {course.isFullCatalog && !course.fills?.length && (
+        <div style={{ fontFamily: FONT.mono, fontSize: "0.45rem", color: "#bbb", marginTop: "0.15rem" }}>
+          not in your requirements
+        </div>
+      )}
     </div>
   );
 }
 
 // ── Semester Bucket ──────────────────────────────────────────────────────────
 
-function SemesterBucket({ term, courses, actualCourses: rawActual = [], selectedCourse, placeCourse, removeCourse, scrapedTerms }) {
+function SemesterBucket({ term, courses, actualCourses: rawActual = [], selectedCourse, placeCourse, removeCourse, scrapedTerms, onSwitchToWeekly }) {
   const [dragOver, setDragOver] = useState(false);
   // Filter out actual courses that also exist in plan (avoid duplicate keys)
   const actualCourses = rawActual.filter(a => !courses.some(p => p.course_code === a.course_code));
@@ -679,6 +722,8 @@ function SemesterBucket({ term, courses, actualCourses: rawActual = [], selected
   const termCredits = actualCredits + plannedCredits;
   const totalCourseCount = courses.length + actualCourses.length;
   const hasData = scrapedTerms.includes(term);
+  const isPast = termOrder(term) < termOrder(getCurrentAcademicTerm());
+  const [collapsed, setCollapsed] = useState(isPast && totalCourseCount > 0);
 
   const handleDrop = (e) => {
     e.preventDefault();
@@ -709,72 +754,99 @@ function SemesterBucket({ term, courses, actualCourses: rawActual = [], selected
         transition: "background 0.15s, border-color 0.15s",
       }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: totalCourseCount > 0 ? "0.4rem" : 0 }}>
+      <div onClick={totalCourseCount > 0 ? (e) => { e.stopPropagation(); setCollapsed(c => !c); } : undefined}
+        style={{ display: "flex", justifyContent: "space-between", alignItems: "center",
+          marginBottom: (!collapsed && totalCourseCount > 0) ? "0.4rem" : 0,
+          cursor: totalCourseCount > 0 ? "pointer" : "default", userSelect: "none",
+        }}>
         <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+          {totalCourseCount > 0 && (
+            <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#888" }}>{collapsed ? "\u25B8" : "\u25BE"}</span>
+          )}
           <span style={{ fontFamily: FONT.serif, fontSize: "0.85rem", fontWeight: 700 }}>{term}</span>
           <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#888" }}>
             {totalCourseCount} course{totalCourseCount !== 1 ? "s" : ""} {"\u00B7"} {termCredits}cr
+            {isPast && actualCourses.length > 0 && " \u00B7 completed"}
           </span>
         </div>
         <div style={{ display: "flex", gap: "0.3rem", alignItems: "center" }}>
-          {termCredits > 18 && (
-            <span style={{ fontFamily: FONT.mono, fontSize: "0.55rem", background: "#fde8e8", color: "#c43b2d", padding: "1px 5px", borderRadius: 3 }}>
-              heavy load
-            </span>
-          )}
+          {(() => {
+            // Skip warnings on past completed semesters
+            const allCompleted = actualCourses.length > 0 && courses.length === 0 && actualCourses.every(c => c.status === "complete");
+            if (allCompleted || termCredits <= 18) return null;
+            const w = termCredits <= 21 ? { label: "heavy load — advisor approval may be required", bg: "#fff8e1", color: "#b08800" }
+              : termCredits <= 24 ? { label: "overload — requires approval + extra fees", bg: "#fff3cd", color: "#856404" }
+              : { label: "exceeds LUC max overload", bg: "#fde8e8", color: "#c43b2d" };
+            return (
+              <span style={{ fontFamily: FONT.mono, fontSize: "0.55rem", background: w.bg, color: w.color, padding: "1px 5px", borderRadius: 3 }}>
+                {w.label}
+              </span>
+            );
+          })()}
           {!hasData && (
             <span style={{ fontFamily: FONT.mono, fontSize: "0.5rem", color: "#b08800" }}>no schedule data</span>
           )}
         </div>
       </div>
 
-      {/* Actual enrolled/complete courses (read-only) */}
-      {actualCourses.length > 0 && (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem", marginBottom: courses.length > 0 ? "0.3rem" : 0 }}>
-          {actualCourses.map(c => {
-            const dept = c.department || c.course_code.split(" ")[0];
-            const color = COLORS[Object.keys(COLORS).find(k => k.startsWith(dept))] || "#5a6a7a";
-            const statusColor = c.status === "complete" ? STATUS_COLOR.complete : STATUS_COLOR.enrolled;
-            return (
-              <div key={c.course_code} style={{
-                display: "inline-flex", alignItems: "center", gap: "0.3rem",
-                background: `${color}18`, border: `1.5px solid ${color}40`,
-                borderRadius: 6, padding: "0.3rem 0.5rem",
-              }}>
-                <div>
-                  <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", fontWeight: 700, color }}>{c.course_code}</div>
-                  <div style={{ fontFamily: FONT.mono, fontSize: "0.5rem", color: "#666", maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {c.title || ""}
+      {!collapsed && <>
+        {/* Actual enrolled/complete courses (read-only) */}
+        {actualCourses.length > 0 && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem", marginBottom: courses.length > 0 ? "0.3rem" : 0 }}>
+            {actualCourses.map(c => {
+              const dept = c.department || c.course_code.split(" ")[0];
+              const color = COLORS[Object.keys(COLORS).find(k => k.startsWith(dept))] || "#5a6a7a";
+              const statusColor = c.status === "complete" ? STATUS_COLOR.complete : STATUS_COLOR.enrolled;
+              return (
+                <div key={c.course_code} style={{
+                  display: "inline-flex", alignItems: "center", gap: "0.3rem",
+                  background: `${color}18`, border: `1.5px solid ${color}40`,
+                  borderRadius: 6, padding: "0.3rem 0.5rem",
+                }}>
+                  <div>
+                    <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", fontWeight: 700, color }}>{c.course_code}</div>
+                    <div style={{ fontFamily: FONT.mono, fontSize: "0.5rem", color: "#666", maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {c.title || ""}
+                    </div>
                   </div>
+                  <span style={{ fontFamily: FONT.mono, fontSize: "0.55rem", color: "#888" }}>{c.credits || 3}cr</span>
+                  <span style={{ fontFamily: FONT.mono, fontSize: "0.45rem", background: `${statusColor}20`, color: statusColor, padding: "1px 4px", borderRadius: 3 }}>
+                    {c.status}
+                  </span>
                 </div>
-                <span style={{ fontFamily: FONT.mono, fontSize: "0.55rem", color: "#888" }}>{c.credits || 3}cr</span>
-                <span style={{ fontFamily: FONT.mono, fontSize: "0.45rem", background: `${statusColor}20`, color: statusColor, padding: "1px 4px", borderRadius: 3 }}>
-                  {c.status}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      )}
+              );
+            })}
+          </div>
+        )}
 
-      {courses.length === 0 && actualCourses.length === 0 && !selectedCourse && (
-        <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#bbb", textAlign: "center", padding: "0.5rem" }}>
-          drag or tap courses here
-        </div>
-      )}
-      {courses.length === 0 && actualCourses.length === 0 && selectedCourse && (
-        <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#6f42c1", textAlign: "center", padding: "0.5rem" }}>
-          tap to place {selectedCourse.code}
-        </div>
-      )}
+        {courses.length === 0 && actualCourses.length === 0 && !selectedCourse && (
+          <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#bbb", textAlign: "center", padding: "0.5rem" }}>
+            drag or tap courses here
+          </div>
+        )}
+        {courses.length === 0 && actualCourses.length === 0 && selectedCourse && (
+          <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#6f42c1", textAlign: "center", padding: "0.5rem" }}>
+            tap to place {selectedCourse.code}
+          </div>
+        )}
 
-      {courses.length > 0 && (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem" }}>
-          {courses.map(c => (
-            <PlacedCourseChip key={c.course_code} course={c} onRemove={() => removeCourse(c.course_code)} />
-          ))}
-        </div>
-      )}
+        {courses.length > 0 && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem" }}>
+            {courses.map(c => (
+              <PlacedCourseChip key={c.course_code} course={c} onRemove={() => removeCourse(c.course_code)} />
+            ))}
+          </div>
+        )}
+        {/* Section picker nudge */}
+        {hasData && onSwitchToWeekly && courses.some(c => !c.section) && (
+          <div onClick={(e) => { e.stopPropagation(); onSwitchToWeekly(term); }} style={{
+            fontFamily: FONT.mono, fontSize: "0.55rem", color: "#6f42c1",
+            cursor: "pointer", marginTop: "0.3rem",
+          }}>
+            switch to weekly view to pick sections {"\u2192"}
+          </div>
+        )}
+      </>}
     </div>
   );
 }

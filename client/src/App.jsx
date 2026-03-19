@@ -1918,6 +1918,7 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
   const [programCatalog, setProgramCatalog] = useState([]);
   const [programSearch, setProgramSearch] = useState("");
   const [minorSearch, setMinorSearch] = useState("");
+  const [programSubStep, setProgramSubStep] = useState(0); // 0=majors, 1=minors
   const [uploading, setUploading] = useState(false);
   const [parseResult, setParseResult] = useState(null);
   const [reviewCourses, setReviewCourses] = useState([]);
@@ -1934,6 +1935,7 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
   const [currentTermSelected, setCurrentTermSelected] = useState([]);
   const [transferRows, setTransferRows] = useState([]);
   const [transferTotal, setTransferTotal] = useState(0);
+  const [coreCategories, setCoreCategories] = useState([]);
   const searchTimer = useRef(null);
 
   const toggleProgram = (pid) => {
@@ -1946,6 +1948,9 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
 
   useEffect(() => {
     fetch("/api/programs/catalog").then(r => r.json()).then(setProgramCatalog).catch(() => {});
+    fetch("/api/programs/CORE").then(r => r.json()).then(p => {
+      if (p?.categories) setCoreCategories(p.categories.map(c => c.name));
+    }).catch(() => {});
   }, []);
 
   // Skip logic — accepts overrides for state that may not be committed yet
@@ -1970,7 +1975,7 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
   useEffect(() => {
     if (step === 6 && transferRows.length === 0 && reviewTransfer.filter(t => t.included).length > 0) {
       setTransferRows(reviewTransfer.filter(t => t.included).map(t => ({
-        code: t.code, label: t.title || "", credits: t.credits || 3, satisfiesCode: "",
+        code: t.code, label: t.title || "", credits: t.credits || 3, satisfiesCode: "", satisfies: [],
       })));
     }
   }, [step, reviewTransfer]);
@@ -2197,35 +2202,47 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
               </div>
             </div>
 
-            <ProgramPickerList
-              label="your major(s)"
-              items={sortedPrograms}
-              selected={programs}
-              onToggle={toggleProgram}
-              search={programSearch}
-              onSearch={setProgramSearch}
-              loading={programCatalog.length === 0}
-            />
-
-            {minorCatalog.length > 0 && (
+            {programSubStep === 0 ? (<>
               <ProgramPickerList
-                label="your minor(s) (optional)"
+                label="your major(s)"
+                items={sortedPrograms}
+                selected={programs}
+                onToggle={toggleProgram}
+                search={programSearch}
+                onSearch={setProgramSearch}
+                loading={programCatalog.length === 0}
+              />
+
+              <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#aaa", marginBottom: 24 }}>
+                Core + CAS graduation requirements are tracked automatically
+              </div>
+
+              {error && <ErrMsg>{error}</ErrMsg>}
+              <Btn onClick={() => { if (programs.length > 0 && minorCatalog.length > 0) { setProgramSubStep(1); } else { saveStep1(); } }} full disabled={programs.length === 0}>continue</Btn>
+            </>) : (<>
+              <ProgramPickerList
+                label="any minors?"
                 items={sortedMinors}
                 selected={minors}
                 onToggle={toggleMinor}
                 search={minorSearch}
                 onSearch={setMinorSearch}
                 loading={false}
-                maxHeight={180}
+                maxHeight={240}
               />
-            )}
 
-            <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#aaa", marginBottom: 24 }}>
-              Core + CAS graduation requirements are tracked automatically
-            </div>
+              {minors.length > 0 && (
+                <div style={{ fontFamily: FONT.mono, fontSize: "0.55rem", color: "#888", marginBottom: 8 }}>
+                  (not yet tracked — minors are saved as declarations)
+                </div>
+              )}
 
-            {error && <ErrMsg>{error}</ErrMsg>}
-            <Btn onClick={saveStep1} full disabled={programs.length === 0}>continue</Btn>
+              {error && <ErrMsg>{error}</ErrMsg>}
+              <div style={{ display: "flex", gap: "0.5rem" }}>
+                <Btn onClick={saveStep1} full style={{ background: "transparent", color: "#888", border: `1px solid ${BORDER}` }}>skip</Btn>
+                <Btn onClick={saveStep1} full>continue</Btn>
+              </div>
+            </>)}
           </div>
         )}
 
@@ -2626,34 +2643,67 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
 
             {transferRows.map((row, i) => (
               <div key={i} style={{
-                display: "flex", gap: 8, alignItems: "center", padding: "8px 0",
+                padding: "10px 0",
                 borderTop: i ? `1px solid ${BORDER}` : "none",
               }}>
-                <Input placeholder="label" value={row.label}
-                  onChange={e => {
-                    const next = [...transferRows];
-                    next[i] = { ...next[i], label: e.target.value };
-                    setTransferRows(next);
-                  }}
-                  style={{ flex: 2, fontSize: "0.7rem" }} />
-                <Input placeholder="cr" value={row.credits} type="number"
-                  onChange={e => {
-                    const next = [...transferRows];
-                    next[i] = { ...next[i], credits: parseInt(e.target.value) || 0 };
-                    setTransferRows(next);
-                  }}
-                  style={{ width: 50, fontSize: "0.7rem" }} />
-                <Input placeholder="satisfies (optional)" value={row.satisfiesCode}
+                <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6 }}>
+                  <Input placeholder="What was it? (e.g. AP Biology)" value={row.label}
+                    onChange={e => {
+                      const next = [...transferRows];
+                      next[i] = { ...next[i], label: e.target.value };
+                      setTransferRows(next);
+                    }}
+                    style={{ flex: 1, fontSize: "0.7rem" }} />
+                  <Input placeholder="cr" value={row.credits} type="number"
+                    onChange={e => {
+                      const next = [...transferRows];
+                      next[i] = { ...next[i], credits: parseInt(e.target.value) || 0 };
+                      setTransferRows(next);
+                    }}
+                    style={{ width: 50, fontSize: "0.7rem" }} />
+                </div>
+                {/* Core category checkboxes */}
+                {coreCategories.length > 0 && (
+                  <div style={{ marginLeft: 2 }}>
+                    <div style={{ fontFamily: FONT.mono, fontSize: "0.55rem", color: "#888", marginBottom: 4 }}>
+                      satisfies which Core requirement?
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2px 8px" }}>
+                      {coreCategories.map(cat => {
+                        const shortName = cat.replace(" and Inquiry", "").replace("Knowledge", "").replace("Seminar", "").trim();
+                        const checked = (row.satisfies || []).includes(cat);
+                        return (
+                          <label key={cat} style={{
+                            display: "flex", alignItems: "center", gap: 4, cursor: "pointer",
+                            fontFamily: FONT.mono, fontSize: "0.55rem", color: checked ? "#1a1a1a" : "#888",
+                            padding: "2px 0",
+                          }}>
+                            <input type="checkbox" checked={checked} onChange={() => {
+                              const next = [...transferRows];
+                              const sats = [...(next[i].satisfies || [])];
+                              if (checked) sats.splice(sats.indexOf(cat), 1); else sats.push(cat);
+                              next[i] = { ...next[i], satisfies: sats };
+                              setTransferRows(next);
+                            }} style={{ margin: 0 }} />
+                            {shortName}
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                {/* Optional: map to specific LUC course */}
+                <Input placeholder="maps to LUC course code (optional, e.g. BIOL 101)" value={row.satisfiesCode}
                   onChange={e => {
                     const next = [...transferRows];
                     next[i] = { ...next[i], satisfiesCode: e.target.value };
                     setTransferRows(next);
                   }}
-                  style={{ flex: 1, fontSize: "0.7rem" }} />
+                  style={{ fontSize: "0.6rem", marginTop: 6, color: "#888" }} />
               </div>
             ))}
 
-            <button onClick={() => setTransferRows(prev => [...prev, { code: "", label: "", credits: 3, satisfiesCode: "" }])}
+            <button onClick={() => setTransferRows(prev => [...prev, { code: "", label: "", credits: 3, satisfiesCode: "", satisfies: [] }])}
               style={{
                 fontFamily: FONT.mono, fontSize: "0.7rem", color: "#5a5550",
                 padding: "8px 0", background: "transparent", border: "none", cursor: "pointer",
@@ -2669,6 +2719,13 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
 
             <Btn onClick={async () => {
               for (const row of transferRows) {
+                // Create new XFER entries for manually added rows
+                if (!row.code && row.label) {
+                  const res = await api.post("/api/students/me/transfer-credits", [{
+                    label: row.label, credits: row.credits,
+                  }]);
+                  if (res?.created?.[0]) row.code = res.created[0].code;
+                }
                 if (!row.code) continue;
                 const safeCode = row.code.replace(" ", "-");
                 if (row.satisfiesCode) {
@@ -2684,9 +2741,13 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
                     note: row.label,
                   });
                 } else {
+                  const satisfiesJson = (row.satisfies || []).length > 0
+                    ? JSON.stringify(row.satisfies.map(cat => ({ program: "CORE", category: cat })))
+                    : null;
                   await api.put(`/api/students/me/courses/${safeCode}`, {
                     note: row.label,
                     creditsOverride: row.credits,
+                    satisfiesJson,
                   });
                 }
               }
