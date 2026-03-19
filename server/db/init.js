@@ -29,6 +29,12 @@ try {
   console.log("  Migrated: added pinned_program column");
 } catch (e) { /* already exists */ }
 
+// Migration: add satisfies_json column for transfer credit requirement mappings
+try {
+  db.prepare("ALTER TABLE student_courses ADD COLUMN satisfies_json TEXT").run();
+  console.log("  Migrated: added satisfies_json column");
+} catch (e) { /* already exists */ }
+
 // Migration: add active column to users
 try {
   db.prepare("ALTER TABLE users ADD COLUMN active INTEGER NOT NULL DEFAULT 1").run();

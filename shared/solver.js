@@ -56,6 +56,12 @@ function courseMatchesEligible(code, course, category, assignedInProgram, glstPo
     return (course?.interdisciplinary_options?.includes("Global Studies") || glstPool?.has(code)) ?? false;
   const elecMatch = typeof ec === "string" && ec.match(/^ANY_([A-Z]+)_ELECTIVE$/);
   if (elecMatch) return course?.department === elecMatch[1] && !assignedInProgram.has(code);
+  // Core knowledge_area matching (used by getSuggestions and slot eligibility)
+  const keywords = CORE_KA_MAP[category.name];
+  if (keywords) {
+    const ka = course?.knowledge_area;
+    if (ka && keywords.includes(ka)) return true;
+  }
   return false;
 }
 
@@ -63,7 +69,12 @@ function solve(studentCourses, declaredPrograms, courseMap, programMap, degreeRe
   const taken = new Map();
   for (const sc of studentCourses) {
     const cat = courseMap.get(sc.code) || {};
-    taken.set(sc.code, { ...cat, ...sc, credits: sc.creditsOverride ?? cat.credits ?? 3, pinnedProgram: sc.pinnedProgram || null });
+    let satisfies = [];
+    if (sc.satisfiesJson) {
+      try { satisfies = typeof sc.satisfiesJson === "string" ? JSON.parse(sc.satisfiesJson) : sc.satisfiesJson; }
+      catch { /* malformed JSON — ignore */ }
+    }
+    taken.set(sc.code, { ...cat, ...sc, credits: sc.creditsOverride ?? cat.credits ?? 3, pinnedProgram: sc.pinnedProgram || null, satisfies });
   }
 
   const waivedCore = new Set();
@@ -106,6 +117,17 @@ function solve(studentCourses, declaredPrograms, courseMap, programMap, degreeRe
     for (const category of pd.categories) {
       const catResult = { name: category.name, description: category.description || null,
         slotsNeeded: category.slots, slots: [], isSatisfied: false, isWaived: false };
+
+      // Check transfer credits with explicit satisfies mappings (for any program type)
+      for (const [code, course] of taken) {
+        if (catResult.slots.length >= category.slots) break;
+        if (course.status !== "transfer" || assignedInProgram.has(code)) continue;
+        if (course.satisfies?.some(s => s.program === progCode && s.category === category.name)) {
+          catResult.slots.push({ code, title: course.title || code, status: "transfer" });
+          assignedInProgram.add(code);
+          _addSlotAssignment(result.slotAssignments, code, progCode, category.name);
+        }
+      }
 
       if (pd.type === "core") {
         if (waivedCore.has(category.name)) {
@@ -347,5 +369,5 @@ function getSuggestions(solverResult, courseMap, programMap, declaredPrograms, o
 }
 
 if (typeof module !== "undefined") {
-  module.exports = { solve, getSuggestions, buildCourseMap, buildProgramMap };
+  module.exports = { solve, getSuggestions, buildCourseMap, buildProgramMap, CORE_KA_MAP };
 }

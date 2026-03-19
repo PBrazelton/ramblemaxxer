@@ -121,16 +121,17 @@ router.post("/confirm", (req, res) => {
         db.prepare("UPDATE users SET grad_year = ? WHERE id = ?").run(gradYear, userId);
       }
 
-      // 2. Set programs (delete + re-insert)
+      // 2. Set programs (always delete + re-insert to avoid stale declarations)
+      db.prepare("DELETE FROM student_programs WHERE user_id = ?").run(userId);
       if (Array.isArray(programs) && programs.length > 0) {
-        db.prepare("DELETE FROM student_programs WHERE user_id = ?").run(userId);
         const insertProg = db.prepare("INSERT INTO student_programs (user_id, program_id) VALUES (?, ?)");
         for (const pid of programs) {
           insertProg.run(userId, pid);
         }
       }
 
-      // 3. Insert courses
+      // 3. Replace all courses (delete existing, then insert fresh from transcript)
+      db.prepare("DELETE FROM student_courses WHERE user_id = ?").run(userId);
       const insertCourse = db.prepare(`
         INSERT OR IGNORE INTO student_courses (user_id, course_code, semester, status)
         VALUES (?, ?, ?, ?)
@@ -157,7 +158,8 @@ router.post("/confirm", (req, res) => {
     const courseRows = db.prepare(`
       SELECT course_code as code, semester, status,
              credits_override as creditsOverride,
-             pinned_program as pinnedProgram
+             pinned_program as pinnedProgram,
+             satisfies_json as satisfiesJson
       FROM student_courses WHERE user_id = ?
     `).all(userId);
 

@@ -103,7 +103,17 @@ router.get("/me/plans/:id", (req, res) => {
   // Sort by term order
   courses.sort((a, b) => termOrder(a.term) - termOrder(b.term) || a.course_code.localeCompare(b.course_code));
 
-  res.json({ ...plan, courses });
+  // Include actual student courses (enrolled/complete) as read-only layer
+  const studentCourses = db.prepare(`
+    SELECT sc.course_code, sc.semester as term, sc.status,
+           c.title, c.credits, c.department
+    FROM student_courses sc
+    LEFT JOIN courses c ON c.code = sc.course_code
+    WHERE sc.user_id = ? AND sc.status IN ('enrolled', 'complete')
+    ORDER BY sc.semester, sc.course_code
+  `).all(req.session.userId);
+
+  res.json({ ...plan, courses, studentCourses });
 });
 
 // ── PUT /me/plans/:id ─────────────────────────────────────────────────────
@@ -160,7 +170,8 @@ router.get("/me/plannable-courses", (req, res) => {
   const courseRows = db.prepare(`
     SELECT course_code as code, semester, status,
            credits_override as creditsOverride,
-           pinned_program as pinnedProgram
+           pinned_program as pinnedProgram,
+           satisfies_json as satisfiesJson
     FROM student_courses WHERE user_id = ?
   `).all(req.session.userId);
 
@@ -252,7 +263,8 @@ router.post("/me/plans/:id/validate", (req, res) => {
   const courseRows = db.prepare(`
     SELECT course_code as code, semester, status,
            credits_override as creditsOverride,
-           pinned_program as pinnedProgram
+           pinned_program as pinnedProgram,
+           satisfies_json as satisfiesJson
     FROM student_courses WHERE user_id = ?
   `).all(req.session.userId);
 

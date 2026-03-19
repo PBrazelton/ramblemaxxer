@@ -64,11 +64,11 @@ router.post("/me/courses", (req, res) => {
 
 // ── PUT /api/students/me/courses/:code ────────────────────────────────────
 router.put("/me/courses/:code", (req, res) => {
-  const { semester, status, creditsOverride, note, pinnedProgram } = req.body;
+  const { semester, status, creditsOverride, note, pinnedProgram, satisfiesJson } = req.body;
   const code = req.params.code.toUpperCase().replace("-", " ");
 
   const current = db.prepare(
-    "SELECT pinned_program FROM student_courses WHERE user_id = ? AND course_code = ?"
+    "SELECT pinned_program, satisfies_json FROM student_courses WHERE user_id = ? AND course_code = ?"
   ).get(req.session.userId, code);
 
   db.prepare(`
@@ -77,11 +77,13 @@ router.put("/me/courses/:code", (req, res) => {
         status = COALESCE(?, status),
         credits_override = COALESCE(?, credits_override),
         note = COALESCE(?, note),
-        pinned_program = ?
+        pinned_program = ?,
+        satisfies_json = ?
     WHERE user_id = ? AND course_code = ?
   `).run(
     semester ?? null, status ?? null, creditsOverride ?? null, note ?? null,
     pinnedProgram !== undefined ? pinnedProgram : (current?.pinned_program ?? null),
+    satisfiesJson !== undefined ? satisfiesJson : (current?.satisfies_json ?? null),
     req.session.userId, code
   );
 
@@ -129,7 +131,8 @@ router.post("/me/courses/bulk", (req, res) => {
   const courseRows = db.prepare(`
     SELECT course_code as code, semester, status,
            credits_override as creditsOverride,
-           pinned_program as pinnedProgram
+           pinned_program as pinnedProgram,
+           satisfies_json as satisfiesJson
     FROM student_courses WHERE user_id = ?
   `).all(req.session.userId);
   const programRows = db.prepare(`
@@ -180,7 +183,8 @@ router.post("/me/transfer-credits", (req, res) => {
   const courseRows = db.prepare(`
     SELECT course_code as code, semester, status,
            credits_override as creditsOverride,
-           pinned_program as pinnedProgram
+           pinned_program as pinnedProgram,
+           satisfies_json as satisfiesJson
     FROM student_courses WHERE user_id = ?
   `).all(req.session.userId);
   const programRows = db.prepare(`
@@ -198,7 +202,8 @@ router.get("/me/solve", (req, res) => {
   const courseRows = db.prepare(`
     SELECT course_code as code, semester, status,
            credits_override as creditsOverride,
-           pinned_program as pinnedProgram
+           pinned_program as pinnedProgram,
+           satisfies_json as satisfiesJson
     FROM student_courses WHERE user_id = ?
   `).all(req.session.userId);
 

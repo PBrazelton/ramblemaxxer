@@ -61,7 +61,8 @@ router.get("/students/:id", (req, res) => {
 
   const courseRows = db.prepare(`
     SELECT course_code as code, semester, status,
-           credits_override as creditsOverride, pinned_program as pinnedProgram
+           credits_override as creditsOverride, pinned_program as pinnedProgram,
+           satisfies_json as satisfiesJson
     FROM student_courses WHERE user_id = ?
   `).all(userId);
   const programRows = db.prepare(

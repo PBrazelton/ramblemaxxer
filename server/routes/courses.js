@@ -9,6 +9,7 @@
 
 const express = require("express");
 const { allCourses, programMap } = require("../lib/catalog");
+const { CORE_KA_MAP } = require("../../shared/solver");
 const { requireAuth } = require("./auth");
 const db = require("../db/connection");
 
@@ -200,6 +201,13 @@ function getEligibleCodes(categoryDef) {
     return [...allCourses.values()]
       .filter(c => c.interdisciplinary_options?.includes("Global Studies"))
       .map(c => c.code);
+  // Core categories: match by knowledge_area
+  const keywords = CORE_KA_MAP[categoryDef.name];
+  if (keywords) {
+    return [...allCourses.values()]
+      .filter(c => c.knowledge_area && keywords.includes(c.knowledge_area))
+      .map(c => c.code);
+  }
   return [];
 }
 
