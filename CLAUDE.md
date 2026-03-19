@@ -266,9 +266,36 @@ The solver doesn't use semester at all.
 - `server/lib/transcript-matcher.js` — matches parsed courses against courses DB
 - `server/routes/transcripts.js` — parse + confirm endpoints (uses multer memoryStorage)
 
-## What's not built yet (Phase 2)
+## Design Context
 
-- Course schedule data (fall/spring offering — behind Loyola login, not scraped yet)
-- Interactive semester planning (drag courses into future semesters)
-- GLST portfolio tracking
-- Richer social features (course reviews, friend recommendations)
+### Users
+LUC undergrad students navigating complex overlapping degree requirements. Stressed about graduation timelines, using this on phones between classes and laptops during advising. The job: find the most efficient path to graduation.
+
+### Brand Personality
+**Friendly, playful, casual.** "Your smart friend made this" — not a startup, not a university admin tool.
+
+### Emotional Goals
+**Delight & surprise.** "This is way cooler than I expected for a university tool."
+
+### Aesthetic Direction
+- **References:** Are.na / Cargo — editorial, warm, anti-corporate
+- **Anti-references:** Generic SaaS dashboards, cool-gray tech tools, startup templates
+- **Typography:** Source Serif 4 (display) + DM Mono (data) — scholarly meets technical
+- **Color:** Warm parchment base (`#fffbf0`). Color sparingly for program identity and status. No gradients, no decorative color.
+- **Density:** Dense but breathable — academic planner, not tech dashboard
+- **Theme:** Light mode only. The warm background IS the brand.
+
+### Design Principles
+1. **Warm over cold.** Parchment tones, serif warmth, rounded but not bubbly. Never sterile.
+2. **Clarity through typography, not chrome.** Hierarchy from weight, size, font choice — not borders/backgrounds.
+3. **Color means something.** Every color is earned — program identity, status, errors. No decorative color.
+4. **Dense but breathable.** Pack info in, but give it rhythm — consistent spacing, clear grouping.
+5. **Delightful details.** Personality in small moments: animations, clever labels, unexpected touches.
+
+## Issue Management
+
+- When picking up a task: comment "Picking this up" on the issue, change label from `ready` to `in-progress`
+- When opening a PR: reference the issue (`Closes #N`) so it auto-closes on merge
+- When blocked: change label to `blocked`, comment explaining why
+- When a blocker resolves: check if downstream issues should be relabeled to `ready`
+- When creating new work during implementation: create a GitHub Issue for it rather than leaving TODOs in code
