@@ -260,6 +260,7 @@ function FeedbackWidget({ user, hidden }) {
                 value={message}
                 onChange={e => setMessage(e.target.value)}
                 placeholder="Describe what happened or what you'd like to see..."
+                aria-label="Feedback message"
                 maxLength={2000}
                 style={{
                   width: "100%", minHeight: 90, padding: "0.7rem", borderRadius: 8,
@@ -448,8 +449,8 @@ function LoginPage({ onLogin, setDevPersona }) {
   return (
     <AuthShell>
       <form onSubmit={submit} style={styles.form}>
-        <Input type="email" placeholder="email" value={email} onChange={e => setEmail(e.target.value)} required />
-        <Input type="password" placeholder="password" value={password} onChange={e => setPassword(e.target.value)} required />
+        <Input type="email" placeholder="email" aria-label="Email" value={email} onChange={e => setEmail(e.target.value)} required />
+        <Input type="password" placeholder="password" aria-label="Password" value={password} onChange={e => setPassword(e.target.value)} required />
         {error && <ErrMsg>{error}</ErrMsg>}
         <Btn type="submit" full>log in</Btn>
       </form>
@@ -507,10 +508,10 @@ function RegisterPage({ onRegister }) {
         <div style={{ flex: 1, height: 1, background: BORDER }} />
       </div>
       <form onSubmit={submit} style={styles.form}>
-        <Input placeholder="name" value={form.name} onChange={set("name")} required />
-        <Input type="email" placeholder="email" value={form.email} onChange={set("email")} required />
-        <Input type="password" placeholder="password" value={form.password} onChange={set("password")} required />
-        <Input placeholder="graduation year (e.g. 2027)" value={form.grad_year} onChange={set("grad_year")} />
+        <Input placeholder="name" aria-label="Name" value={form.name} onChange={set("name")} required />
+        <Input type="email" placeholder="email" aria-label="Email" value={form.email} onChange={set("email")} required />
+        <Input type="password" placeholder="password" aria-label="Password" value={form.password} onChange={set("password")} required />
+        <Input placeholder="graduation year (e.g. 2027)" aria-label="Graduation year" value={form.grad_year} onChange={set("grad_year")} />
         {error && <ErrMsg>{error}</ErrMsg>}
         <Btn type="submit" full>create account</Btn>
       </form>
@@ -543,7 +544,7 @@ function ForgotPasswordPage() {
         </div>
       ) : (
         <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          <Input type="email" placeholder="your email" value={email}
+          <Input type="email" placeholder="your email" aria-label="Email" value={email}
             onChange={e => setEmail(e.target.value)} required />
           {err && <ErrMsg>{err}</ErrMsg>}
           <Btn type="submit" full>send reset link</Btn>
@@ -584,9 +585,9 @@ function ResetPasswordPage() {
         </div>
       ) : (
         <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          <Input type="password" placeholder="new password (8+ chars)"
+          <Input type="password" placeholder="new password (8+ chars)" aria-label="New password"
             value={password} onChange={e => setPassword(e.target.value)} required />
-          <Input type="password" placeholder="confirm password"
+          <Input type="password" placeholder="confirm password" aria-label="Confirm password"
             value={confirm} onChange={e => setConfirm(e.target.value)} required />
           {err && <ErrMsg>{err}</ErrMsg>}
           <Btn type="submit" full>set new password</Btn>
@@ -607,7 +608,7 @@ function SettingsResetSection({ onClose, onReimport }) {
       <p style={{ fontSize: 11, color: TEXT.danger, fontFamily: FONT.mono, marginBottom: 8 }}>
         Delete all course data and start over. Programs and account info are kept.
       </p>
-      <Input placeholder='Type "RESET" to confirm' value={resetConfirm}
+      <Input placeholder='Type "RESET" to confirm' aria-label="Type RESET to confirm" value={resetConfirm}
         onChange={e => setResetConfirm(e.target.value)} />
       <Btn onClick={async () => {
         if (resetConfirm !== "RESET") return;
@@ -673,9 +674,9 @@ function SettingsSheet({ user, onClose, onUpdate, onReimport }) {
         )}
 
         <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
-          <Input placeholder="display name" value={name}
+          <Input placeholder="display name" aria-label="Display name" value={name}
             onChange={e => setName(e.target.value)} />
-          <Input placeholder="graduation year" value={gradYear}
+          <Input placeholder="graduation year" aria-label="Graduation year" value={gradYear}
             onChange={e => setGradYear(e.target.value)} />
           <div>
             <div style={{ fontSize: 12, color: "#8a8580", marginBottom: 6,
@@ -705,9 +706,9 @@ function SettingsSheet({ user, onClose, onUpdate, onReimport }) {
           <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: 16, marginBottom: 16 }}>
             <SectionTitle>Change Password</SectionTitle>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              <Input type="password" placeholder="current password"
+              <Input type="password" placeholder="current password" aria-label="Current password"
                 value={currentPw} onChange={e => setCurrentPw(e.target.value)} />
-              <Input type="password" placeholder="new password (8+ chars)"
+              <Input type="password" placeholder="new password (8+ chars)" aria-label="New password"
                 value={newPw} onChange={e => setNewPw(e.target.value)} />
               <Btn onClick={changePassword} full>update password</Btn>
             </div>
@@ -781,12 +782,13 @@ function CreditMeter({ credits, hasUnmappedTransfer, onTransferWarningTap }) {
             {max - total > 0 ? `${max - total} credits remaining` : "Credit requirement met"}
           </div>
           {hasUnmappedTransfer && (
-            <div onClick={onTransferWarningTap} style={{
+            <button type="button" onClick={onTransferWarningTap} style={{
               fontFamily: FONT.mono, fontSize: "0.65rem", color: TEXT.warning, marginTop: "0.3rem",
               cursor: onTransferWarningTap ? "pointer" : "default",
+              background: "none", border: "none", textAlign: "left", width: "100%", padding: 0,
             }}>
               Transfer credits not mapped to requirements
-            </div>
+            </button>
           )}
         </div>
       </div>
@@ -868,18 +870,31 @@ function NextStepsSection({ data, onAddCourses, onMapTransfer, onSuggestionTap }
       <div style={{ fontFamily: FONT.serif, fontSize: "1rem", fontWeight: 600, marginBottom: "0.5rem" }}>Next Steps</div>
       <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
         {cards.slice(0, 3).map(card => (
-          <div key={card.key} onClick={card.action || undefined} style={{
-            background: SURFACE.card, border: `1px solid ${BORDER}`, borderRadius: 8, padding: "0.7rem 1rem",
-            display: "flex", alignItems: "center", gap: "0.7rem",
-            cursor: card.action ? "pointer" : "default",
-          }}>
-            <span style={{ fontSize: "1.1rem", flexShrink: 0 }} dangerouslySetInnerHTML={{ __html: card.icon }} />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 700 }}>{card.title}</div>
-              <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: TEXT.muted }}>{card.subtitle}</div>
+          card.action ? (
+            <button type="button" key={card.key} onClick={card.action} style={{
+              background: SURFACE.card, border: `1px solid ${BORDER}`, borderRadius: 8, padding: "0.7rem 1rem",
+              display: "flex", alignItems: "center", gap: "0.7rem",
+              cursor: "pointer", textAlign: "left", width: "100%",
+            }}>
+              <span style={{ fontSize: "1.1rem", flexShrink: 0 }} dangerouslySetInnerHTML={{ __html: card.icon }} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 700 }}>{card.title}</div>
+                <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: TEXT.muted }}>{card.subtitle}</div>
+              </div>
+              <span style={{ fontFamily: FONT.mono, fontSize: "1rem", color: "#c0b8b0" }}>&rsaquo;</span>
+            </button>
+          ) : (
+            <div key={card.key} style={{
+              background: SURFACE.card, border: `1px solid ${BORDER}`, borderRadius: 8, padding: "0.7rem 1rem",
+              display: "flex", alignItems: "center", gap: "0.7rem",
+            }}>
+              <span style={{ fontSize: "1.1rem", flexShrink: 0 }} dangerouslySetInnerHTML={{ __html: card.icon }} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 700 }}>{card.title}</div>
+                <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: TEXT.muted }}>{card.subtitle}</div>
+              </div>
             </div>
-            {card.action && <span style={{ fontFamily: FONT.mono, fontSize: "1rem", color: "#c0b8b0" }}>&rsaquo;</span>}
-          </div>
+          )
         ))}
       </div>
     </div>
@@ -919,7 +934,7 @@ function ProgramCard({ prog, conflicts, onPipClick, onSlotTap, defaultOpen = fal
 
   return (
     <div style={{ background: SURFACE.card, border: `1px solid ${BORDER}`, borderRadius: 8, marginBottom: "0.75rem", overflow: "hidden" }}>
-      <div onClick={() => setOpen(!open)} style={{ display: "flex", alignItems: "center", gap: "0.8rem", padding: "0.8rem 1rem", cursor: "pointer", borderLeft: `4px solid ${color}` }}>
+      <button type="button" aria-expanded={open} onClick={() => setOpen(!open)} style={{ display: "flex", alignItems: "center", gap: "0.8rem", padding: "0.8rem 1rem", cursor: "pointer", background: "none", border: "none", borderLeft: `4px solid ${color}`, textAlign: "left", width: "100%" }}>
         <div style={{ position: "relative", flexShrink: 0 }}>
           <ProgressRing value={filledSlots} max={totalSlots} size={48} stroke={4} color={color} />
           <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: FONT.mono, fontSize: "0.6rem", fontWeight: 700 }}>
@@ -933,7 +948,7 @@ function ProgramCard({ prog, conflicts, onPipClick, onSlotTap, defaultOpen = fal
           </div>
         </div>
         <span style={{ fontFamily: FONT.mono, fontSize: "0.8rem", color: TEXT.disabled, transform: open ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>▼</span>
-      </div>
+      </button>
       {open && (() => {
         const incomplete = prog.categories.filter(cat => !cat.isSatisfied && !cat.isWaived);
         const completed = prog.categories.filter(cat => cat.isSatisfied || cat.isWaived);
@@ -958,15 +973,16 @@ function CompletedCategoriesGroup({ categories, color, conflicts, onPipClick }) 
   const [expanded, setExpanded] = useState(false);
   return (
     <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: "0.5rem" }}>
-      <div onClick={() => setExpanded(!expanded)} style={{
+      <button type="button" aria-expanded={expanded} onClick={() => setExpanded(!expanded)} style={{
         display: "flex", alignItems: "center", gap: "0.4rem", cursor: "pointer", padding: "0.3rem 0",
+        background: "none", border: "none", textAlign: "left", width: "100%",
       }}>
         <span style={{ color: TEXT.success, fontSize: "0.7rem" }}>&#10003;</span>
         <span style={{ fontFamily: FONT.mono, fontSize: "0.7rem", fontWeight: 600, color: TEXT.success }}>
           {categories.length} completed
         </span>
         <span style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: TEXT.disabled, transform: expanded ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>&#9660;</span>
-      </div>
+      </button>
       {expanded && categories.map((cat, i) => (
         <CategoryRow key={`comp-${i}`} cat={cat} color={color} conflicts={conflicts} onPipClick={onPipClick} />
       ))}
@@ -1025,32 +1041,44 @@ function CategoryRow({ cat, color, conflicts, onPipClick, onSlotTap }) {
 
 function FilledPip({ slot, color, isConflict, onClick, label }) {
   return (
-    <div onClick={onClick} style={{
+    <button type="button" onClick={onClick} style={{
       display: "inline-flex", alignItems: "center", gap: 4,
       padding: "3px 8px", borderRadius: 4, fontSize: "0.65rem", fontFamily: FONT.mono,
       background: `${color}12`, border: `1px solid ${isConflict ? "#ffc107" : color + "40"}`,
       cursor: "pointer", boxShadow: isConflict ? "0 0 0 1px #ffc107" : "none",
+      textAlign: "left",
     }}>
       <span style={{ width: 6, height: 6, borderRadius: "50%", background: STATUS_COLOR[slot.status] || "#888", flexShrink: 0 }} />
       {slot.code}
       {label && <span style={{ fontSize: "0.5rem", opacity: 0.6 }}>{label}</span>}
       {isConflict && <span style={{ fontSize: "0.55rem" }}>&#x27F7;</span>}
-    </div>
+    </button>
   );
 }
 
 function EmptyPip({ onClick }) {
+  if (onClick) {
+    return (
+      <button type="button" onClick={onClick} style={{
+        width: 60, height: 24, borderRadius: 4,
+        border: `1.5px dashed #999`,
+        background: "#fafaf8",
+        cursor: "pointer",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        fontFamily: FONT.mono, fontSize: "0.65rem", color: TEXT.disabled,
+      }}>
+        +
+      </button>
+    );
+  }
   return (
-    <div onClick={onClick} style={{
+    <div style={{
       width: 60, height: 24, borderRadius: 4,
-      border: `1.5px dashed ${onClick ? "#999" : "#ccc"}`,
-      background: onClick ? "#fafaf8" : "transparent",
-      cursor: onClick ? "pointer" : "default",
+      border: `1.5px dashed #ccc`,
+      background: "transparent",
       display: "flex", alignItems: "center", justifyContent: "center",
       fontFamily: FONT.mono, fontSize: "0.65rem", color: TEXT.disabled,
-    }}>
-      {onClick && "+"}
-    </div>
+    }} />
   );
 }
 
@@ -1123,13 +1151,13 @@ function OverlapBudget({ overlaps, programs, conflicts, onPipClick }) {
             {pairCourses.length > 0 && (
               <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem", marginTop: "0.5rem" }}>
                 {pairCourses.map(code => (
-                  <span key={code} onClick={() => onPipClick?.(code, "", conflicts[code] || [a, b])} style={{
+                  <button type="button" key={code} onClick={() => onPipClick?.(code, "", conflicts[code] || [a, b])} style={{
                     fontFamily: FONT.mono, fontSize: "0.6rem", padding: "2px 8px", borderRadius: 4,
                     background: "#e8f0fe", border: "1px solid #b8d0f0", color: "#1a5276",
                     cursor: "pointer",
                   }}>
                     {code}
-                  </span>
+                  </button>
                 ))}
               </div>
             )}
@@ -1170,13 +1198,13 @@ function CASCard({ casGrad, spanLang }) {
 
   return (
     <div style={{ background: SURFACE.card, border: `1px solid ${BORDER}`, borderRadius: 8, marginBottom: "0.75rem", overflow: "hidden" }}>
-      <div onClick={() => setOpen(!open)} style={{ display: "flex", alignItems: "center", gap: "0.8rem", padding: "0.8rem 1rem", cursor: "pointer", borderLeft: `4px solid ${COLORS["CAS-GRAD"]}` }}>
+      <button type="button" aria-expanded={open} onClick={() => setOpen(!open)} style={{ display: "flex", alignItems: "center", gap: "0.8rem", padding: "0.8rem 1rem", cursor: "pointer", background: "none", border: "none", borderLeft: `4px solid ${COLORS["CAS-GRAD"]}`, textAlign: "left", width: "100%" }}>
         <div style={{ flex: 1 }}>
           <div style={{ fontFamily: FONT.serif, fontSize: "1rem", fontWeight: 600, color: COLORS["CAS-GRAD"] }}>Graduation Requirements (Arts & Sciences)</div>
           <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: TEXT.muted }}>{filled}/{allCats.length} satisfied</div>
         </div>
         <span style={{ fontFamily: FONT.mono, fontSize: "0.8rem", color: TEXT.disabled, transform: open ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>▼</span>
-      </div>
+      </button>
       {open && (
         <div style={{ padding: "0 1rem 0.8rem" }}>
           {casGrad && casGrad.categories.map((cat, i) => (
@@ -1231,13 +1259,22 @@ function RemainingCard({ remaining, onSlotTap }) {
     <div style={{ background: SURFACE.card, border: `1px solid ${BORDER}`, borderRadius: 8, padding: "1rem", marginBottom: "0.75rem" }}>
       <div style={{ fontFamily: FONT.serif, fontSize: "1rem", fontWeight: 600, marginBottom: "0.5rem" }}>Remaining</div>
       {remaining.map((r, i) => (
-        <div key={i} onClick={() => onSlotTap?.(r.program, r.category)}
-          style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.25rem 0", fontFamily: FONT.mono, fontSize: "0.7rem", cursor: onSlotTap ? "pointer" : "default" }}>
-          <span style={{ width: 8, height: 8, borderRadius: "50%", background: COLORS[r.program] || "#888", flexShrink: 0 }} />
-          <span style={{ color: TEXT.primary }}>{r.category}</span>
-          <span style={{ color: TEXT.muted, marginLeft: "auto", fontSize: "0.6rem" }}>{r.programName} · {r.needed} needed</span>
-          {onSlotTap && <span style={{ color: "#c0b8b0", fontSize: 14 }}>&rsaquo;</span>}
-        </div>
+        onSlotTap ? (
+          <button type="button" key={i} onClick={() => onSlotTap(r.program, r.category)}
+            style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.25rem 0", fontFamily: FONT.mono, fontSize: "0.7rem", cursor: "pointer", background: "none", border: "none", textAlign: "left", width: "100%" }}>
+            <span style={{ width: 8, height: 8, borderRadius: "50%", background: COLORS[r.program] || "#888", flexShrink: 0 }} />
+            <span style={{ color: TEXT.primary }}>{r.category}</span>
+            <span style={{ color: TEXT.muted, marginLeft: "auto", fontSize: "0.6rem" }}>{r.programName} · {r.needed} needed</span>
+            <span style={{ color: "#c0b8b0", fontSize: 14 }}>&rsaquo;</span>
+          </button>
+        ) : (
+          <div key={i}
+            style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.25rem 0", fontFamily: FONT.mono, fontSize: "0.7rem" }}>
+            <span style={{ width: 8, height: 8, borderRadius: "50%", background: COLORS[r.program] || "#888", flexShrink: 0 }} />
+            <span style={{ color: TEXT.primary }}>{r.category}</span>
+            <span style={{ color: TEXT.muted, marginLeft: "auto", fontSize: "0.6rem" }}>{r.programName} · {r.needed} needed</span>
+          </div>
+        )
       ))}
     </div>
   );
@@ -1271,6 +1308,7 @@ function SuggestionsCard({ suggestions, remaining, scrapedTerms }) {
           <select
             value={termFilter}
             onChange={e => setTermFilter(e.target.value)}
+            aria-label="Filter suggestions by term"
             style={{ fontFamily: FONT.mono, fontSize: "0.6rem", padding: "2px 6px", border: `1px solid ${BORDER}`, borderRadius: 4, background: SURFACE.card, color: TEXT.primary }}
           >
             <option value="">All terms</option>
@@ -1337,15 +1375,15 @@ function RemainingPill({ count, remainingRef }) {
   if (!visible || !count) return null;
 
   return (
-    <div onClick={() => remainingRef.current?.scrollIntoView({ behavior: "smooth" })}
+    <button type="button" onClick={() => remainingRef.current?.scrollIntoView({ behavior: "smooth" })}
       style={{
         position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)",
         background: BTN.primary, color: TEXT.inverse, padding: "10px 20px", borderRadius: 24,
         fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 600, cursor: "pointer",
-        zIndex: 50, boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
+        zIndex: 50, boxShadow: "0 4px 16px rgba(0,0,0,0.2)", border: "none",
       }}>
       {count} requirements remaining &#9650;
-    </div>
+    </button>
   );
 }
 
@@ -1450,8 +1488,9 @@ function SlotModal({ programCode, categoryName, onClose }) {
       )}
 
       {courses && courses.map(c => (
-        <div key={c.code} onClick={() => setDetail(c)} style={{
-          padding: "0.6rem 0", borderTop: `1px solid ${BORDER}`, cursor: "pointer",
+        <button type="button" key={c.code} onClick={() => setDetail(c)} style={{
+          padding: "0.6rem 0", cursor: "pointer",
+          background: "none", border: "none", borderTop: `1px solid ${BORDER}`, textAlign: "left", width: "100%",
         }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <div style={{ flex: 1 }}>
@@ -1478,7 +1517,7 @@ function SlotModal({ programCode, categoryName, onClose }) {
             </div>
             <span style={{ color: "#c0b8b0", fontSize: 16, marginLeft: "0.5rem" }}>&rsaquo;</span>
           </div>
-        </div>
+        </button>
       ))}
     </BottomSheet>
   );
@@ -1488,9 +1527,9 @@ function SlotModal({ programCode, categoryName, onClose }) {
 function CourseDetailSheet({ course, categoryName, onBack }) {
   return (
     <div>
-      <div onClick={onBack} style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: TEXT.muted, cursor: "pointer", marginBottom: "0.8rem" }}>
+      <button type="button" onClick={onBack} style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: TEXT.muted, cursor: "pointer", marginBottom: "0.8rem", background: "none", border: "none", padding: 0, textAlign: "left" }}>
         &larr; Back to {categoryName}
-      </div>
+      </button>
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.3rem" }}>
         <span style={{ fontFamily: FONT.mono, fontSize: "1rem", fontWeight: 700 }}>{course.code}</span>
@@ -1691,20 +1730,20 @@ function AddCoursesSheet({ initialTerm, onClose, onSaved }) {
       </div>
 
       {/* Search */}
-      <Input placeholder="Search courses..." value={query} onChange={e => setQuery(e.target.value)}
+      <Input placeholder="Search courses..." aria-label="Search courses" value={query} onChange={e => setQuery(e.target.value)}
         style={{ marginBottom: "0.5rem" }} />
 
       {/* Selected chips */}
       {selected.length > 0 && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: "0.5rem" }}>
           {selected.map(c => (
-            <span key={c.code} onClick={() => toggleCourse(c)} style={{
+            <button type="button" key={c.code} onClick={() => toggleCourse(c)} style={{
               fontFamily: FONT.mono, fontSize: "0.6rem", padding: "3px 8px", borderRadius: 4,
               background: "#e8f5e9", color: TEXT.success, cursor: "pointer",
-              display: "inline-flex", alignItems: "center", gap: 4,
+              display: "inline-flex", alignItems: "center", gap: 4, border: "none",
             }}>
               {c.code} <span style={{ color: TEXT.muted }}>&times;</span>
-            </span>
+            </button>
           ))}
         </div>
       )}
@@ -1712,9 +1751,10 @@ function AddCoursesSheet({ initialTerm, onClose, onSaved }) {
       {/* Results */}
       <div style={{ maxHeight: 280, overflow: "auto" }}>
         {results.slice(0, 20).map(c => (
-          <div key={c.code} onClick={() => toggleCourse(c)} style={{
+          <button type="button" key={c.code} onClick={() => toggleCourse(c)} style={{
             display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 0",
-            borderTop: `1px solid ${BORDER}`, cursor: "pointer",
+            cursor: "pointer",
+            background: "none", border: "none", borderTop: `1px solid ${BORDER}`, textAlign: "left", width: "100%",
           }}>
             <span style={{
               width: 20, height: 20, borderRadius: 4, flexShrink: 0,
@@ -1731,7 +1771,7 @@ function AddCoursesSheet({ initialTerm, onClose, onSaved }) {
               </div>
             </div>
             <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: TEXT.muted, flexShrink: 0 }}>{c.credits || 3}cr</span>
-          </div>
+          </button>
         ))}
       </div>
 
@@ -1798,14 +1838,15 @@ function TransferMappingSheet({ onClose, onSaved }) {
           padding: "0.5rem 0", borderTop: i ? `1px solid ${BORDER}` : "none",
         }}>
           <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
-            <Input placeholder="Description (e.g. Intro to Psych)"
+            <Input placeholder="Description (e.g. Intro to Psych)" aria-label="Transfer credit description"
               value={row.label} onChange={e => updateRow(i, "label", e.target.value)}
               style={{ fontSize: "0.75rem" }} />
             <div style={{ display: "flex", gap: 6 }}>
-              <Input type="number" placeholder="Cr" value={row.creditHours}
+              <Input type="number" placeholder="Cr" aria-label="Credit hours"
+                value={row.creditHours}
                 onChange={e => updateRow(i, "creditHours", e.target.value)}
                 style={{ width: 50, fontSize: "0.75rem", textAlign: "center" }} />
-              <Input placeholder="Catalog code (optional, e.g. PSYC 101)"
+              <Input placeholder="Catalog code (optional, e.g. PSYC 101)" aria-label="Catalog course code"
                 value={row.satisfiesCode} onChange={e => updateRow(i, "satisfiesCode", e.target.value)}
                 style={{ flex: 1, fontSize: "0.75rem" }} />
             </div>
@@ -1850,6 +1891,7 @@ function ProgramPickerList({ label, items, selected, onToggle, search, onSearch,
       <input
         type="text"
         placeholder="search programs..."
+        aria-label="Search programs"
         value={search}
         onChange={e => onSearch(e.target.value)}
         style={{
@@ -2263,6 +2305,7 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
               transition: "border-color 0.2s",
             }}>
               <input type="file" accept=".pdf" onChange={handleFileUpload}
+                aria-label="Upload transcript PDF"
                 style={{ display: "none" }} disabled={uploading} />
               {uploading ? (
                 <span style={{ fontFamily: FONT.mono, fontSize: "0.85rem", color: TEXT.muted }}>
@@ -2553,7 +2596,7 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
               it's {getCurrentAcademicTerm()} — add your current courses
             </p>
 
-            <Input placeholder="search courses..."
+            <Input placeholder="search courses..." aria-label="Search courses"
               value={currentTermSearch}
               onChange={e => {
                 const q = e.target.value;
@@ -2593,15 +2636,15 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
             {currentTermSelected.length > 0 && (
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
                 {currentTermSelected.map(c => (
-                  <span key={c.code} onClick={() => setCurrentTermSelected(prev => prev.filter(s => s.code !== c.code))}
+                  <button type="button" key={c.code} onClick={() => setCurrentTermSelected(prev => prev.filter(s => s.code !== c.code))}
                     style={{
                       display: "inline-flex", alignItems: "center", gap: 4,
                       padding: "6px 10px", borderRadius: 6, cursor: "pointer",
                       fontFamily: FONT.mono, fontSize: "0.7rem",
-                      background: BTN.primary, color: TEXT.inverse,
+                      background: BTN.primary, color: TEXT.inverse, border: "none",
                     }}>
                     {c.code} · {c.credits || 3}cr ×
-                  </span>
+                  </button>
                 ))}
                 <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: TEXT.muted, width: "100%", marginTop: 4 }}>
                   {currentTermSelected.reduce((s, c) => s + (c.credits || 3), 0)} credits selected
@@ -2650,14 +2693,14 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
                 borderTop: i ? `1px solid ${BORDER}` : "none",
               }}>
                 <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6 }}>
-                  <Input placeholder="What was it? (e.g. AP Biology)" value={row.label}
+                  <Input placeholder="What was it? (e.g. AP Biology)" aria-label="Transfer credit description" value={row.label}
                     onChange={e => {
                       const next = [...transferRows];
                       next[i] = { ...next[i], label: e.target.value };
                       setTransferRows(next);
                     }}
                     style={{ flex: 1, fontSize: "0.7rem" }} />
-                  <Input placeholder="cr" value={row.credits} type="number"
+                  <Input placeholder="cr" aria-label="Credit hours" value={row.credits} type="number"
                     onChange={e => {
                       const next = [...transferRows];
                       next[i] = { ...next[i], credits: parseInt(e.target.value) || 0 };
@@ -2696,7 +2739,7 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
                   </div>
                 )}
                 {/* Optional: map to specific LUC course */}
-                <Input placeholder="maps to LUC course code (optional, e.g. BIOL 101)" value={row.satisfiesCode}
+                <Input placeholder="maps to LUC course code (optional, e.g. BIOL 101)" aria-label="LUC course code equivalent" value={row.satisfiesCode}
                   onChange={e => {
                     const next = [...transferRows];
                     next[i] = { ...next[i], satisfiesCode: e.target.value };
