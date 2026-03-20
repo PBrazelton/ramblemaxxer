@@ -615,16 +615,17 @@ function CourseBrowserFilters({ searchQuery, setSearchQuery, programFilter, setP
     <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
       <input
         type="text" placeholder={isSearchingCatalog ? "Searching full catalog..." : "Search courses..."}
+        aria-label="Search courses"
         value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
         style={{ fontFamily: FONT.mono, fontSize: "0.7rem", padding: "0.3rem 0.5rem", border: `1px solid ${isSearchingCatalog ? "#6f42c1" : BORDER}`, borderRadius: 4, background: "#fafaf8", width: "100%", boxSizing: "border-box" }}
       />
       {!isSearchingCatalog && (
         <div style={{ display: "flex", gap: "0.3rem" }}>
-          <select value={programFilter} onChange={e => setProgramFilter(e.target.value)} style={selectStyle}>
+          <select value={programFilter} onChange={e => setProgramFilter(e.target.value)} aria-label="Filter by program" style={selectStyle}>
             <option value="">All programs</option>
             {programNames.map(p => <option key={p.code} value={p.name}>{p.name}</option>)}
           </select>
-          <select value={termFilter} onChange={e => setTermFilter(e.target.value)} style={selectStyle}>
+          <select value={termFilter} onChange={e => setTermFilter(e.target.value)} aria-label="Filter by term" style={selectStyle}>
             <option value="">All terms</option>
             {scrapedTerms.map(t => <option key={t} value={t}>{termLabel(t)}</option>)}
           </select>
@@ -665,14 +666,17 @@ function CourseCard({ course, isPlaced, isSelected, onSelect }) {
   const programCode = primaryFill.split(":")[0]?.trim();
   const color = COLORS[Object.keys(COLORS).find(k => programCode.includes(k.replace("-BA", "").replace("-", " ")))] || "#5a6a7a";
 
+  const Tag = isPlaced ? "div" : "button";
+  const interactiveProps = isPlaced ? {} : { type: "button", onClick: onSelect };
+
   return (
-    <div
+    <Tag
       draggable={!isPlaced}
       onDragStart={e => {
         e.dataTransfer.setData("application/json", JSON.stringify(course));
         e.dataTransfer.effectAllowed = "move";
       }}
-      onClick={isPlaced ? undefined : onSelect}
+      {...interactiveProps}
       style={{
         padding: "0.4rem 0.5rem", borderRadius: 6,
         border: `1px solid ${isSelected ? "#1a1a1a" : BORDER}`,
@@ -681,6 +685,7 @@ function CourseCard({ course, isPlaced, isSelected, onSelect }) {
         opacity: isPlaced ? 0.4 : 1,
         cursor: isPlaced ? "default" : "pointer",
         transition: "opacity 0.2s",
+        textAlign: "left", width: "100%",
       }}
     >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -720,7 +725,7 @@ function CourseCard({ course, isPlaced, isSelected, onSelect }) {
           not in your requirements
         </div>
       )}
-    </div>
+    </Tag>
   );
 }
 
@@ -768,40 +773,56 @@ function SemesterBucket({ term, courses, actualCourses: rawActual = [], selected
         transition: "background 0.15s, border-color 0.15s",
       }}
     >
-      <div onClick={totalCourseCount > 0 ? (e) => { e.stopPropagation(); setCollapsed(c => !c); } : undefined}
-        style={{ display: "flex", justifyContent: "space-between", alignItems: "center",
-          marginBottom: (!collapsed && totalCourseCount > 0) ? "0.4rem" : 0,
-          cursor: totalCourseCount > 0 ? "pointer" : "default", userSelect: "none",
-        }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-          {totalCourseCount > 0 && (
+      {totalCourseCount > 0 ? (
+        <button type="button" aria-expanded={!collapsed} onClick={(e) => { e.stopPropagation(); setCollapsed(c => !c); }}
+          style={{ display: "flex", justifyContent: "space-between", alignItems: "center",
+            marginBottom: (!collapsed && totalCourseCount > 0) ? "0.4rem" : 0,
+            cursor: "pointer", userSelect: "none",
+            background: "none", border: "none", textAlign: "left", width: "100%", padding: 0,
+          }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
             <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: TEXT.muted }}>{collapsed ? "\u25B8" : "\u25BE"}</span>
-          )}
-          <span style={{ fontFamily: FONT.serif, fontSize: "0.85rem", fontWeight: 700 }}>{term}</span>
-          <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: TEXT.muted }}>
-            {totalCourseCount} course{totalCourseCount !== 1 ? "s" : ""} {"\u00B7"} {termCredits}cr
-            {isPast && actualCourses.length > 0 && " \u00B7 completed"}
-          </span>
+            <span style={{ fontFamily: FONT.serif, fontSize: "0.85rem", fontWeight: 700 }}>{term}</span>
+            <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: TEXT.muted }}>
+              {totalCourseCount} course{totalCourseCount !== 1 ? "s" : ""} {"\u00B7"} {termCredits}cr
+              {isPast && actualCourses.length > 0 && " \u00B7 completed"}
+            </span>
+          </div>
+          <div style={{ display: "flex", gap: "0.3rem", alignItems: "center" }}>
+            {(() => {
+              const allCompleted = actualCourses.length > 0 && courses.length === 0 && actualCourses.every(c => c.status === "complete");
+              if (allCompleted || termCredits <= 18) return null;
+              const w = termCredits <= 21 ? { label: "heavy load — advisor approval may be required", bg: "#fff8e1", color: "#b08800" }
+                : termCredits <= 24 ? { label: "overload — requires approval + extra fees", bg: "#fff3cd", color: "#856404" }
+                : { label: "exceeds LUC max overload", bg: "#fde8e8", color: TEXT.danger };
+              return (
+                <span style={{ fontFamily: FONT.mono, fontSize: "0.55rem", background: w.bg, color: w.color, padding: "1px 5px", borderRadius: 3 }}>
+                  {w.label}
+                </span>
+              );
+            })()}
+            {!hasData && (
+              <span style={{ fontFamily: FONT.mono, fontSize: "0.5rem", color: "#b08800" }}>no schedule data</span>
+            )}
+          </div>
+        </button>
+      ) : (
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center",
+          marginBottom: 0, userSelect: "none",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+            <span style={{ fontFamily: FONT.serif, fontSize: "0.85rem", fontWeight: 700 }}>{term}</span>
+            <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: TEXT.muted }}>
+              {totalCourseCount} course{totalCourseCount !== 1 ? "s" : ""} {"\u00B7"} {termCredits}cr
+            </span>
+          </div>
+          <div style={{ display: "flex", gap: "0.3rem", alignItems: "center" }}>
+            {!hasData && (
+              <span style={{ fontFamily: FONT.mono, fontSize: "0.5rem", color: "#b08800" }}>no schedule data</span>
+            )}
+          </div>
         </div>
-        <div style={{ display: "flex", gap: "0.3rem", alignItems: "center" }}>
-          {(() => {
-            // Skip warnings on past completed semesters
-            const allCompleted = actualCourses.length > 0 && courses.length === 0 && actualCourses.every(c => c.status === "complete");
-            if (allCompleted || termCredits <= 18) return null;
-            const w = termCredits <= 21 ? { label: "heavy load — advisor approval may be required", bg: "#fff8e1", color: "#b08800" }
-              : termCredits <= 24 ? { label: "overload — requires approval + extra fees", bg: "#fff3cd", color: "#856404" }
-              : { label: "exceeds LUC max overload", bg: "#fde8e8", color: TEXT.danger };
-            return (
-              <span style={{ fontFamily: FONT.mono, fontSize: "0.55rem", background: w.bg, color: w.color, padding: "1px 5px", borderRadius: 3 }}>
-                {w.label}
-              </span>
-            );
-          })()}
-          {!hasData && (
-            <span style={{ fontFamily: FONT.mono, fontSize: "0.5rem", color: "#b08800" }}>no schedule data</span>
-          )}
-        </div>
-      </div>
+      )}
 
       {!collapsed && <>
         {/* Actual enrolled/complete courses (read-only) */}
@@ -853,12 +874,13 @@ function SemesterBucket({ term, courses, actualCourses: rawActual = [], selected
         )}
         {/* Section picker nudge */}
         {hasData && onSwitchToWeekly && courses.some(c => !c.section) && (
-          <div onClick={(e) => { e.stopPropagation(); onSwitchToWeekly(term); }} style={{
+          <button type="button" onClick={(e) => { e.stopPropagation(); onSwitchToWeekly(term); }} style={{
             fontFamily: FONT.mono, fontSize: "0.55rem", color: "#6f42c1",
             cursor: "pointer", marginTop: "0.3rem",
+            background: "none", border: "none", padding: 0, textAlign: "left",
           }}>
             switch to weekly view to pick sections {"\u2192"}
-          </div>
+          </button>
         )}
 
         {/* Confirm enrollment button — shown when this is the current term and has plan courses */}
@@ -1247,11 +1269,12 @@ function SectionPicker({ course, term, sections, onSelect }) {
         {sections.map(s => {
           const isSelected = course.section === s.section;
           return (
-            <div key={s.section || s.class_number} onClick={() => onSelect(s.section, s.class_number)} style={{
+            <button type="button" key={s.section || s.class_number} onClick={() => onSelect(s.section, s.class_number)} style={{
               display: "flex", alignItems: "center", gap: "0.4rem",
               padding: "0.3rem 0.4rem", borderRadius: 4, cursor: "pointer",
               background: isSelected ? "#e8f5e9" : "transparent",
               border: `1px solid ${isSelected ? "#22863a" : "transparent"}`,
+              textAlign: "left", width: "100%",
             }}>
               <span style={{ width: 14, height: 14, borderRadius: "50%", border: `2px solid ${isSelected ? "#22863a" : "#ddd"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 {isSelected && <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#22863a" }} />}
@@ -1265,7 +1288,7 @@ function SectionPicker({ course, term, sections, onSelect }) {
                   {s.instructor || "TBA"}{s.location ? ` | ${s.location}` : ""}{s.instruction_mode ? ` | ${s.instruction_mode}` : ""}
                 </div>
               </div>
-            </div>
+            </button>
           );
         })}
       </div>
