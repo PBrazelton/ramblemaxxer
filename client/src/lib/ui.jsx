@@ -2,6 +2,7 @@
  * client/src/lib/ui.jsx
  * Shared UI primitives and constants.
  */
+import { useEffect, useRef } from "react";
 
 // ── Design Tokens ───────────────────────────────────────────────────────────
 
@@ -184,9 +185,39 @@ export function ErrMsg({ children }) {
 
 // ── Bottom sheet wrapper ────────────────────────────────────────────────────
 export function BottomSheet({ onClose, children, maxWidth = 400 }) {
+  const dialogRef = useRef(null);
+  const previousFocusRef = useRef(null);
+
+  useEffect(() => {
+    // Save previously focused element
+    previousFocusRef.current = document.activeElement;
+
+    // Focus first focusable element inside dialog, or the dialog itself
+    const dialog = dialogRef.current;
+    if (dialog) {
+      const focusable = dialog.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+      if (focusable) focusable.focus();
+      else dialog.focus();
+    }
+
+    // Escape key handler
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      // Restore focus to previously focused element
+      if (previousFocusRef.current && typeof previousFocusRef.current.focus === "function") {
+        previousFocusRef.current.focus();
+      }
+    };
+  }, [onClose]);
+
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: SURFACE.overlay, zIndex: 100, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-      <div role="dialog" aria-modal="true" onClick={e => e.stopPropagation()} style={{ background: SURFACE.card, borderRadius: "16px 16px 0 0", padding: "1.5rem", width: "100%", maxWidth, maxHeight: "80vh", overflow: "auto" }}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" tabIndex={-1} onClick={e => e.stopPropagation()} style={{ background: SURFACE.card, borderRadius: "16px 16px 0 0", padding: "1.5rem", width: "100%", maxWidth, maxHeight: "80vh", overflow: "auto", outline: "none" }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: BORDER, margin: "0 auto 1rem" }} />
         {children}
       </div>
