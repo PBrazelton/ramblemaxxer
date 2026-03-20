@@ -385,4 +385,85 @@ function parseTime(t) {
   return h * 60 + (m || 0);
 }
 
+// ── POST /me/plans/:id/confirm-term ──────────────────────────────────────
+// Promote planned courses for a term to student_courses with status 'enrolled'
+router.post("/me/plans/:id/confirm-term", (req, res) => {
+  const { term } = req.body;
+  if (!term) return res.status(400).json({ error: "term is required" });
+
+  const plan = db.prepare("SELECT id FROM student_plans WHERE id = ? AND user_id = ?")
+    .get(req.params.id, req.session.userId);
+  if (!plan) return res.status(404).json({ error: "Plan not found" });
+
+  // Validate term is current or past
+  const currentOrder = termOrder(getCurrentAcademicTerm());
+  if (termOrder(term) > currentOrder) {
+    return res.status(400).json({ error: "Cannot confirm enrollment for a future term" });
+  }
+
+  // Fetch plan courses for this term
+  const planCourses = db.prepare(
+    "SELECT course_code, term FROM plan_courses WHERE plan_id = ? AND term = ?"
+  ).all(plan.id, term);
+
+  if (planCourses.length === 0) {
+    return res.status(400).json({ error: "No planned courses in this term" });
+  }
+
+  // Promote to student_courses and remove from plan
+  const inserted = [];
+  db.transaction(() => {
+    const insert = db.prepare(
+      "INSERT OR IGNORE INTO student_courses (user_id, course_code, semester, status) VALUES (?, ?, ?, 'enrolled')"
+    );
+    const del = db.prepare(
+      "DELETE FROM plan_courses WHERE plan_id = ? AND course_code = ? AND term = ?"
+    );
+    for (const pc of planCourses) {
+      insert.run(req.session.userId, pc.course_code, pc.term);
+      del.run(plan.id, pc.course_code, pc.term);
+      inserted.push(pc.course_code);
+    }
+  })();
+
+  // Re-run solver
+  const courseRows = db.prepare(`
+    SELECT course_code as code, semester, status,
+           credits_override as creditsOverride,
+           pinned_program as pinnedProgram,
+           satisfies_json as satisfiesJson
+    FROM student_courses WHERE user_id = ?
+  `).all(req.session.userId);
+  const programRows = db.prepare("SELECT program_id FROM student_programs WHERE user_id = ?")
+    .all(req.session.userId);
+  const declaredPrograms = programRows.map(r => r.program_id);
+  const result = solve(courseRows, declaredPrograms, courseMap, programMap, degreeRequirements);
+
+  // Return updated plan + solver
+  const updatedCourses = db.prepare(`
+    SELECT pc.course_code, pc.term, pc.section, pc.class_number,
+           c.title, c.credits, c.department
+    FROM plan_courses pc LEFT JOIN courses c ON c.code = pc.course_code
+    WHERE pc.plan_id = ? ORDER BY pc.term, pc.course_code
+  `).all(plan.id);
+  const studentCourses = db.prepare(`
+    SELECT sc.course_code, sc.semester as term, sc.status,
+           c.title, c.credits, c.department
+    FROM student_courses sc LEFT JOIN courses c ON c.code = sc.course_code
+    WHERE sc.user_id = ? AND sc.status IN ('enrolled', 'complete')
+    ORDER BY sc.semester, sc.course_code
+  `).all(req.session.userId);
+
+  res.json({ confirmed: inserted, solver: result, plan: { ...plan, courses: updatedCourses, studentCourses } });
+});
+
+function getCurrentAcademicTerm() {
+  const now = new Date();
+  const month = now.getMonth() + 1;
+  const year = now.getFullYear();
+  if (month >= 8) return `Fall ${year}`;
+  if (month >= 5) return `Summer ${year}`;
+  return `Spring ${year}`;
+}
+
 module.exports = router;
