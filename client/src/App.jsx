@@ -228,7 +228,7 @@ function FeedbackWidget({ user, hidden }) {
           <div style={{
             position: "absolute", bottom: 52, right: 0, whiteSpace: "nowrap",
             background: BTN.primary, color: TEXT.inverse, padding: "6px 12px", borderRadius: 6,
-            fontFamily: FONT.mono, fontSize: "0.7rem", boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+            fontFamily: FONT.mono, fontSize: TYPE.sm, boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
           }}>Please wait before sending another</div>
         )}
         <button onClick={handleOpen} style={{
@@ -249,7 +249,7 @@ function FeedbackWidget({ user, hidden }) {
               <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>
                 <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="14" stroke="#22863a" strokeWidth="2"/><path d="M10 16l4 4 8-8" stroke="#22863a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </div>
-              <div style={{ fontFamily: FONT.serif, fontSize: "1.1rem", color: "#333" }}>Thanks! We got it.</div>
+              <div style={{ fontFamily: FONT.serif, fontSize: TYPE.xl, color: "#333" }}>Thanks! We got it.</div>
             </div>
           ) : (
             <>
@@ -264,7 +264,7 @@ function FeedbackWidget({ user, hidden }) {
                 maxLength={2000}
                 style={{
                   width: "100%", minHeight: 90, padding: "0.7rem", borderRadius: 8,
-                  border: `1px solid ${BORDER}`, fontFamily: FONT.mono, fontSize: "0.85rem",
+                  border: `1px solid ${BORDER}`, fontFamily: FONT.mono, fontSize: TYPE.md,
                   resize: "vertical", background: "#faf8f4", boxSizing: "border-box",
                 }}
               />
@@ -272,24 +272,24 @@ function FeedbackWidget({ user, hidden }) {
                 {categories.map(c => (
                   <button key={c.key} onClick={() => setCategory(category === c.key ? null : c.key)} style={{
                     padding: "0.35rem 0.75rem", borderRadius: 16, cursor: "pointer",
-                    fontFamily: FONT.mono, fontSize: "0.75rem",
+                    fontFamily: FONT.mono, fontSize: TYPE.base,
                     background: category === c.key ? "#1a1a1a" : "#f5f0e8",
                     color: category === c.key ? "#fff" : "#666",
                     border: "none", transition: "all 0.15s",
                   }}>{c.label}</button>
                 ))}
               </div>
-              <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: TEXT.disabled, marginBottom: "1rem" }}>
+              <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.disabled, marginBottom: "1rem" }}>
                 A screenshot of this page will be attached
               </div>
               <button onClick={handleSend} disabled={message.length < 5 || sending} style={{
                 width: "100%", padding: "0.7rem", borderRadius: 8, border: "none",
                 background: message.length < 5 ? "#ccc" : "#1a1a1a",
-                color: TEXT.inverse, fontFamily: FONT.mono, fontSize: "0.85rem",
+                color: TEXT.inverse, fontFamily: FONT.mono, fontSize: TYPE.md,
                 cursor: message.length < 5 ? "default" : "pointer",
                 transition: "background 0.15s",
               }}>{sending ? "Sending..." : "Send feedback"}</button>
-              <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#bbb", textAlign: "center", marginTop: "0.6rem" }}>
+              <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: "#bbb", textAlign: "center", marginTop: "0.6rem" }}>
                 Your feedback goes directly to the team. We read every message.
               </div>
             </>
@@ -308,17 +308,17 @@ function DevBanner({ persona, onSwitch, onReset }) {
       <div style={{
         position: "fixed", top: 0, left: 0, right: 0, zIndex: 9999,
         background: BTN.danger, color: TEXT.inverse, padding: "6px 16px",
-        fontFamily: FONT.mono, fontSize: "0.7rem",
+        fontFamily: FONT.mono, fontSize: TYPE.sm,
         display: "flex", alignItems: "center", justifyContent: "center", gap: 12,
       }}>
         <span>DEV MODE — Viewing as: {persona.name} ({persona.label})</span>
         <button onClick={onSwitch} style={{
           background: "rgba(255,255,255,0.2)", border: "none", color: TEXT.inverse,
-          padding: "2px 8px", borderRadius: 3, cursor: "pointer", fontFamily: FONT.mono, fontSize: "0.65rem",
+          padding: "2px 8px", borderRadius: 3, cursor: "pointer", fontFamily: FONT.mono, fontSize: TYPE.sm,
         }}>Switch</button>
         <button onClick={onReset} style={{
           background: "rgba(255,255,255,0.2)", border: "none", color: TEXT.inverse,
-          padding: "2px 8px", borderRadius: 3, cursor: "pointer", fontFamily: FONT.mono, fontSize: "0.65rem",
+          padding: "2px 8px", borderRadius: 3, cursor: "pointer", fontFamily: FONT.mono, fontSize: TYPE.sm,
         }}>Reset</button>
       </div>
       <div style={{ height: 30 }} />
@@ -365,7 +365,7 @@ function PersonaPicker({ onLogin, setDevPersona }) {
         <span style={{ fontSize: 11, color: "#b0a090", fontFamily: FONT.mono, whiteSpace: "nowrap" }}>development mode</span>
         <div style={{ flex: 1, height: 1, background: BORDER }} />
       </div>
-      <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: TEXT.muted, marginBottom: 12, textAlign: "center" }}>
+      <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.muted, marginBottom: 12, textAlign: "center" }}>
         Quick Login as Test Persona
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -382,15 +382,15 @@ function PersonaPicker({ onLogin, setDevPersona }) {
               background: PERSONA_COLORS[p.color] || "#888",
             }} />
             <div style={{ flex: 1 }}>
-              <div style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 600 }}>
+              <div style={{ fontFamily: FONT.mono, fontSize: TYPE.base, fontWeight: 600 }}>
                 {p.label}
               </div>
-              <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: TEXT.muted }}>
+              <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted }}>
                 {p.name} · {p.description}
               </div>
             </div>
             {loading === p.id && (
-              <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: TEXT.muted }}>loading...</span>
+              <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted }}>loading...</span>
             )}
           </button>
         ))}
@@ -406,7 +406,7 @@ function AuthShell({ title, sub, children }) {
       <div style={styles.card}>
         <h1 style={styles.logo}><span>ramble</span><span style={{ color: TEXT.danger }}>maxxer</span></h1>
         <p style={styles.tagline}>{sub || "stop guessing, start maxxing"}</p>
-        {title && <div style={{ fontFamily: FONT.serif, fontSize: "1.1rem", fontWeight: 600, marginBottom: 12 }}>{title}</div>}
+        {title && <div style={{ fontFamily: FONT.serif, fontSize: TYPE.xl, fontWeight: 600, marginBottom: 12 }}>{title}</div>}
         {children}
       </div>
     </div>
@@ -459,7 +459,7 @@ function LoginPage({ onLogin, setDevPersona }) {
           display: "inline-flex", alignItems: "center", justifyContent: "center",
           width: "100%", padding: "0.6rem", borderRadius: 4,
           border: `1px solid ${BORDER}`, background: SURFACE.card, cursor: "pointer",
-          fontFamily: FONT.mono, fontSize: "0.85rem", color: "#333",
+          fontFamily: FONT.mono, fontSize: TYPE.md, color: "#333",
           textDecoration: "none",
         }}>
           <GoogleIcon /> sign in with Google
@@ -468,7 +468,7 @@ function LoginPage({ onLogin, setDevPersona }) {
       <div style={{ textAlign: "center", marginTop: "0.75rem" }}>
         <button onClick={() => { window.location.hash = "/forgot-password"; }}
           style={{ background: "none", border: "none", color: TEXT.disabled,
-            fontSize: "0.75rem", fontFamily: FONT.mono, cursor: "pointer" }}>
+            fontSize: TYPE.base, fontFamily: FONT.mono, cursor: "pointer" }}>
           forgot password?
         </button>
       </div>
@@ -498,7 +498,7 @@ function RegisterPage({ onRegister }) {
           display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
           padding: "0.65rem 1rem", borderRadius: 8, border: `1px solid ${BORDER}`,
           background: SURFACE.card, color: "#3a3530", textDecoration: "none",
-          fontFamily: FONT.mono, fontSize: "0.9rem", marginBottom: 12,
+          fontFamily: FONT.mono, fontSize: TYPE.md, marginBottom: 12,
         }}>
         <GoogleIcon /> continue with Google
       </a>
@@ -762,28 +762,28 @@ function CreditMeter({ credits, hasUnmappedTransfer, onTransferWarningTap }) {
         <div style={{ position: "relative", flexShrink: 0 }}>
           <ProgressRing value={total} max={max} size={80} color={total >= max ? "#22863a" : "#b08800"} />
           <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-            <span style={{ fontFamily: FONT.mono, fontSize: "1rem", fontWeight: 700 }}>{total}</span>
-            <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: TEXT.muted }}>/ {max}</span>
+            <span style={{ fontFamily: FONT.mono, fontSize: TYPE.lg, fontWeight: 700 }}>{total}</span>
+            <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted }}>/ {max}</span>
           </div>
         </div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontFamily: FONT.serif, fontSize: "1rem", fontWeight: 600, marginBottom: "0.5rem" }}>Credit Hours</div>
+          <div style={{ fontFamily: FONT.serif, fontSize: TYPE.lg, fontWeight: 600, marginBottom: "0.5rem" }}>Credit Hours</div>
           <div style={{ height: 12, borderRadius: 6, background: "#eee", overflow: "hidden", display: "flex" }}>
             <div style={{ width: `${pctC}%`, background: STATUS_COLOR.complete }} />
             <div style={{ width: `${pctE}%`, background: STATUS_COLOR.enrolled }} />
             <div style={{ width: `${pctP}%`, background: STATUS_COLOR.planned }} />
           </div>
-          <div style={{ display: "flex", gap: "0.8rem", marginTop: "0.4rem", fontFamily: FONT.mono, fontSize: "0.65rem", color: TEXT.secondary }}>
+          <div style={{ display: "flex", gap: "0.8rem", marginTop: "0.4rem", fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.secondary }}>
             <span><span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: STATUS_COLOR.complete, marginRight: 4 }} />{complete} earned</span>
             <span><span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: STATUS_COLOR.enrolled, marginRight: 4 }} />{enrolled} enrolled</span>
             <span><span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: STATUS_COLOR.planned, marginRight: 4 }} />{planned} planned</span>
           </div>
-          <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: TEXT.muted, marginTop: "0.3rem" }}>
+          <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.muted, marginTop: "0.3rem" }}>
             {max - total > 0 ? `${max - total} credits remaining` : "Credit requirement met"}
           </div>
           {hasUnmappedTransfer && (
             <button type="button" onClick={onTransferWarningTap} style={{
-              fontFamily: FONT.mono, fontSize: "0.65rem", color: TEXT.warning, marginTop: "0.3rem",
+              fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.warning, marginTop: "0.3rem",
               cursor: onTransferWarningTap ? "pointer" : "default",
               background: "none", border: "none", textAlign: "left", width: "100%", padding: 0,
             }}>
@@ -867,7 +867,7 @@ function NextStepsSection({ data, onAddCourses, onMapTransfer, onSuggestionTap }
 
   return (
     <div style={{ marginBottom: "1rem" }}>
-      <div style={{ fontFamily: FONT.serif, fontSize: "1rem", fontWeight: 600, marginBottom: "0.5rem" }}>Next Steps</div>
+      <div style={{ fontFamily: FONT.serif, fontSize: TYPE.lg, fontWeight: 600, marginBottom: "0.5rem" }}>Next Steps</div>
       <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
         {cards.slice(0, 3).map(card => (
           card.action ? (
@@ -876,22 +876,22 @@ function NextStepsSection({ data, onAddCourses, onMapTransfer, onSuggestionTap }
               display: "flex", alignItems: "center", gap: "0.7rem",
               cursor: "pointer", textAlign: "left", width: "100%",
             }}>
-              <span style={{ fontSize: "1.1rem", flexShrink: 0 }} dangerouslySetInnerHTML={{ __html: card.icon }} />
+              <span style={{ fontSize: TYPE.xl, flexShrink: 0 }} dangerouslySetInnerHTML={{ __html: card.icon }} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 700 }}>{card.title}</div>
-                <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: TEXT.muted }}>{card.subtitle}</div>
+                <div style={{ fontFamily: FONT.mono, fontSize: TYPE.base, fontWeight: 700 }}>{card.title}</div>
+                <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted }}>{card.subtitle}</div>
               </div>
-              <span style={{ fontFamily: FONT.mono, fontSize: "1rem", color: "#c0b8b0" }}>&rsaquo;</span>
+              <span style={{ fontFamily: FONT.mono, fontSize: TYPE.lg, color: "#c0b8b0" }}>&rsaquo;</span>
             </button>
           ) : (
             <div key={card.key} style={{
               background: SURFACE.card, border: `1px solid ${BORDER}`, borderRadius: 8, padding: "0.7rem 1rem",
               display: "flex", alignItems: "center", gap: "0.7rem",
             }}>
-              <span style={{ fontSize: "1.1rem", flexShrink: 0 }} dangerouslySetInnerHTML={{ __html: card.icon }} />
+              <span style={{ fontSize: TYPE.xl, flexShrink: 0 }} dangerouslySetInnerHTML={{ __html: card.icon }} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 700 }}>{card.title}</div>
-                <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: TEXT.muted }}>{card.subtitle}</div>
+                <div style={{ fontFamily: FONT.mono, fontSize: TYPE.base, fontWeight: 700 }}>{card.title}</div>
+                <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted }}>{card.subtitle}</div>
               </div>
             </div>
           )
@@ -915,10 +915,10 @@ function PlanPreview() {
   return (
     <div style={{ background: SURFACE.card, border: `1px solid ${BORDER}`, borderRadius: 8, padding: "0.8rem 1rem", marginBottom: "0.75rem" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.2rem" }}>
-        <span style={{ fontFamily: FONT.serif, fontSize: "1rem", fontWeight: 600 }}>Your plan</span>
-        <a href="#/planner" style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#6f42c1", textDecoration: "none" }}>Open planner &rsaquo;</a>
+        <span style={{ fontFamily: FONT.serif, fontSize: TYPE.lg, fontWeight: 600 }}>Your plan</span>
+        <a href="#/planner" style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: "#6f42c1", textDecoration: "none" }}>Open planner &rsaquo;</a>
       </div>
-      <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#555" }}>
+      <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: "#555" }}>
         {planSummary.course_count} course{planSummary.course_count !== 1 ? "s" : ""} &middot; {planSummary.total_credits}cr planned
       </div>
     </div>
@@ -937,17 +937,17 @@ function ProgramCard({ prog, conflicts, onPipClick, onSlotTap, defaultOpen = fal
       <button type="button" aria-expanded={open} onClick={() => setOpen(!open)} style={{ display: "flex", alignItems: "center", gap: "0.8rem", padding: "0.8rem 1rem", cursor: "pointer", background: "none", border: "none", borderLeft: `4px solid ${color}`, textAlign: "left", width: "100%" }}>
         <div style={{ position: "relative", flexShrink: 0 }}>
           <ProgressRing value={filledSlots} max={totalSlots} size={48} stroke={4} color={color} />
-          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: FONT.mono, fontSize: "0.6rem", fontWeight: 700 }}>
+          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: FONT.mono, fontSize: TYPE.xs, fontWeight: 700 }}>
             {filledSlots}/{totalSlots}
           </div>
         </div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontFamily: FONT.serif, fontSize: "1rem", fontWeight: 600, color }}>{prog.name}</div>
-          <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: TEXT.muted }}>
+          <div style={{ fontFamily: FONT.serif, fontSize: TYPE.lg, fontWeight: 600, color }}>{prog.name}</div>
+          <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.muted }}>
             {filledSlots}/{totalSlots} categories{prog.totalCredits ? ` · ${prog.creditsApplied || 0}/${prog.totalCredits} cr` : ""}
           </div>
         </div>
-        <span style={{ fontFamily: FONT.mono, fontSize: "0.8rem", color: TEXT.disabled, transform: open ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>▼</span>
+        <span style={{ fontFamily: FONT.mono, fontSize: TYPE.base, color: TEXT.disabled, transform: open ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>▼</span>
       </button>
       {open && (() => {
         const incomplete = prog.categories.filter(cat => !cat.isSatisfied && !cat.isWaived);
@@ -977,11 +977,11 @@ function CompletedCategoriesGroup({ categories, color, conflicts, onPipClick }) 
         display: "flex", alignItems: "center", gap: "0.4rem", cursor: "pointer", padding: "0.3rem 0",
         background: "none", border: "none", textAlign: "left", width: "100%",
       }}>
-        <span style={{ color: TEXT.success, fontSize: "0.7rem" }}>&#10003;</span>
-        <span style={{ fontFamily: FONT.mono, fontSize: "0.7rem", fontWeight: 600, color: TEXT.success }}>
+        <span style={{ color: TEXT.success, fontSize: TYPE.sm }}>&#10003;</span>
+        <span style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, fontWeight: 600, color: TEXT.success }}>
           {categories.length} completed
         </span>
-        <span style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: TEXT.disabled, transform: expanded ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>&#9660;</span>
+        <span style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.disabled, transform: expanded ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>&#9660;</span>
       </button>
       {expanded && categories.map((cat, i) => (
         <CategoryRow key={`comp-${i}`} cat={cat} color={color} conflicts={conflicts} onPipClick={onPipClick} />
@@ -1022,13 +1022,13 @@ function CategoryRow({ cat, color, conflicts, onPipClick, onSlotTap }) {
         display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.3rem",
         cursor: onSlotTap ? "pointer" : "default",
       }}>
-        <div style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 600 }}>
+        <div style={{ fontFamily: FONT.mono, fontSize: TYPE.base, fontWeight: 600 }}>
           {cat.name}
-          {cat.isWaived && <span style={{ marginLeft: 6, fontSize: "0.6rem", background: "#f0ede8", padding: "1px 6px", borderRadius: 3, color: TEXT.muted }}>waived</span>}
-          {hasConflict && <span style={{ marginLeft: 6, fontSize: "0.6rem", background: "#e8f0fe", padding: "1px 6px", borderRadius: 3, color: "#1a5276" }}>shared</span>}
+          {cat.isWaived && <span style={{ marginLeft: 6, fontSize: TYPE.xs, background: "#f0ede8", padding: "1px 6px", borderRadius: 3, color: TEXT.muted }}>waived</span>}
+          {hasConflict && <span style={{ marginLeft: 6, fontSize: TYPE.xs, background: "#e8f0fe", padding: "1px 6px", borderRadius: 3, color: "#1a5276" }}>shared</span>}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
-          <span style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: cat.isSatisfied ? "#22863a" : "#b08800", fontWeight: 600 }}>
+          <span style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: cat.isSatisfied ? "#22863a" : "#b08800", fontWeight: 600 }}>
             {cat.filledCount || 0}/{cat.slotsNeeded}
           </span>
           {onSlotTap && <span style={{ color: "#c0b8b0", fontSize: 14 }}>&rsaquo;</span>}
@@ -1043,7 +1043,7 @@ function FilledPip({ slot, color, isConflict, onClick, label }) {
   return (
     <button type="button" onClick={onClick} style={{
       display: "inline-flex", alignItems: "center", gap: 4,
-      padding: "3px 8px", borderRadius: 4, fontSize: "0.65rem", fontFamily: FONT.mono,
+      padding: "3px 8px", borderRadius: 4, fontSize: TYPE.sm, fontFamily: FONT.mono,
       background: `${color}12`, border: `1px solid ${isConflict ? "#ffc107" : color + "40"}`,
       cursor: "pointer", boxShadow: isConflict ? "0 0 0 1px #ffc107" : "none",
       textAlign: "left",
@@ -1051,7 +1051,7 @@ function FilledPip({ slot, color, isConflict, onClick, label }) {
       <span style={{ width: 6, height: 6, borderRadius: "50%", background: STATUS_COLOR[slot.status] || "#888", flexShrink: 0 }} />
       {slot.code}
       {label && <span style={{ fontSize: "0.5rem", opacity: 0.6 }}>{label}</span>}
-      {isConflict && <span style={{ fontSize: "0.55rem" }}>&#x27F7;</span>}
+      {isConflict && <span style={{ fontSize: TYPE.xs }}>&#x27F7;</span>}
     </button>
   );
 }
@@ -1065,7 +1065,7 @@ function EmptyPip({ onClick }) {
         background: "#fafaf8",
         cursor: "pointer",
         display: "flex", alignItems: "center", justifyContent: "center",
-        fontFamily: FONT.mono, fontSize: "0.65rem", color: TEXT.disabled,
+        fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.disabled,
       }}>
         +
       </button>
@@ -1077,14 +1077,14 @@ function EmptyPip({ onClick }) {
       border: `1.5px dashed #ccc`,
       background: "transparent",
       display: "flex", alignItems: "center", justifyContent: "center",
-      fontFamily: FONT.mono, fontSize: "0.65rem", color: TEXT.disabled,
+      fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.disabled,
     }} />
   );
 }
 
 function WaivedPip() {
   return (
-    <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 60, height: 24, borderRadius: 4, background: SURFACE.hover, border: `1px solid ${BORDER}`, fontSize: "0.6rem", color: TEXT.muted }}>
+    <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 60, height: 24, borderRadius: 4, background: SURFACE.hover, border: `1px solid ${BORDER}`, fontSize: TYPE.xs, color: TEXT.muted }}>
       &#10003; waived
     </div>
   );
@@ -1103,7 +1103,7 @@ function OverlapBudget({ overlaps, programs, conflicts, onPipClick }) {
 
   return (
     <div style={{ background: SURFACE.card, border: `1px solid ${BORDER}`, borderRadius: 8, padding: "1rem", marginBottom: "0.75rem" }}>
-      <div style={{ fontFamily: FONT.serif, fontSize: "1rem", fontWeight: 600, marginBottom: "0.6rem" }}>Overlap Budget</div>
+      <div style={{ fontFamily: FONT.serif, fontSize: TYPE.lg, fontWeight: 600, marginBottom: "0.6rem" }}>Overlap Budget</div>
 
       {ruledPairs.map(([key, pair]) => {
         const [a, b] = key.split("|");
@@ -1127,14 +1127,14 @@ function OverlapBudget({ overlaps, programs, conflicts, onPipClick }) {
         return (
           <div key={key} style={{ marginBottom: "0.8rem" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.3rem" }}>
-              <span style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 600 }}>
+              <span style={{ fontFamily: FONT.mono, fontSize: TYPE.base, fontWeight: 600 }}>
                 {nameA} &#x2194; {nameB}
               </span>
-              <span style={{ fontFamily: FONT.mono, fontSize: "0.65rem", padding: "1px 8px", borderRadius: 10, background: overBudget ? "#fde8e8" : "#e8f5e9", color: overBudget ? "#c43b2d" : "#22863a", fontWeight: 600 }}>
+              <span style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "1px 8px", borderRadius: 10, background: overBudget ? "#fde8e8" : "#e8f5e9", color: overBudget ? "#c43b2d" : "#22863a", fontWeight: 600 }}>
                 {pair.count}/{pair.max}
               </span>
             </div>
-            <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: TEXT.secondary, lineHeight: 1.5, marginBottom: "0.4rem" }}>
+            <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.secondary, lineHeight: 1.5, marginBottom: "0.4rem" }}>
               {explain}
             </div>
             <div style={{ display: "flex", gap: "0.3rem" }}>
@@ -1145,14 +1145,14 @@ function OverlapBudget({ overlaps, programs, conflicts, onPipClick }) {
                   border: `1px solid ${i < pair.count ? colorA + "40" : "#ddd"}`,
                 }} />
               ))}
-              {overBudget && <div style={{ width: 32, height: 20, borderRadius: 4, background: BTN.danger, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.55rem", color: TEXT.inverse, fontFamily: FONT.mono }}>!</div>}
+              {overBudget && <div style={{ width: 32, height: 20, borderRadius: 4, background: BTN.danger, display: "flex", alignItems: "center", justifyContent: "center", fontSize: TYPE.xs, color: TEXT.inverse, fontFamily: FONT.mono }}>!</div>}
             </div>
 
             {pairCourses.length > 0 && (
               <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem", marginTop: "0.5rem" }}>
                 {pairCourses.map(code => (
                   <button type="button" key={code} onClick={() => onPipClick?.(code, "", conflicts[code] || [a, b])} style={{
-                    fontFamily: FONT.mono, fontSize: "0.6rem", padding: "2px 8px", borderRadius: 4,
+                    fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "2px 8px", borderRadius: 4,
                     background: "#e8f0fe", border: "1px solid #b8d0f0", color: "#1a5276",
                     cursor: "pointer",
                   }}>
@@ -1168,18 +1168,18 @@ function OverlapBudget({ overlaps, programs, conflicts, onPipClick }) {
       {/* GLST dept spread — only show if GLST-BA is in a ruled pair */}
       {overlaps.glstElectiveDeptUsage && Object.keys(overlaps.glstElectiveDeptUsage).length > 0 && ruledPairs.some(([k]) => k.includes("GLST-BA")) && (
         <div>
-          <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", fontWeight: 600, marginBottom: "0.3rem" }}>
+          <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, fontWeight: 600, marginBottom: "0.3rem" }}>
             GLST elective dept spread ({overlaps.glstElectiveDeptMax} max per dept)
           </div>
           {Object.entries(overlaps.glstElectiveDeptUsage).map(([dept, count]) => (
             <div key={dept} style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.25rem" }}>
-              <span style={{ fontFamily: FONT.mono, fontSize: "0.65rem", width: 40, textAlign: "right", color: TEXT.secondary }}>{dept}</span>
+              <span style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, width: 40, textAlign: "right", color: TEXT.secondary }}>{dept}</span>
               <div style={{ display: "flex", gap: 2 }}>
                 {Array.from({ length: overlaps.glstElectiveDeptMax }).map((_, i) => (
                   <div key={i} style={{ width: 20, height: 10, borderRadius: 2, background: i < count ? (count >= overlaps.glstElectiveDeptMax ? "#c43b2d" : programColor("GLST-BA")) : "#eee" }} />
                 ))}
               </div>
-              <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: count >= overlaps.glstElectiveDeptMax ? "#c43b2d" : "#888" }}>{count}</span>
+              <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: count >= overlaps.glstElectiveDeptMax ? "#c43b2d" : "#888" }}>{count}</span>
             </div>
           ))}
         </div>
@@ -1200,37 +1200,37 @@ function CASCard({ casGrad, spanLang }) {
     <div style={{ background: SURFACE.card, border: `1px solid ${BORDER}`, borderRadius: 8, marginBottom: "0.75rem", overflow: "hidden" }}>
       <button type="button" aria-expanded={open} onClick={() => setOpen(!open)} style={{ display: "flex", alignItems: "center", gap: "0.8rem", padding: "0.8rem 1rem", cursor: "pointer", background: "none", border: "none", borderLeft: `4px solid ${COLORS["CAS-GRAD"]}`, textAlign: "left", width: "100%" }}>
         <div style={{ flex: 1 }}>
-          <div style={{ fontFamily: FONT.serif, fontSize: "1rem", fontWeight: 600, color: COLORS["CAS-GRAD"] }}>Graduation Requirements (Arts & Sciences)</div>
-          <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: TEXT.muted }}>{filled}/{allCats.length} satisfied</div>
+          <div style={{ fontFamily: FONT.serif, fontSize: TYPE.lg, fontWeight: 600, color: COLORS["CAS-GRAD"] }}>Graduation Requirements (Arts & Sciences)</div>
+          <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.muted }}>{filled}/{allCats.length} satisfied</div>
         </div>
-        <span style={{ fontFamily: FONT.mono, fontSize: "0.8rem", color: TEXT.disabled, transform: open ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>▼</span>
+        <span style={{ fontFamily: FONT.mono, fontSize: TYPE.base, color: TEXT.disabled, transform: open ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>▼</span>
       </button>
       {open && (
         <div style={{ padding: "0 1rem 0.8rem" }}>
           {casGrad && casGrad.categories.map((cat, i) => (
             <div key={i} style={{ padding: "0.4rem 0", borderTop: `1px solid ${BORDER}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
-                <div style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 600 }}>{cat.name}</div>
+                <div style={{ fontFamily: FONT.mono, fontSize: TYPE.base, fontWeight: 600 }}>{cat.name}</div>
                 {cat.slots.length > 0 && (
-                  <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: TEXT.muted, marginTop: 2 }}>
+                  <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, marginTop: 2 }}>
                     {cat.slots.map(s => s.code).join(", ")}
                   </div>
                 )}
               </div>
-              <span style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: cat.isSatisfied ? "#22863a" : "#b08800", fontWeight: 600 }}>
+              <span style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: cat.isSatisfied ? "#22863a" : "#b08800", fontWeight: 600 }}>
                 {cat.isSatisfied ? "done" : `${cat.filledCount || 0}/${cat.slotsNeeded}`}
               </span>
             </div>
           ))}
           {spanLang && (
             <div style={{ padding: "0.5rem 0", borderTop: `1px solid ${BORDER}` }}>
-              <div style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 600, marginBottom: "0.3rem", color: COLORS["SPAN-LANG"] }}>Spanish Sequence</div>
+              <div style={{ fontFamily: FONT.mono, fontSize: TYPE.base, fontWeight: 600, marginBottom: "0.3rem", color: COLORS["SPAN-LANG"] }}>Spanish Sequence</div>
               <div style={{ display: "flex", gap: "0.3rem", flexWrap: "wrap" }}>
                 {["SPAN 102", "SPAN 103", "SPAN 104"].map(code => {
                   const slot = spanLang.categories[0]?.slots.find(s => s.code === code);
                   return (
                     <div key={code} style={{
-                      padding: "3px 8px", borderRadius: 4, fontSize: "0.65rem", fontFamily: FONT.mono,
+                      padding: "3px 8px", borderRadius: 4, fontSize: TYPE.sm, fontFamily: FONT.mono,
                       background: slot ? `${COLORS["SPAN-LANG"]}15` : "#f5f0e8",
                       border: `1px solid ${slot ? COLORS["SPAN-LANG"] + "40" : "#ddd"}`,
                       color: slot ? "#333" : "#aaa",
@@ -1241,7 +1241,7 @@ function CASCard({ casGrad, spanLang }) {
                   );
                 })}
               </div>
-              <div style={{ fontFamily: FONT.mono, fontSize: "0.55rem", color: TEXT.muted, marginTop: "0.3rem" }}>
+              <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, marginTop: "0.3rem" }}>
                 SPAN 102 satisfies CAS · SPAN 104 satisfies GLST · does not count toward 33 major credits
               </div>
             </div>
@@ -1257,22 +1257,22 @@ function RemainingCard({ remaining, onSlotTap }) {
   if (!remaining || remaining.length === 0) return null;
   return (
     <div style={{ background: SURFACE.card, border: `1px solid ${BORDER}`, borderRadius: 8, padding: "1rem", marginBottom: "0.75rem" }}>
-      <div style={{ fontFamily: FONT.serif, fontSize: "1rem", fontWeight: 600, marginBottom: "0.5rem" }}>Remaining</div>
+      <div style={{ fontFamily: FONT.serif, fontSize: TYPE.lg, fontWeight: 600, marginBottom: "0.5rem" }}>Remaining</div>
       {remaining.map((r, i) => (
         onSlotTap ? (
           <button type="button" key={i} onClick={() => onSlotTap(r.program, r.category)}
-            style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.25rem 0", fontFamily: FONT.mono, fontSize: "0.7rem", cursor: "pointer", background: "none", border: "none", textAlign: "left", width: "100%" }}>
+            style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.25rem 0", fontFamily: FONT.mono, fontSize: TYPE.sm, cursor: "pointer", background: "none", border: "none", textAlign: "left", width: "100%" }}>
             <span style={{ width: 8, height: 8, borderRadius: "50%", background: COLORS[r.program] || "#888", flexShrink: 0 }} />
             <span style={{ color: TEXT.primary }}>{r.category}</span>
-            <span style={{ color: TEXT.muted, marginLeft: "auto", fontSize: "0.6rem" }}>{r.programName} · {r.needed} needed</span>
+            <span style={{ color: TEXT.muted, marginLeft: "auto", fontSize: TYPE.xs }}>{r.programName} · {r.needed} needed</span>
             <span style={{ color: "#c0b8b0", fontSize: 14 }}>&rsaquo;</span>
           </button>
         ) : (
           <div key={i}
-            style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.25rem 0", fontFamily: FONT.mono, fontSize: "0.7rem" }}>
+            style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.25rem 0", fontFamily: FONT.mono, fontSize: TYPE.sm }}>
             <span style={{ width: 8, height: 8, borderRadius: "50%", background: COLORS[r.program] || "#888", flexShrink: 0 }} />
             <span style={{ color: TEXT.primary }}>{r.category}</span>
-            <span style={{ color: TEXT.muted, marginLeft: "auto", fontSize: "0.6rem" }}>{r.programName} · {r.needed} needed</span>
+            <span style={{ color: TEXT.muted, marginLeft: "auto", fontSize: TYPE.xs }}>{r.programName} · {r.needed} needed</span>
           </div>
         )
       ))}
@@ -1303,13 +1303,13 @@ function SuggestionsCard({ suggestions, remaining, scrapedTerms }) {
   return (
     <div style={{ background: SURFACE.card, border: `1px solid ${BORDER}`, borderRadius: 8, padding: "1rem", marginBottom: "0.75rem" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.5rem" }}>
-        <div style={{ fontFamily: FONT.serif, fontSize: "1rem", fontWeight: 600 }}>High-Efficiency Suggestions</div>
+        <div style={{ fontFamily: FONT.serif, fontSize: TYPE.lg, fontWeight: 600 }}>High-Efficiency Suggestions</div>
         {scrapedTerms && scrapedTerms.length > 0 && (
           <select
             value={termFilter}
             onChange={e => setTermFilter(e.target.value)}
             aria-label="Filter suggestions by term"
-            style={{ fontFamily: FONT.mono, fontSize: "0.6rem", padding: "2px 6px", border: `1px solid ${BORDER}`, borderRadius: 4, background: SURFACE.card, color: TEXT.primary }}
+            style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "2px 6px", border: `1px solid ${BORDER}`, borderRadius: 4, background: SURFACE.card, color: TEXT.primary }}
           >
             <option value="">All terms</option>
             {scrapedTerms.map(t => <option key={t} value={t}>{t}</option>)}
@@ -1317,35 +1317,35 @@ function SuggestionsCard({ suggestions, remaining, scrapedTerms }) {
         )}
       </div>
       {top.length === 0 && termFilter && (
-        <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: TEXT.disabled, padding: "0.5rem 0" }}>
+        <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.disabled, padding: "0.5rem 0" }}>
           No suggestions offered in {termFilter}
         </div>
       )}
       {top.map((s, i) => (
         <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem", padding: "0.4rem 0", borderTop: i ? `1px solid ${BORDER}` : "none" }}>
           <span style={{
-            fontFamily: FONT.mono, fontSize: "0.6rem", fontWeight: 700, width: 22, height: 22, borderRadius: "50%",
+            fontFamily: FONT.mono, fontSize: TYPE.xs, fontWeight: 700, width: 22, height: 22, borderRadius: "50%",
             display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
             background: s.boxCount >= 3 ? "linear-gradient(135deg, #c43b2d, #1a7a5a)" : "#e8e4df",
             color: s.boxCount >= 3 ? "#fff" : "#444",
           }}>{s.boxCount}</span>
           <div style={{ flex: 1 }}>
-            <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", fontWeight: 600 }}>
+            <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, fontWeight: 600 }}>
               {s.code} <span style={{ fontWeight: 400, color: TEXT.secondary }}>{s.title}</span>
-              {s.writing_intensive && <span style={{ marginLeft: 4, fontSize: "0.55rem", background: "#e3f2fd", padding: "1px 4px", borderRadius: 2, color: "#1565c0" }}>WI</span>}
-              {s.engaged_learning && <span style={{ marginLeft: 4, fontSize: "0.55rem", background: "#f3e5f5", padding: "1px 4px", borderRadius: 2, color: "#7b1fa2" }}>EL</span>}
+              {s.writing_intensive && <span style={{ marginLeft: 4, fontSize: TYPE.xs, background: "#e3f2fd", padding: "1px 4px", borderRadius: 2, color: "#1565c0" }}>WI</span>}
+              {s.engaged_learning && <span style={{ marginLeft: 4, fontSize: TYPE.xs, background: "#f3e5f5", padding: "1px 4px", borderRadius: 2, color: "#7b1fa2" }}>EL</span>}
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "0.25rem", marginTop: "0.2rem" }}>
               {s.fills.map((f, j) => {
                 const needed = neededLookup[f];
                 return (
-                  <span key={j} style={{ fontFamily: FONT.mono, fontSize: "0.55rem", background: SURFACE.hover, padding: "1px 5px", borderRadius: 3, color: TEXT.secondary }}>
+                  <span key={j} style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, background: SURFACE.hover, padding: "1px 5px", borderRadius: 3, color: TEXT.secondary }}>
                     {f}{needed ? ` (${needed} needed)` : ""}
                   </span>
                 );
               })}
               {s.terms && s.terms.length > 0 && s.terms.map((t, j) => (
-                <span key={`t${j}`} style={{ fontFamily: FONT.mono, fontSize: "0.55rem", background: "#e8f5e9", padding: "1px 5px", borderRadius: 3, color: "#2e7d32" }}>
+                <span key={`t${j}`} style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, background: "#e8f5e9", padding: "1px 5px", borderRadius: 3, color: "#2e7d32" }}>
                   {t.replace(/\d{4}/, "").trim()}
                 </span>
               ))}
@@ -1379,7 +1379,7 @@ function RemainingPill({ count, remainingRef }) {
       style={{
         position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)",
         background: BTN.primary, color: TEXT.inverse, padding: "10px 20px", borderRadius: 24,
-        fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 600, cursor: "pointer",
+        fontFamily: FONT.mono, fontSize: TYPE.base, fontWeight: 600, cursor: "pointer",
         zIndex: 50, boxShadow: "0 4px 16px rgba(0,0,0,0.2)", border: "none",
       }}>
       {count} requirements remaining &#9650;
@@ -1403,13 +1403,13 @@ function PinModal({ code, title, programs, onPin, onClose, slotAssignments, over
 
   return (
     <BottomSheet onClose={onClose}>
-      <div style={{ fontFamily: FONT.serif, fontSize: "1.1rem", fontWeight: 600, marginBottom: "0.2rem" }}>Pin course to one program</div>
-      <div style={{ fontFamily: FONT.mono, fontSize: "0.85rem", fontWeight: 700, marginBottom: "0.1rem" }}>{code}</div>
-      <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: TEXT.muted, marginBottom: "0.8rem" }}>{title}</div>
+      <div style={{ fontFamily: FONT.serif, fontSize: TYPE.xl, fontWeight: 600, marginBottom: "0.2rem" }}>Pin course to one program</div>
+      <div style={{ fontFamily: FONT.mono, fontSize: TYPE.md, fontWeight: 700, marginBottom: "0.1rem" }}>{code}</div>
+      <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.muted, marginBottom: "0.8rem" }}>{title}</div>
 
       {/* Explanation block */}
       <div style={{ background: "#f8f6f2", border: `1px solid ${BORDER}`, borderRadius: 6, padding: "0.6rem 0.8rem", marginBottom: "0.8rem" }}>
-        <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#555", lineHeight: 1.5 }}>
+        <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: "#555", lineHeight: 1.5 }}>
           This course counts toward multiple programs.
           {relevantRules.map(r => ` ${r.a}/${r.b} allows up to ${r.max} shared (${r.count} used).`).join("")}
         </div>
@@ -1418,11 +1418,11 @@ function PinModal({ code, title, programs, onPin, onClose, slotAssignments, over
       {/* Slot assignments */}
       {assignments.length > 0 && (
         <div style={{ marginBottom: "0.8rem" }}>
-          <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", fontWeight: 600, color: TEXT.muted, marginBottom: "0.3rem" }}>Currently fills:</div>
+          <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, fontWeight: 600, color: TEXT.muted, marginBottom: "0.3rem" }}>Currently fills:</div>
           {assignments.map((a, i) => (
             <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.2rem 0" }}>
               <span style={{ width: 8, height: 8, borderRadius: "50%", background: COLORS[a.programCode] || "#888", flexShrink: 0 }} />
-              <span style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: TEXT.primary }}>
+              <span style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.primary }}>
                 {a.programCode}: {a.categoryName}
               </span>
             </div>
@@ -1433,20 +1433,20 @@ function PinModal({ code, title, programs, onPin, onClose, slotAssignments, over
       <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
         {programs.map(p => (
           <button key={p} onClick={() => onPin(code, p)} style={{
-            fontFamily: FONT.mono, fontSize: "0.85rem", padding: "0.7rem",
+            fontFamily: FONT.mono, fontSize: TYPE.md, padding: "0.7rem",
             background: COLORS[p] || "#444", color: TEXT.inverse, border: "none", borderRadius: 6, cursor: "pointer",
           }}>
             Pin to {p}
           </button>
         ))}
         <button onClick={() => onPin(code, null)} style={{
-          fontFamily: FONT.mono, fontSize: "0.8rem", padding: "0.6rem",
+          fontFamily: FONT.mono, fontSize: TYPE.base, padding: "0.6rem",
           background: SURFACE.hover, color: TEXT.secondary, border: `1px solid ${BORDER}`, borderRadius: 6, cursor: "pointer",
         }}>
           Let solver decide automatically
         </button>
         <button onClick={onClose} style={{
-          fontFamily: FONT.mono, fontSize: "0.75rem", padding: "0.5rem",
+          fontFamily: FONT.mono, fontSize: TYPE.base, padding: "0.5rem",
           background: "transparent", color: TEXT.disabled, border: "none", cursor: "pointer",
         }}>
           Cancel
@@ -1476,13 +1476,13 @@ function SlotModal({ programCode, categoryName, onClose }) {
 
   return (
     <BottomSheet onClose={onClose} maxWidth={480}>
-      <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: COLORS[programCode] || "#666", marginBottom: "0.2rem" }}>{programCode}</div>
-      <div style={{ fontFamily: FONT.serif, fontSize: "1.1rem", fontWeight: 600, marginBottom: "0.8rem" }}>{categoryName}</div>
+      <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: COLORS[programCode] || "#666", marginBottom: "0.2rem" }}>{programCode}</div>
+      <div style={{ fontFamily: FONT.serif, fontSize: TYPE.xl, fontWeight: 600, marginBottom: "0.8rem" }}>{categoryName}</div>
 
-      {!courses && <div style={{ fontFamily: FONT.mono, fontSize: "0.8rem", color: TEXT.muted, textAlign: "center", padding: "2rem" }}>loading...</div>}
+      {!courses && <div style={{ fontFamily: FONT.mono, fontSize: TYPE.base, color: TEXT.muted, textAlign: "center", padding: "2rem" }}>loading...</div>}
 
       {courses && courses.length === 0 && (
-        <div style={{ fontFamily: FONT.mono, fontSize: "0.8rem", color: TEXT.muted, textAlign: "center", padding: "2rem" }}>
+        <div style={{ fontFamily: FONT.mono, fontSize: TYPE.base, color: TEXT.muted, textAlign: "center", padding: "2rem" }}>
           No eligible courses found in catalog.
         </div>
       )}
@@ -1495,22 +1495,22 @@ function SlotModal({ programCode, categoryName, onClose }) {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <div style={{ flex: 1 }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.2rem" }}>
-                <span style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 700 }}>{c.code}</span>
-                <span style={{ fontFamily: FONT.serif, fontSize: "0.8rem", color: TEXT.primary }}>{c.title}</span>
-                <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: TEXT.muted }}>{c.credits}cr</span>
+                <span style={{ fontFamily: FONT.mono, fontSize: TYPE.base, fontWeight: 700 }}>{c.code}</span>
+                <span style={{ fontFamily: FONT.serif, fontSize: TYPE.base, color: TEXT.primary }}>{c.title}</span>
+                <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted }}>{c.credits}cr</span>
               </div>
               {c.description && (
-                <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: TEXT.muted, marginBottom: "0.3rem" }}>
+                <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, marginBottom: "0.3rem" }}>
                   {c.description.slice(0, 80)}{c.description.length > 80 ? "..." : ""}
                 </div>
               )}
               <div style={{ display: "flex", gap: "0.3rem", flexWrap: "wrap" }}>
-                {c.alreadyTaken && <span style={{ fontFamily: FONT.mono, fontSize: "0.55rem", background: "#e8f5e9", padding: "1px 5px", borderRadius: 3, color: TEXT.success }}>taking</span>}
-                {c.writing_intensive && <span style={{ fontFamily: FONT.mono, fontSize: "0.55rem", background: "#e3f2fd", padding: "1px 4px", borderRadius: 2, color: "#1565c0" }}>WI</span>}
-                {c.engaged_learning && <span style={{ fontFamily: FONT.mono, fontSize: "0.55rem", background: "#f3e5f5", padding: "1px 4px", borderRadius: 2, color: "#7b1fa2" }}>EL</span>}
+                {c.alreadyTaken && <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, background: "#e8f5e9", padding: "1px 5px", borderRadius: 3, color: TEXT.success }}>taking</span>}
+                {c.writing_intensive && <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, background: "#e3f2fd", padding: "1px 4px", borderRadius: 2, color: "#1565c0" }}>WI</span>}
+                {c.engaged_learning && <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, background: "#f3e5f5", padding: "1px 4px", borderRadius: 2, color: "#7b1fa2" }}>EL</span>}
               </div>
               {c.friends.length > 0 && (
-                <div style={{ fontFamily: FONT.mono, fontSize: "0.55rem", color: TEXT.muted, marginTop: "0.2rem" }}>
+                <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, marginTop: "0.2rem" }}>
                   {c.friends.map(f => f.name).join(", ")} {c.friends.length === 1 ? "is" : "are"} taking this
                 </div>
               )}
@@ -1527,25 +1527,25 @@ function SlotModal({ programCode, categoryName, onClose }) {
 function CourseDetailSheet({ course, categoryName, onBack }) {
   return (
     <div>
-      <button type="button" onClick={onBack} style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: TEXT.muted, cursor: "pointer", marginBottom: "0.8rem", background: "none", border: "none", padding: 0, textAlign: "left" }}>
+      <button type="button" onClick={onBack} style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.muted, cursor: "pointer", marginBottom: "0.8rem", background: "none", border: "none", padding: 0, textAlign: "left" }}>
         &larr; Back to {categoryName}
       </button>
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.3rem" }}>
-        <span style={{ fontFamily: FONT.mono, fontSize: "1rem", fontWeight: 700 }}>{course.code}</span>
-        <span style={{ fontFamily: FONT.mono, fontSize: "0.8rem", color: TEXT.muted }}>{course.credits} credits</span>
+        <span style={{ fontFamily: FONT.mono, fontSize: TYPE.lg, fontWeight: 700 }}>{course.code}</span>
+        <span style={{ fontFamily: FONT.mono, fontSize: TYPE.base, color: TEXT.muted }}>{course.credits} credits</span>
       </div>
-      <div style={{ fontFamily: FONT.serif, fontSize: "1.1rem", fontWeight: 600, marginBottom: "1rem" }}>{course.title}</div>
+      <div style={{ fontFamily: FONT.serif, fontSize: TYPE.xl, fontWeight: 600, marginBottom: "1rem" }}>{course.title}</div>
 
       {course.description && (
         <div style={{ marginBottom: "0.8rem" }}>
-          <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", fontWeight: 600, marginBottom: "0.2rem" }}>Description</div>
-          <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: TEXT.primary, lineHeight: 1.5 }}>{course.description}</div>
+          <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, fontWeight: 600, marginBottom: "0.2rem" }}>Description</div>
+          <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.primary, lineHeight: 1.5 }}>{course.description}</div>
         </div>
       )}
 
       {course.prerequisites && (
-        <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: TEXT.secondary, marginBottom: "0.5rem" }}>
+        <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.secondary, marginBottom: "0.5rem" }}>
           <strong>Prerequisites:</strong> {course.prerequisites}
         </div>
       )}
@@ -1559,10 +1559,10 @@ function CourseDetailSheet({ course, categoryName, onBack }) {
 
       {course.interdisciplinary_options?.length > 0 && (
         <div style={{ marginBottom: "0.8rem" }}>
-          <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", fontWeight: 600, marginBottom: "0.2rem" }}>Interdisciplinary</div>
+          <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, fontWeight: 600, marginBottom: "0.2rem" }}>Interdisciplinary</div>
           <div style={{ display: "flex", gap: "0.3rem", flexWrap: "wrap" }}>
             {course.interdisciplinary_options.map(opt => (
-              <span key={opt} style={{ fontFamily: FONT.mono, fontSize: "0.55rem", background: SURFACE.hover, padding: "1px 5px", borderRadius: 3, color: TEXT.secondary }}>{opt}</span>
+              <span key={opt} style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, background: SURFACE.hover, padding: "1px 5px", borderRadius: 3, color: TEXT.secondary }}>{opt}</span>
             ))}
           </div>
         </div>
@@ -1570,9 +1570,9 @@ function CourseDetailSheet({ course, categoryName, onBack }) {
 
       {course.friends?.length > 0 && (
         <div style={{ marginTop: "0.8rem" }}>
-          <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", fontWeight: 600, marginBottom: "0.2rem" }}>Friends taking this</div>
+          <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, fontWeight: 600, marginBottom: "0.2rem" }}>Friends taking this</div>
           {course.friends.map(f => (
-            <div key={f.id} style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: TEXT.primary }}>{f.name}</div>
+            <div key={f.id} style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.primary }}>{f.name}</div>
           ))}
         </div>
       )}
@@ -1583,8 +1583,8 @@ function CourseDetailSheet({ course, categoryName, onBack }) {
 function DetailItem({ label, value }) {
   return (
     <div>
-      <div style={{ fontFamily: FONT.mono, fontSize: "0.55rem", color: TEXT.muted, marginBottom: 1 }}>{label}</div>
-      <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: TEXT.primary }}>{value}</div>
+      <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, marginBottom: 1 }}>{label}</div>
+      <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.primary }}>{value}</div>
     </div>
   );
 }
@@ -1605,31 +1605,31 @@ function CourseDetailModal({ code, onClose }) {
   return (
     <BottomSheet onClose={onClose} maxWidth={480}>
       {!course ? (
-        <div style={{ fontFamily: FONT.mono, fontSize: "0.8rem", color: TEXT.muted, padding: "2rem", textAlign: "center" }}>loading...</div>
+        <div style={{ fontFamily: FONT.mono, fontSize: TYPE.base, color: TEXT.muted, padding: "2rem", textAlign: "center" }}>loading...</div>
       ) : (
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.3rem" }}>
-            <span style={{ fontFamily: FONT.mono, fontSize: "1rem", fontWeight: 700 }}>{course.code}</span>
-            <span style={{ fontFamily: FONT.mono, fontSize: "0.8rem", color: TEXT.muted }}>{course.credits} credits</span>
+            <span style={{ fontFamily: FONT.mono, fontSize: TYPE.lg, fontWeight: 700 }}>{course.code}</span>
+            <span style={{ fontFamily: FONT.mono, fontSize: TYPE.base, color: TEXT.muted }}>{course.credits} credits</span>
           </div>
-          <div style={{ fontFamily: FONT.serif, fontSize: "1.1rem", fontWeight: 600, marginBottom: "1rem" }}>{course.title}</div>
+          <div style={{ fontFamily: FONT.serif, fontSize: TYPE.xl, fontWeight: 600, marginBottom: "1rem" }}>{course.title}</div>
 
           {studentCourse?.semester && (
-            <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: TEXT.primary, marginBottom: "0.8rem" }}>
+            <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.primary, marginBottom: "0.8rem" }}>
               <strong>Term:</strong> {studentCourse.semester}
-              {studentCourse.status && <span style={{ marginLeft: "0.5rem", fontSize: "0.6rem", background: `${STATUS_COLOR[studentCourse.status] || "#888"}18`, color: STATUS_COLOR[studentCourse.status] || "#888", padding: "1px 6px", borderRadius: 3 }}>{studentCourse.status}</span>}
+              {studentCourse.status && <span style={{ marginLeft: "0.5rem", fontSize: TYPE.xs, background: `${STATUS_COLOR[studentCourse.status] || "#888"}18`, color: STATUS_COLOR[studentCourse.status] || "#888", padding: "1px 6px", borderRadius: 3 }}>{studentCourse.status}</span>}
             </div>
           )}
 
           {course.description && (
             <div style={{ marginBottom: "0.8rem" }}>
-              <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", fontWeight: 600, marginBottom: "0.2rem" }}>Description</div>
-              <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: TEXT.primary, lineHeight: 1.5 }}>{course.description}</div>
+              <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, fontWeight: 600, marginBottom: "0.2rem" }}>Description</div>
+              <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.primary, lineHeight: 1.5 }}>{course.description}</div>
             </div>
           )}
 
           {course.prerequisites && (
-            <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: TEXT.secondary, marginBottom: "0.5rem" }}>
+            <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.secondary, marginBottom: "0.5rem" }}>
               <strong>Prerequisites:</strong> {course.prerequisites}
             </div>
           )}
@@ -1643,10 +1643,10 @@ function CourseDetailModal({ code, onClose }) {
 
           {course.interdisciplinary_options?.length > 0 && (
             <div style={{ marginBottom: "0.8rem" }}>
-              <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", fontWeight: 600, marginBottom: "0.2rem" }}>Interdisciplinary</div>
+              <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, fontWeight: 600, marginBottom: "0.2rem" }}>Interdisciplinary</div>
               <div style={{ display: "flex", gap: "0.3rem", flexWrap: "wrap" }}>
                 {course.interdisciplinary_options.map(opt => (
-                  <span key={opt} style={{ fontFamily: FONT.mono, fontSize: "0.55rem", background: SURFACE.hover, padding: "1px 5px", borderRadius: 3, color: TEXT.secondary }}>{opt}</span>
+                  <span key={opt} style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, background: SURFACE.hover, padding: "1px 5px", borderRadius: 3, color: TEXT.secondary }}>{opt}</span>
                 ))}
               </div>
             </div>
@@ -1715,13 +1715,13 @@ function AddCoursesSheet({ initialTerm, onClose, onSaved }) {
 
   return (
     <BottomSheet onClose={onClose} maxWidth={480}>
-      <div style={{ fontFamily: FONT.serif, fontSize: "1.1rem", fontWeight: 600, marginBottom: "0.5rem" }}>Add Courses</div>
+      <div style={{ fontFamily: FONT.serif, fontSize: TYPE.xl, fontWeight: 600, marginBottom: "0.5rem" }}>Add Courses</div>
 
       {/* Term selector */}
       <div style={{ display: "flex", gap: 6, marginBottom: "0.8rem", flexWrap: "wrap" }}>
         {termOptions.map(t => (
           <button key={t} onClick={() => setTerm(t)} style={{
-            fontFamily: FONT.mono, fontSize: "0.65rem", padding: "4px 10px", borderRadius: 12,
+            fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "4px 10px", borderRadius: 12,
             border: `1px solid ${term === t ? "#1a1a1a" : BORDER}`,
             background: term === t ? "#1a1a1a" : "transparent",
             color: term === t ? "#fff" : "#666", cursor: "pointer",
@@ -1738,7 +1738,7 @@ function AddCoursesSheet({ initialTerm, onClose, onSaved }) {
         <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: "0.5rem" }}>
           {selected.map(c => (
             <button type="button" key={c.code} onClick={() => toggleCourse(c)} style={{
-              fontFamily: FONT.mono, fontSize: "0.6rem", padding: "3px 8px", borderRadius: 4,
+              fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "3px 8px", borderRadius: 4,
               background: "#e8f5e9", color: TEXT.success, cursor: "pointer",
               display: "inline-flex", alignItems: "center", gap: 4, border: "none",
             }}>
@@ -1766,11 +1766,11 @@ function AddCoursesSheet({ initialTerm, onClose, onSaved }) {
               {isSelected(c.code) && "\u2713"}
             </span>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", fontWeight: 600 }}>
+              <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, fontWeight: 600 }}>
                 {c.code} <span style={{ fontWeight: 400, color: TEXT.secondary }}>{c.title}</span>
               </div>
             </div>
-            <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: TEXT.muted, flexShrink: 0 }}>{c.credits || 3}cr</span>
+            <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, flexShrink: 0 }}>{c.credits || 3}cr</span>
           </button>
         ))}
       </div>
@@ -1779,7 +1779,7 @@ function AddCoursesSheet({ initialTerm, onClose, onSaved }) {
       {selected.length > 0 && (
         <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: "0.8rem", marginTop: "0.5rem",
           display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: TEXT.secondary }}>
+          <span style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.secondary }}>
             {selected.length} course{selected.length !== 1 ? "s" : ""} · {totalCredits} credits
           </span>
           <Btn onClick={handleSave} style={{ padding: "0.5rem 1.5rem" }}>
@@ -1827,8 +1827,8 @@ function TransferMappingSheet({ onClose, onSaved }) {
 
   return (
     <BottomSheet onClose={onClose} maxWidth={480}>
-      <div style={{ fontFamily: FONT.serif, fontSize: "1.1rem", fontWeight: 600, marginBottom: "0.2rem" }}>Transfer Credits</div>
-      <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: TEXT.muted, marginBottom: "1rem" }}>
+      <div style={{ fontFamily: FONT.serif, fontSize: TYPE.xl, fontWeight: 600, marginBottom: "0.2rem" }}>Transfer Credits</div>
+      <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.muted, marginBottom: "1rem" }}>
         Add credits from other institutions
       </div>
 
@@ -1840,28 +1840,28 @@ function TransferMappingSheet({ onClose, onSaved }) {
           <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
             <Input placeholder="Description (e.g. Intro to Psych)" aria-label="Transfer credit description"
               value={row.label} onChange={e => updateRow(i, "label", e.target.value)}
-              style={{ fontSize: "0.75rem" }} />
+              style={{ fontSize: TYPE.base }} />
             <div style={{ display: "flex", gap: 6 }}>
               <Input type="number" placeholder="Cr" aria-label="Credit hours"
                 value={row.creditHours}
                 onChange={e => updateRow(i, "creditHours", e.target.value)}
-                style={{ width: 50, fontSize: "0.75rem", textAlign: "center" }} />
+                style={{ width: 50, fontSize: TYPE.base, textAlign: "center" }} />
               <Input placeholder="Catalog code (optional, e.g. PSYC 101)" aria-label="Catalog course code"
                 value={row.satisfiesCode} onChange={e => updateRow(i, "satisfiesCode", e.target.value)}
-                style={{ flex: 1, fontSize: "0.75rem" }} />
+                style={{ flex: 1, fontSize: TYPE.base }} />
             </div>
           </div>
           {rows.length > 1 && (
             <button onClick={() => removeRow(i)} style={{
               background: "transparent", border: "none", cursor: "pointer",
-              fontFamily: FONT.mono, fontSize: "1rem", color: "#ccc", padding: "0.3rem",
+              fontFamily: FONT.mono, fontSize: TYPE.lg, color: "#ccc", padding: "0.3rem",
             }}>&times;</button>
           )}
         </div>
       ))}
 
       <button onClick={addRow} style={{
-        fontFamily: FONT.mono, fontSize: "0.7rem", color: TEXT.muted, background: "transparent",
+        fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.muted, background: "transparent",
         border: `1px dashed ${BORDER}`, borderRadius: 6, padding: "0.5rem", width: "100%",
         cursor: "pointer", marginBottom: "0.8rem",
       }}>
@@ -1870,7 +1870,7 @@ function TransferMappingSheet({ onClose, onSaved }) {
 
       <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: "0.8rem",
         display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: TEXT.secondary }}>
+        <span style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.secondary }}>
           {rows.length} credit{rows.length !== 1 ? "s" : ""} · {totalCredits} hours
         </span>
         <Btn onClick={handleSave} style={{ padding: "0.5rem 1.5rem" }}>
@@ -1885,7 +1885,7 @@ function TransferMappingSheet({ onClose, onSaved }) {
 function ProgramPickerList({ label, items, selected, onToggle, search, onSearch, loading, maxHeight = 300 }) {
   return (
     <div style={{ marginBottom: 24 }}>
-      <div style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 600, marginBottom: 8 }}>
+      <div style={{ fontFamily: FONT.mono, fontSize: TYPE.base, fontWeight: 600, marginBottom: 8 }}>
         {label}
       </div>
       <input
@@ -1896,12 +1896,12 @@ function ProgramPickerList({ label, items, selected, onToggle, search, onSearch,
         onChange={e => onSearch(e.target.value)}
         style={{
           ...sharedStyles.input, width: "100%", boxSizing: "border-box",
-          marginBottom: 10, fontSize: "0.8rem",
+          marginBottom: 10, fontSize: TYPE.base,
         }}
       />
       <div style={{ maxHeight, overflowY: "auto", border: `1px solid ${BORDER}`, borderRadius: 8, background: SURFACE.card }}>
         {items.length === 0 && (
-          <div style={{ padding: 16, textAlign: "center", fontFamily: FONT.mono, fontSize: "0.75rem", color: TEXT.disabled }}>
+          <div style={{ padding: 16, textAlign: "center", fontFamily: FONT.mono, fontSize: TYPE.base, color: TEXT.disabled }}>
             {loading ? "loading programs..." : "no programs match your search"}
           </div>
         )}
@@ -1928,14 +1928,14 @@ function ProgramPickerList({ label, items, selected, onToggle, search, onSearch,
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <span style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 600, color: isSelected ? color : "#333" }}>{p.name}</span>
+                  <span style={{ fontFamily: FONT.mono, fontSize: TYPE.base, fontWeight: 600, color: isSelected ? color : "#333" }}>{p.name}</span>
                   {p.degree && <span style={{
-                    fontFamily: FONT.mono, fontSize: "0.55rem", padding: "1px 5px", borderRadius: 3,
+                    fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "1px 5px", borderRadius: 3,
                     background: "#eee", color: TEXT.secondary, flexShrink: 0,
                   }}>{p.degree}</span>}
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
-                  <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: TEXT.disabled }}>{p.code}</span>
+                  <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.disabled }}>{p.code}</span>
                   {p.modeled ? (
                     <span style={{ fontFamily: FONT.mono, fontSize: "0.5rem", padding: "1px 5px", borderRadius: 3, background: "#e8f5e9", color: TEXT.success }}>full tracking</span>
                   ) : (
@@ -2220,12 +2220,12 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
             <h2 style={{ fontFamily: FONT.serif, fontSize: "1.5rem", fontWeight: 700, marginBottom: 4 }}>
               welcome to <span>ramble</span><span style={{ color: TEXT.danger }}>maxxer</span>
             </h2>
-            <p style={{ fontFamily: FONT.mono, fontSize: "0.8rem", color: TEXT.muted, marginBottom: 24 }}>
+            <p style={{ fontFamily: FONT.mono, fontSize: TYPE.base, color: TEXT.muted, marginBottom: 24 }}>
               let's set up your degree tracking
             </p>
 
             <div style={{ marginBottom: 20 }}>
-              <div style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 600, marginBottom: 8 }}>
+              <div style={{ fontFamily: FONT.mono, fontSize: TYPE.base, fontWeight: 600, marginBottom: 8 }}>
                 expected graduation
               </div>
               <div style={{ display: "flex", gap: 8 }}>
@@ -2233,7 +2233,7 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
                   <button key={y} onClick={() => setGradYear(y)}
                     style={{
                       flex: 1, padding: "10px 0", borderRadius: 8, cursor: "pointer",
-                      fontFamily: FONT.mono, fontSize: "0.85rem",
+                      fontFamily: FONT.mono, fontSize: TYPE.md,
                       border: `2px solid ${gradYear == y ? "#1a1a1a" : BORDER}`,
                       background: gradYear == y ? "#1a1a1a" : "transparent",
                       color: gradYear == y ? "#fff" : "#5a5550",
@@ -2255,7 +2255,7 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
                 loading={programCatalog.length === 0}
               />
 
-              <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: TEXT.disabled, marginBottom: 24 }}>
+              <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.disabled, marginBottom: 24 }}>
                 Core + CAS graduation requirements are tracked automatically
               </div>
 
@@ -2274,7 +2274,7 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
               />
 
               {minors.length > 0 && (
-                <div style={{ fontFamily: FONT.mono, fontSize: "0.55rem", color: TEXT.muted, marginBottom: 8 }}>
+                <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, marginBottom: 8 }}>
                   (not yet tracked — minors are saved as declarations)
                 </div>
               )}
@@ -2291,10 +2291,10 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
         {/* ── Step 2: Transcript Upload ─────────────────────────────────── */}
         {step === 2 && (
           <div>
-            <h2 style={{ fontFamily: FONT.serif, fontSize: "1.3rem", fontWeight: 700, marginBottom: 4 }}>
+            <h2 style={{ fontFamily: FONT.serif, fontSize: TYPE.xxl, fontWeight: 700, marginBottom: 4 }}>
               import your transcript
             </h2>
-            <p style={{ fontFamily: FONT.mono, fontSize: "0.75rem", color: TEXT.muted, marginBottom: 24 }}>
+            <p style={{ fontFamily: FONT.mono, fontSize: TYPE.base, color: TEXT.muted, marginBottom: 24 }}>
               upload your unofficial transcript PDF to auto-populate your courses
             </p>
 
@@ -2308,16 +2308,16 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
                 aria-label="Upload transcript PDF"
                 style={{ display: "none" }} disabled={uploading} />
               {uploading ? (
-                <span style={{ fontFamily: FONT.mono, fontSize: "0.85rem", color: TEXT.muted }}>
+                <span style={{ fontFamily: FONT.mono, fontSize: TYPE.md, color: TEXT.muted }}>
                   parsing transcript...
                 </span>
               ) : (
                 <>
                   <div style={{ fontSize: 32, marginBottom: 8, opacity: 0.4 }}>&#128196;</div>
-                  <div style={{ fontFamily: FONT.mono, fontSize: "0.85rem", color: TEXT.primary, marginBottom: 4 }}>
+                  <div style={{ fontFamily: FONT.mono, fontSize: TYPE.md, color: TEXT.primary, marginBottom: 4 }}>
                     tap to upload PDF
                   </div>
-                  <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: TEXT.disabled }}>
+                  <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.disabled }}>
                     official or unofficial transcript from LOCUS (max 2MB)
                   </div>
                 </>
@@ -2333,7 +2333,7 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
               style={{
                 display: "block", width: "100%", marginTop: 20, padding: 12,
                 background: "transparent", border: "none", cursor: "pointer",
-                fontFamily: FONT.mono, fontSize: "0.75rem", color: TEXT.disabled,
+                fontFamily: FONT.mono, fontSize: TYPE.base, color: TEXT.disabled,
                 textAlign: "center",
               }}>
               I'll add courses manually &rarr;
@@ -2344,7 +2344,7 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
         {/* ── Step 3: Review ────────────────────────────────────────────── */}
         {step === 3 && parseResult && (
           <div>
-            <h2 style={{ fontFamily: FONT.serif, fontSize: "1.3rem", fontWeight: 700, marginBottom: 4 }}>
+            <h2 style={{ fontFamily: FONT.serif, fontSize: TYPE.xxl, fontWeight: 700, marginBottom: 4 }}>
               review your courses
             </h2>
 
@@ -2352,7 +2352,7 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
             <div style={{
               display: "flex", gap: 12, padding: "10px 14px", borderRadius: 8,
               background: SURFACE.card, border: `1px solid ${BORDER}`, marginBottom: 16,
-              fontFamily: FONT.mono, fontSize: "0.7rem",
+              fontFamily: FONT.mono, fontSize: TYPE.sm,
             }}>
               <span style={{ color: TEXT.success }}>
                 found {parseResult.summary.exact + (parseResult.summary.fuzzy || 0)} of {parseResult.summary.exact + (parseResult.summary.fuzzy || 0) + parseResult.summary.unmatched} in catalog
@@ -2368,11 +2368,11 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
             {/* Transfer credits */}
             {(reviewTransfer.length > 0 || parseResult.transferCredits?.total > 0) && (
               <div style={{ marginBottom: 16 }}>
-                <div style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 600, marginBottom: 4, color: COLORS["CAS-GRAD"] }}>
+                <div style={{ fontFamily: FONT.mono, fontSize: TYPE.base, fontWeight: 600, marginBottom: 4, color: COLORS["CAS-GRAD"] }}>
                   Transfer Credits
                 </div>
                 {parseResult.transferCredits?.total > 0 && (
-                  <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: TEXT.muted, marginBottom: 8 }}>
+                  <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.muted, marginBottom: 8 }}>
                     Your transcript shows {parseResult.transferCredits.total} transfer credits
                   </div>
                 )}
@@ -2380,7 +2380,7 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
                     {parseResult.transferCredits.sources.map((src, i) => (
                       <span key={i} style={{
-                        fontFamily: FONT.mono, fontSize: "0.6rem", padding: "3px 8px",
+                        fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "3px 8px",
                         borderRadius: 4, background: "#f5f0eb", color: TEXT.secondary,
                       }}>
                         {src.type === "test" ? "Test/AP Credits" : src.name || "Transfer"} — {src.credits}cr
@@ -2403,22 +2403,22 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
                       }} style={{
                         width: 22, height: 22, borderRadius: 4, border: `1px solid ${BORDER}`,
                         background: c.included ? "#1a1a1a" : "transparent", color: TEXT.inverse,
-                        cursor: "pointer", fontSize: 11, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                        cursor: "pointer", fontSize: 11, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, minWidth: 44, minHeight: 44, padding: 0,
                       }}>
                         {c.included && "\u2713"}
                       </button>
                       <span style={{
-                        width: 18, height: 18, borderRadius: "50%", fontSize: "0.6rem",
+                        width: 18, height: 18, borderRadius: "50%", fontSize: TYPE.xs,
                         display: "flex", alignItems: "center", justifyContent: "center",
                         background: icon.bg, color: icon.color, flexShrink: 0,
                       }}>{icon.symbol}</span>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", fontWeight: 600 }}>{c.code}</div>
-                        <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: TEXT.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, fontWeight: 600 }}>{c.code}</div>
+                        <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           {c.title}
                         </div>
                       </div>
-                      <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: TEXT.muted, flexShrink: 0 }}>
+                      <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, flexShrink: 0 }}>
                         {c.credits}cr
                       </span>
                     </div>
@@ -2433,7 +2433,7 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
               if (termCourses.length === 0) return null;
               return (
                 <div key={term.name} style={{ marginBottom: 16 }}>
-                  <div style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 600, marginBottom: 8 }}>
+                  <div style={{ fontFamily: FONT.mono, fontSize: TYPE.base, fontWeight: 600, marginBottom: 8 }}>
                     {term.name}
                   </div>
                   {termCourses.map((c, i) => {
@@ -2452,38 +2452,38 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
                         }} style={{
                           width: 22, height: 22, borderRadius: 4, border: `1px solid ${BORDER}`,
                           background: c.included ? "#1a1a1a" : "transparent", color: TEXT.inverse,
-                          cursor: "pointer", fontSize: 11, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                          cursor: "pointer", fontSize: 11, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, minWidth: 44, minHeight: 44, padding: 0,
                         }}>
                           {c.included && "\u2713"}
                         </button>
                         <span style={{
-                          width: 18, height: 18, borderRadius: "50%", fontSize: "0.6rem",
+                          width: 18, height: 18, borderRadius: "50%", fontSize: TYPE.xs,
                           display: "flex", alignItems: "center", justifyContent: "center",
                           background: icon.bg, color: icon.color, flexShrink: 0,
                         }}>{icon.symbol}</span>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", fontWeight: 600 }}>
+                          <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, fontWeight: 600 }}>
                             {c.matchedCode || c.code}
                             {c.grade && <span style={{ fontWeight: 400, color: TEXT.muted, marginLeft: 6 }}>{c.grade}</span>}
                           </div>
-                          <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: TEXT.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                             {c.matchedTitle || c.title}
                           </div>
                           {c.matchType !== "exact" && c.matchedCode && c.matchedCode !== c.code && (
-                            <div style={{ fontFamily: FONT.mono, fontSize: "0.55rem", color: TEXT.warning }}>
+                            <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.warning }}>
                               transcript: {c.code} &rarr; matched: {c.matchedCode}
                             </div>
                           )}
                           {c.inferred && (
-                            <div style={{ fontFamily: FONT.mono, fontSize: "0.55rem", color: TEXT.warning }}>
+                            <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.warning }}>
                               please verify — credits not in PDF
                             </div>
                           )}
                         </div>
                         <div style={{ textAlign: "right", flexShrink: 0 }}>
-                          <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: TEXT.muted }}>{c.credits != null ? `${c.credits}cr` : "—"}</span>
+                          <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted }}>{c.credits != null ? `${c.credits}cr` : "—"}</span>
                           <div style={{
-                            fontFamily: FONT.mono, fontSize: "0.55rem",
+                            fontFamily: FONT.mono, fontSize: TYPE.xs,
                             color: STATUS_COLOR[c.status] || "#888",
                           }}>{c.status}</div>
                         </div>
@@ -2503,7 +2503,7 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
               style={{
                 display: "block", width: "100%", marginTop: 12, padding: 8,
                 background: "transparent", border: "none", cursor: "pointer",
-                fontFamily: FONT.mono, fontSize: "0.7rem", color: TEXT.disabled, textAlign: "center",
+                fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.disabled, textAlign: "center",
               }}>
               &larr; upload a different file
             </button>
@@ -2513,10 +2513,10 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
         {/* ── Step 4: Are these done? ─────────────────────────────────── */}
         {step === 4 && (
           <div>
-            <h2 style={{ fontFamily: FONT.serif, fontSize: "1.3rem", fontWeight: 700, marginBottom: 4 }}>
+            <h2 style={{ fontFamily: FONT.serif, fontSize: TYPE.xxl, fontWeight: 700, marginBottom: 4 }}>
               quick check on past courses
             </h2>
-            <p style={{ fontFamily: FONT.mono, fontSize: "0.75rem", color: TEXT.muted, marginBottom: 20 }}>
+            <p style={{ fontFamily: FONT.mono, fontSize: TYPE.base, color: TEXT.muted, marginBottom: 20 }}>
               these courses are from past terms but still marked "enrolled" — did you complete them?
             </p>
 
@@ -2528,10 +2528,10 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
                   borderTop: i ? `1px solid ${BORDER}` : "none",
                 }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 600 }}>
+                    <div style={{ fontFamily: FONT.mono, fontSize: TYPE.base, fontWeight: 600 }}>
                       {c.matchedCode || c.code}
                     </div>
-                    <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: TEXT.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {c.matchedTitle || c.title} · {c.semester}
                     </div>
                   </div>
@@ -2541,7 +2541,7 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
                         <button key={st} onClick={() => setCourseUpdates(prev => ({ ...prev, [c.dbCode]: st }))}
                           style={{
                             padding: "4px 8px", borderRadius: 4, cursor: "pointer",
-                            fontFamily: FONT.mono, fontSize: "0.6rem",
+                            fontFamily: FONT.mono, fontSize: TYPE.xs,
                             border: `1px solid ${chosen === st ? col : BORDER}`,
                             background: chosen === st ? col + "18" : "transparent",
                             color: chosen === st ? col : "#888",
@@ -2568,7 +2568,7 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
                   style={{
                     display: "block", width: "100%", marginTop: 12, padding: 8,
                     background: "transparent", border: "none", cursor: "pointer",
-                    fontFamily: FONT.mono, fontSize: "0.7rem", color: TEXT.disabled, textAlign: "center",
+                    fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.disabled, textAlign: "center",
                   }}>
                   let me adjust
                 </button>
@@ -2589,10 +2589,10 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
         {/* ── Step 5: What are you taking now? ────────────────────────── */}
         {step === 5 && (
           <div>
-            <h2 style={{ fontFamily: FONT.serif, fontSize: "1.3rem", fontWeight: 700, marginBottom: 4 }}>
+            <h2 style={{ fontFamily: FONT.serif, fontSize: TYPE.xxl, fontWeight: 700, marginBottom: 4 }}>
               what are you taking this semester?
             </h2>
-            <p style={{ fontFamily: FONT.mono, fontSize: "0.75rem", color: TEXT.muted, marginBottom: 20 }}>
+            <p style={{ fontFamily: FONT.mono, fontSize: TYPE.base, color: TEXT.muted, marginBottom: 20 }}>
               it's {getCurrentAcademicTerm()} — add your current courses
             </p>
 
@@ -2624,7 +2624,7 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
                   }} style={{
                     display: "block", width: "100%", textAlign: "left", padding: "10px 12px",
                     border: "none", borderBottom: `1px solid ${BORDER}`, background: "transparent",
-                    cursor: "pointer", fontFamily: FONT.mono, fontSize: "0.75rem",
+                    cursor: "pointer", fontFamily: FONT.mono, fontSize: TYPE.base,
                   }}>
                     <strong>{c.code}</strong> — {c.title}
                     <span style={{ color: TEXT.muted, marginLeft: 8 }}>{c.credits || 3}cr</span>
@@ -2640,13 +2640,13 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
                     style={{
                       display: "inline-flex", alignItems: "center", gap: 4,
                       padding: "6px 10px", borderRadius: 6, cursor: "pointer",
-                      fontFamily: FONT.mono, fontSize: "0.7rem",
+                      fontFamily: FONT.mono, fontSize: TYPE.sm,
                       background: BTN.primary, color: TEXT.inverse, border: "none",
                     }}>
                     {c.code} · {c.credits || 3}cr ×
                   </button>
                 ))}
-                <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: TEXT.muted, width: "100%", marginTop: 4 }}>
+                <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.muted, width: "100%", marginTop: 4 }}>
                   {currentTermSelected.reduce((s, c) => s + (c.credits || 3), 0)} credits selected
                 </div>
               </div>
@@ -2670,7 +2670,7 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
               style={{
                 display: "block", width: "100%", marginTop: 12, padding: 8,
                 background: "transparent", border: "none", cursor: "pointer",
-                fontFamily: FONT.mono, fontSize: "0.7rem", color: TEXT.disabled, textAlign: "center",
+                fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.disabled, textAlign: "center",
               }}>
               skip for now
             </button>
@@ -2680,10 +2680,10 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
         {/* ── Step 6: Transfer Credits ────────────────────────────────── */}
         {step === 6 && (
           <div>
-            <h2 style={{ fontFamily: FONT.serif, fontSize: "1.3rem", fontWeight: 700, marginBottom: 4 }}>
+            <h2 style={{ fontFamily: FONT.serif, fontSize: TYPE.xxl, fontWeight: 700, marginBottom: 4 }}>
               let's map your transfer credits
             </h2>
-            <p style={{ fontFamily: FONT.mono, fontSize: "0.75rem", color: TEXT.muted, marginBottom: 20 }}>
+            <p style={{ fontFamily: FONT.mono, fontSize: TYPE.base, color: TEXT.muted, marginBottom: 20 }}>
               your transcript shows {transferTotal} transfer credits
             </p>
 
@@ -2699,19 +2699,19 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
                       next[i] = { ...next[i], label: e.target.value };
                       setTransferRows(next);
                     }}
-                    style={{ flex: 1, fontSize: "0.7rem" }} />
+                    style={{ flex: 1, fontSize: TYPE.sm }} />
                   <Input placeholder="cr" aria-label="Credit hours" value={row.credits} type="number"
                     onChange={e => {
                       const next = [...transferRows];
                       next[i] = { ...next[i], credits: parseInt(e.target.value) || 0 };
                       setTransferRows(next);
                     }}
-                    style={{ width: 50, fontSize: "0.7rem" }} />
+                    style={{ width: 50, fontSize: TYPE.sm }} />
                 </div>
                 {/* Core category checkboxes */}
                 {coreCategories.length > 0 && (
                   <div style={{ marginLeft: 2 }}>
-                    <div style={{ fontFamily: FONT.mono, fontSize: "0.55rem", color: TEXT.muted, marginBottom: 4 }}>
+                    <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, marginBottom: 4 }}>
                       satisfies which Core requirement?
                     </div>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2px 8px" }}>
@@ -2721,7 +2721,7 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
                         return (
                           <label key={cat} style={{
                             display: "flex", alignItems: "center", gap: 4, cursor: "pointer",
-                            fontFamily: FONT.mono, fontSize: "0.55rem", color: checked ? "#1a1a1a" : "#888",
+                            fontFamily: FONT.mono, fontSize: TYPE.xs, color: checked ? "#1a1a1a" : "#888",
                             padding: "2px 0",
                           }}>
                             <input type="checkbox" checked={checked} onChange={() => {
@@ -2745,19 +2745,19 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
                     next[i] = { ...next[i], satisfiesCode: e.target.value };
                     setTransferRows(next);
                   }}
-                  style={{ fontSize: "0.6rem", marginTop: 6, color: TEXT.muted }} />
+                  style={{ fontSize: TYPE.xs, marginTop: 6, color: TEXT.muted }} />
               </div>
             ))}
 
             <button onClick={() => setTransferRows(prev => [...prev, { code: "", label: "", credits: 3, satisfiesCode: "", satisfies: [] }])}
               style={{
-                fontFamily: FONT.mono, fontSize: "0.7rem", color: TEXT.secondary,
+                fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.secondary,
                 padding: "8px 0", background: "transparent", border: "none", cursor: "pointer",
               }}>
               + add another
             </button>
 
-            <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: TEXT.muted, marginBottom: 12 }}>
+            <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.muted, marginBottom: 12 }}>
               accounted for: {transferRows.reduce((s, r) => s + (r.credits || 0), 0)} / {transferTotal} credits
             </div>
 
@@ -2804,7 +2804,7 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
               style={{
                 display: "block", width: "100%", marginTop: 12, padding: 8,
                 background: "transparent", border: "none", cursor: "pointer",
-                fontFamily: FONT.mono, fontSize: "0.7rem", color: TEXT.disabled, textAlign: "center",
+                fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.disabled, textAlign: "center",
               }}>
               skip for now
             </button>
@@ -2830,13 +2830,13 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
               <h2 style={{ fontFamily: FONT.serif, fontSize: "1.5rem", fontWeight: 700, marginBottom: 4, textAlign: "center" }}>
                 you're all set
               </h2>
-              <p style={{ fontFamily: FONT.mono, fontSize: "0.75rem", color: TEXT.muted, marginBottom: 24, textAlign: "center" }}>
+              <p style={{ fontFamily: FONT.mono, fontSize: TYPE.base, color: TEXT.muted, marginBottom: 24, textAlign: "center" }}>
                 here's where you stand
               </p>
 
               {/* Credit progress bar */}
               <div style={{ marginBottom: 20 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", fontFamily: FONT.mono, fontSize: "0.7rem", marginBottom: 6 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontFamily: FONT.mono, fontSize: TYPE.sm, marginBottom: 6 }}>
                   <span>credits</span>
                   <span>{totalCredits} / 120</span>
                 </div>
@@ -2852,7 +2852,7 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
                 const pct = total > 0 ? Math.min((filled / total) * 100, 100) : 0;
                 return (
                   <div key={code} style={{ marginBottom: 12 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontFamily: FONT.mono, fontSize: "0.65rem", marginBottom: 4 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontFamily: FONT.mono, fontSize: TYPE.sm, marginBottom: 4 }}>
                       <span style={{ color: programColor(code) }}>{prog.name || code}</span>
                       <span>{filled}/{total} slots</span>
                     </div>
@@ -2864,7 +2864,7 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
               })}
 
               {remainingCount > 0 && (
-                <div style={{ fontFamily: FONT.mono, fontSize: "0.75rem", color: TEXT.muted, textAlign: "center", margin: "16px 0" }}>
+                <div style={{ fontFamily: FONT.mono, fontSize: TYPE.base, color: TEXT.muted, textAlign: "center", margin: "16px 0" }}>
                   {remainingCount} requirement{remainingCount !== 1 ? "s" : ""} remaining
                 </div>
               )}
@@ -2972,7 +2972,7 @@ function Dashboard({ user, setUser, onLogout, setOnboardingActive }) {
   return (
     <div style={{ background: BG, minHeight: "100vh" }}>
       <StickyHeader user={user} onLogout={onLogout} onSettings={() => setShowSettings(true)}
-        nav={<a href="#/planner" style={{ fontFamily: FONT.mono, fontSize: "0.7rem", padding: "0.3rem 0.6rem", background: "#6f42c1", color: TEXT.inverse, borderRadius: 4, textDecoration: "none" }}>plan</a>}
+        nav={<a href="#/planner" style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.3rem 0.6rem", background: "#6f42c1", color: TEXT.inverse, borderRadius: 4, textDecoration: "none" }}>plan</a>}
       />
 
       {/* Content */}
@@ -2995,7 +2995,7 @@ function Dashboard({ user, setUser, onLogout, setOnboardingActive }) {
           const nameA = data.programs[a]?.name || a;
           const nameB = data.programs[b]?.name || b;
           return (
-            <div key={key} style={{ background: "#fde8e8", border: "1px solid #f5c6cb", borderRadius: 8, padding: "0.7rem 1rem", marginBottom: "0.75rem", fontFamily: FONT.mono, fontSize: "0.75rem", color: "#721c24" }}>
+            <div key={key} style={{ background: "#fde8e8", border: "1px solid #f5c6cb", borderRadius: 8, padding: "0.7rem 1rem", marginBottom: "0.75rem", fontFamily: FONT.mono, fontSize: TYPE.base, color: "#721c24" }}>
               Over budget: {pair.count} {nameA}/{nameB} overlaps (max {pair.max}). Pin courses to fix.
             </div>
           );

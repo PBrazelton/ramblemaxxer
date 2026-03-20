@@ -333,8 +333,8 @@ export default function Planner({ user, onLogout }) {
 
   if (!plan && error) return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh", background: BG, gap: "1rem" }}>
-      <span style={{ fontFamily: FONT.mono, color: TEXT.danger, fontSize: "0.85rem" }}>{error}</span>
-      <a href="#/" style={{ fontFamily: FONT.mono, fontSize: "0.75rem", color: TEXT.secondary }}>back to dashboard</a>
+      <span style={{ fontFamily: FONT.mono, color: TEXT.danger, fontSize: TYPE.md }}>{error}</span>
+      <a href="#/" style={{ fontFamily: FONT.mono, fontSize: TYPE.base, color: TEXT.secondary }}>back to dashboard</a>
     </div>
   );
 
@@ -349,29 +349,29 @@ export default function Planner({ user, onLogout }) {
       {/* Error banner */}
       {error && (
         <div style={{ background: "#fde8e8", borderBottom: "1px solid #f5c6cb", padding: "0.5rem 1rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: TEXT.danger }}>{error}</span>
-          <button onClick={() => setError(null)} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: FONT.mono, fontSize: "0.8rem", color: TEXT.danger }}>{"\u00D7"}</button>
+          <span style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.danger }}>{error}</span>
+          <button onClick={() => setError(null)} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: FONT.mono, fontSize: TYPE.base, color: TEXT.danger }}>{"\u00D7"}</button>
         </div>
       )}
       {/* Header */}
       <div style={{ flexShrink: 0, zIndex: 50, background: BG, borderBottom: `1px solid ${BORDER}`, padding: "0.6rem 1rem" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.8rem" }}>
-            <h1 style={{ fontFamily: FONT.serif, fontSize: "1.3rem", fontWeight: 700, margin: 0, letterSpacing: "-0.02em" }}>
+            <h1 style={{ fontFamily: FONT.serif, fontSize: TYPE.xxl, fontWeight: 700, margin: 0, letterSpacing: "-0.02em" }}>
               <a href="#/" style={{ textDecoration: "none", color: "inherit" }}>
                 <span>ramble</span><span style={{ color: TEXT.danger }}>maxxer</span>
               </a>
             </h1>
-            <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", background: "#6f42c1", color: TEXT.inverse, padding: "2px 8px", borderRadius: 3 }}>planner</span>
+            <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, background: "#6f42c1", color: TEXT.inverse, padding: "2px 8px", borderRadius: 3 }}>planner</span>
           </div>
           <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-            <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: saveStatus === "saved" ? "#22863a" : saveStatus === "saving" ? "#b08800" : "#888" }}>
+            <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: saveStatus === "saved" ? "#22863a" : saveStatus === "saving" ? "#b08800" : "#888" }}>
               {saveStatus === "saved" ? "saved" : saveStatus === "saving" ? "saving..." : "unsaved"}
             </span>
-            <button onClick={() => window.location.hash = "/"} style={{ fontFamily: FONT.mono, fontSize: "0.7rem", padding: "0.3rem 0.7rem", background: "transparent", border: `1px solid ${BORDER}`, borderRadius: 4, cursor: "pointer" }}>
+            <button onClick={() => window.location.hash = "/"} style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.3rem 0.7rem", background: "transparent", border: `1px solid ${BORDER}`, borderRadius: 4, cursor: "pointer" }}>
               dashboard
             </button>
-            <button onClick={onLogout} style={{ fontFamily: FONT.mono, fontSize: "0.7rem", padding: "0.3rem 0.7rem", background: BTN.primary, color: TEXT.inverse, border: "none", borderRadius: 4, cursor: "pointer" }}>
+            <button onClick={onLogout} style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.3rem 0.7rem", background: BTN.primary, color: TEXT.inverse, border: "none", borderRadius: 4, cursor: "pointer" }}>
               log out
             </button>
           </div>
@@ -382,7 +382,7 @@ export default function Planner({ user, onLogout }) {
           <div style={{ display: "flex", gap: "0.3rem" }}>
             {["semester", "weekly"].map(v => (
               <button key={v} onClick={() => setView(v)} style={{
-                fontFamily: FONT.mono, fontSize: "0.7rem", padding: "0.25rem 0.6rem",
+                fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.25rem 0.6rem",
                 background: view === v ? "#1a1a1a" : "transparent", color: view === v ? "#fff" : "#666",
                 border: `1px solid ${view === v ? "#1a1a1a" : BORDER}`, borderRadius: 4, cursor: "pointer",
               }}>
@@ -391,7 +391,7 @@ export default function Planner({ user, onLogout }) {
             ))}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-            <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: TEXT.secondary }}>
+            <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.secondary }}>
               {creditStats.current} + {creditStats.planned} = {creditStats.total} / {creditStats.goal} cr
             </div>
             <div style={{ position: "relative", width: 32, height: 32 }}>
@@ -450,11 +450,11 @@ export default function Planner({ user, onLogout }) {
           display: "flex", justifyContent: "space-between", alignItems: "center",
         }}>
           <div>
-            <span style={{ fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 700 }}>{selectedCourse.code}</span>
-            <span style={{ fontFamily: FONT.mono, fontSize: "0.65rem", marginLeft: "0.5rem", opacity: 0.7 }}>tap a semester to place</span>
+            <span style={{ fontFamily: FONT.mono, fontSize: TYPE.base, fontWeight: 700 }}>{selectedCourse.code}</span>
+            <span style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, marginLeft: "0.5rem", opacity: 0.7 }}>tap a semester to place</span>
           </div>
           <button onClick={() => setSelectedCourse(null)} style={{
-            fontFamily: FONT.mono, fontSize: "0.65rem", padding: "0.2rem 0.5rem",
+            fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.2rem 0.5rem",
             background: "rgba(255,255,255,0.2)", color: TEXT.inverse, border: "none", borderRadius: 3, cursor: "pointer",
           }}>cancel</button>
         </div>
@@ -481,7 +481,7 @@ function SemesterPlanView({
         <div style={{ marginBottom: "0.75rem" }}>
           <button onClick={() => setShowBrowser(!showBrowser)} style={{
             width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center",
-            fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 700,
+            fontFamily: FONT.mono, fontSize: TYPE.base, fontWeight: 700,
             padding: "0.5rem 0.7rem", background: SURFACE.card, border: `1px solid ${BORDER}`,
             borderRadius: 8, cursor: "pointer",
           }}>
@@ -523,7 +523,7 @@ function SemesterPlanView({
         <div style={{ marginTop: "0.75rem" }}>
           <button onClick={() => setShowTracker(!showTracker)} style={{
             width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center",
-            fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 700,
+            fontFamily: FONT.mono, fontSize: TYPE.base, fontWeight: 700,
             padding: "0.5rem 0.7rem", background: SURFACE.card, border: `1px solid ${BORDER}`,
             borderRadius: 8, cursor: "pointer",
           }}>
@@ -544,13 +544,13 @@ function SemesterPlanView({
   return (
     <div style={{ display: "flex", gap: "0.75rem", padding: "0.75rem", height: "100%", boxSizing: "border-box" }}>
       {/* Left: Course Browser */}
-      <div style={{ width: 280, flexShrink: 0, display: "flex", flexDirection: "column" }}>
+      <div style={{ width: 280, minWidth: 200, flexShrink: 1, display: "flex", flexDirection: "column" }}>
         <div style={{
           background: SURFACE.card, border: `1px solid ${BORDER}`, borderRadius: 8,
           display: "flex", flexDirection: "column", overflow: "hidden", flex: 1,
         }}>
           <div style={{ padding: "0.6rem 0.7rem", borderBottom: `1px solid ${BORDER}` }}>
-            <div style={{ fontFamily: FONT.serif, fontSize: "0.9rem", fontWeight: 700, marginBottom: "0.4rem" }}>
+            <div style={{ fontFamily: FONT.serif, fontSize: TYPE.md, fontWeight: 700, marginBottom: "0.4rem" }}>
               Course Browser
             </div>
             <CourseBrowserFilters
@@ -585,15 +585,15 @@ function SemesterPlanView({
       </div>
 
       {/* Right: Requirement Tracker */}
-      <div style={{ width: 220, flexShrink: 0, overflow: "auto", minHeight: 0 }}>
+      <div style={{ width: 220, minWidth: 160, flexShrink: 1, overflow: "auto", minHeight: 0 }}>
         <div style={{
           background: SURFACE.card, border: `1px solid ${BORDER}`, borderRadius: 8,
           padding: "0.6rem 0.7rem",
         }}>
-          <div style={{ fontFamily: FONT.serif, fontSize: "0.9rem", fontWeight: 700, marginBottom: "0.4rem" }}>
+          <div style={{ fontFamily: FONT.serif, fontSize: TYPE.md, fontWeight: 700, marginBottom: "0.4rem" }}>
             Requirements
           </div>
-          <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: TEXT.secondary, marginBottom: "0.5rem" }}>
+          <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.secondary, marginBottom: "0.5rem" }}>
             {requirementStatus.filled}/{requirementStatus.total} covered by plan
           </div>
           <RequirementTracker status={requirementStatus} solverData={solverData} />
@@ -607,7 +607,7 @@ function SemesterPlanView({
 
 function CourseBrowserFilters({ searchQuery, setSearchQuery, programFilter, setProgramFilter, termFilter, setTermFilter, programNames, scrapedTerms, isSearchingCatalog }) {
   const selectStyle = {
-    fontFamily: FONT.mono, fontSize: "0.65rem", padding: "0.25rem 0.3rem",
+    fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.25rem 0.3rem",
     border: `1px solid ${BORDER}`, borderRadius: 4, background: "#fafaf8",
     flex: 1, minWidth: 0,
   };
@@ -617,7 +617,7 @@ function CourseBrowserFilters({ searchQuery, setSearchQuery, programFilter, setP
         type="text" placeholder={isSearchingCatalog ? "Searching full catalog..." : "Search courses..."}
         aria-label="Search courses"
         value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-        style={{ fontFamily: FONT.mono, fontSize: "0.7rem", padding: "0.3rem 0.5rem", border: `1px solid ${isSearchingCatalog ? "#6f42c1" : BORDER}`, borderRadius: 4, background: "#fafaf8", width: "100%", boxSizing: "border-box" }}
+        style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.3rem 0.5rem", border: `1px solid ${isSearchingCatalog ? "#6f42c1" : BORDER}`, borderRadius: 4, background: "#fafaf8", width: "100%", boxSizing: "border-box" }}
       />
       {!isSearchingCatalog && (
         <div style={{ display: "flex", gap: "0.3rem" }}>
@@ -639,7 +639,7 @@ function CourseBrowserFilters({ searchQuery, setSearchQuery, programFilter, setP
 
 function CourseBrowserList({ courses, placedCodes, selectedCourse, setSelectedCourse }) {
   if (courses.length === 0) {
-    return <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: TEXT.muted, textAlign: "center", padding: "1rem" }}>No courses match filters</div>;
+    return <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.muted, textAlign: "center", padding: "1rem" }}>No courses match filters</div>;
   }
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
@@ -651,7 +651,7 @@ function CourseBrowserList({ courses, placedCodes, selectedCourse, setSelectedCo
         />
       ))}
       {courses.length > 100 && (
-        <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: TEXT.muted, textAlign: "center", padding: "0.5rem" }}>
+        <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, textAlign: "center", padding: "0.5rem" }}>
           +{courses.length - 100} more — refine your search
         </div>
       )}
@@ -691,18 +691,18 @@ function CourseCard({ course, isPlaced, isSelected, onSelect }) {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
-            <span style={{ fontFamily: FONT.mono, fontSize: "0.65rem", fontWeight: 700 }}>{course.code}</span>
+            <span style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, fontWeight: 700 }}>{course.code}</span>
             {course.boxCount > 0 && (
-              <span style={{ fontFamily: FONT.mono, fontSize: "0.55rem", background: "#f5e6d0", color: "#7a4a1a", padding: "1px 4px", borderRadius: 3 }}>
+              <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, background: "#f5e6d0", color: "#7a4a1a", padding: "1px 4px", borderRadius: 3 }}>
                 {"\u26A1"}{course.boxCount}
               </span>
             )}
           </div>
-          <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#555", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#555", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {course.title}
           </div>
         </div>
-        <span style={{ fontFamily: FONT.mono, fontSize: "0.55rem", color: TEXT.muted, flexShrink: 0 }}>{course.credits || 3}cr</span>
+        <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, flexShrink: 0 }}>{course.credits || 3}cr</span>
       </div>
       {/* Term badges */}
       {course.terms?.length > 0 && (
@@ -733,6 +733,7 @@ function CourseCard({ course, isPlaced, isSelected, onSelect }) {
 
 function SemesterBucket({ term, courses, actualCourses: rawActual = [], selectedCourse, placeCourse, removeCourse, scrapedTerms, onSwitchToWeekly, onConfirmTerm }) {
   const [dragOver, setDragOver] = useState(false);
+  const [confirming, setConfirming] = useState(false);
   // Filter out actual courses that also exist in plan (avoid duplicate keys)
   const actualCourses = rawActual.filter(a => !courses.some(p => p.course_code === a.course_code));
   const actualCredits = actualCourses.reduce((sum, c) => sum + (c.credits || 3), 0);
@@ -764,6 +765,9 @@ function SemesterBucket({ term, courses, actualCourses: rawActual = [], selected
       onDragLeave={() => setDragOver(false)}
       onDrop={handleDrop}
       onClick={selectedCourse ? handleTapPlace : undefined}
+      tabIndex={selectedCourse ? 0 : undefined}
+      aria-label={selectedCourse ? `Place ${selectedCourse.code} in ${term}` : undefined}
+      onKeyDown={selectedCourse ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleTapPlace(); } } : undefined}
       style={{
         background: dragOver ? "#e8f5e9" : "#fff",
         border: `1px ${totalCourseCount === 0 ? "dashed" : "solid"} ${dragOver ? "#22863a" : selectedCourse ? "#6f42c1" : BORDER}`,
@@ -781,9 +785,9 @@ function SemesterBucket({ term, courses, actualCourses: rawActual = [], selected
             background: "none", border: "none", textAlign: "left", width: "100%", padding: 0,
           }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-            <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: TEXT.muted }}>{collapsed ? "\u25B8" : "\u25BE"}</span>
-            <span style={{ fontFamily: FONT.serif, fontSize: "0.85rem", fontWeight: 700 }}>{term}</span>
-            <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: TEXT.muted }}>
+            <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted }}>{collapsed ? "\u25B8" : "\u25BE"}</span>
+            <span style={{ fontFamily: FONT.serif, fontSize: TYPE.md, fontWeight: 700 }}>{term}</span>
+            <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted }}>
               {totalCourseCount} course{totalCourseCount !== 1 ? "s" : ""} {"\u00B7"} {termCredits}cr
               {isPast && actualCourses.length > 0 && " \u00B7 completed"}
             </span>
@@ -796,7 +800,7 @@ function SemesterBucket({ term, courses, actualCourses: rawActual = [], selected
                 : termCredits <= 24 ? { label: "overload — requires approval + extra fees", bg: "#fff3cd", color: "#856404" }
                 : { label: "exceeds LUC max overload", bg: "#fde8e8", color: TEXT.danger };
               return (
-                <span style={{ fontFamily: FONT.mono, fontSize: "0.55rem", background: w.bg, color: w.color, padding: "1px 5px", borderRadius: 3 }}>
+                <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, background: w.bg, color: w.color, padding: "1px 5px", borderRadius: 3 }}>
                   {w.label}
                 </span>
               );
@@ -811,8 +815,8 @@ function SemesterBucket({ term, courses, actualCourses: rawActual = [], selected
           marginBottom: 0, userSelect: "none",
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-            <span style={{ fontFamily: FONT.serif, fontSize: "0.85rem", fontWeight: 700 }}>{term}</span>
-            <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: TEXT.muted }}>
+            <span style={{ fontFamily: FONT.serif, fontSize: TYPE.md, fontWeight: 700 }}>{term}</span>
+            <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted }}>
               {totalCourseCount} course{totalCourseCount !== 1 ? "s" : ""} {"\u00B7"} {termCredits}cr
             </span>
           </div>
@@ -839,12 +843,12 @@ function SemesterBucket({ term, courses, actualCourses: rawActual = [], selected
                   borderRadius: 6, padding: "0.3rem 0.5rem",
                 }}>
                   <div>
-                    <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", fontWeight: 700, color }}>{c.course_code}</div>
+                    <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, fontWeight: 700, color }}>{c.course_code}</div>
                     <div style={{ fontFamily: FONT.mono, fontSize: "0.5rem", color: TEXT.secondary, maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {c.title || ""}
                     </div>
                   </div>
-                  <span style={{ fontFamily: FONT.mono, fontSize: "0.55rem", color: TEXT.muted }}>{c.credits || 3}cr</span>
+                  <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted }}>{c.credits || 3}cr</span>
                   <span style={{ fontFamily: FONT.mono, fontSize: "0.45rem", background: `${statusColor}20`, color: statusColor, padding: "1px 4px", borderRadius: 3 }}>
                     {c.status}
                   </span>
@@ -855,12 +859,12 @@ function SemesterBucket({ term, courses, actualCourses: rawActual = [], selected
         )}
 
         {courses.length === 0 && actualCourses.length === 0 && !selectedCourse && (
-          <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#bbb", textAlign: "center", padding: "0.5rem" }}>
+          <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: "#bbb", textAlign: "center", padding: "0.5rem" }}>
             drag or tap courses here
           </div>
         )}
         {courses.length === 0 && actualCourses.length === 0 && selectedCourse && (
-          <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#6f42c1", textAlign: "center", padding: "0.5rem" }}>
+          <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: "#6f42c1", textAlign: "center", padding: "0.5rem" }}>
             tap to place {selectedCourse.code}
           </div>
         )}
@@ -875,7 +879,7 @@ function SemesterBucket({ term, courses, actualCourses: rawActual = [], selected
         {/* Section picker nudge */}
         {hasData && onSwitchToWeekly && courses.some(c => !c.section) && (
           <button type="button" onClick={(e) => { e.stopPropagation(); onSwitchToWeekly(term); }} style={{
-            fontFamily: FONT.mono, fontSize: "0.55rem", color: "#6f42c1",
+            fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#6f42c1",
             cursor: "pointer", marginTop: "0.3rem",
             background: "none", border: "none", padding: 0, textAlign: "left",
           }}>
@@ -885,12 +889,13 @@ function SemesterBucket({ term, courses, actualCourses: rawActual = [], selected
 
         {/* Confirm enrollment button — shown when this is the current term and has plan courses */}
         {onConfirmTerm && courses.length > 0 && termOrder(term) <= termOrder(getCurrentAcademicTerm()) && (
-          <button onClick={(e) => { e.stopPropagation(); onConfirmTerm(term); }} style={{
-            fontFamily: FONT.mono, fontSize: "0.6rem", padding: "0.4rem 0.8rem", marginTop: "0.4rem",
+          <button disabled={confirming} onClick={async (e) => { e.stopPropagation(); setConfirming(true); try { await onConfirmTerm(term); } finally { setConfirming(false); } }} style={{
+            fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "0.4rem 0.8rem", marginTop: "0.4rem",
             background: "#6f42c1", color: TEXT.inverse, border: "none", borderRadius: 4,
-            cursor: "pointer", width: "100%",
+            cursor: confirming ? "not-allowed" : "pointer", width: "100%",
+            opacity: confirming ? 0.6 : 1,
           }}>
-            confirm enrollment for {term}
+            {confirming ? "confirming..." : `confirm enrollment for ${term}`}
           </button>
         )}
       </>}
@@ -910,12 +915,12 @@ function PlacedCourseChip({ course, onRemove }) {
       borderRadius: 6, padding: "0.3rem 0.5rem",
     }}>
       <div>
-        <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", fontWeight: 700, color }}>{course.course_code}</div>
+        <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, fontWeight: 700, color }}>{course.course_code}</div>
         <div style={{ fontFamily: FONT.mono, fontSize: "0.5rem", color: TEXT.secondary, maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {course.title || ""}
         </div>
       </div>
-      <span style={{ fontFamily: FONT.mono, fontSize: "0.55rem", color: TEXT.muted }}>{course.credits || 3}cr</span>
+      <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted }}>{course.credits || 3}cr</span>
       {course.section && (
         <span style={{ fontFamily: FONT.mono, fontSize: "0.5rem", background: "#eee", padding: "1px 3px", borderRadius: 2 }}>
           {"\u00A7"}{course.section}
@@ -923,7 +928,8 @@ function PlacedCourseChip({ course, onRemove }) {
       )}
       <button onClick={e => { e.stopPropagation(); onRemove(); }} style={{
         background: "none", border: "none", cursor: "pointer", padding: "0 0 0 0.2rem",
-        fontFamily: FONT.mono, fontSize: "0.7rem", color: TEXT.danger, lineHeight: 1,
+        fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.danger, lineHeight: 1,
+        minWidth: 44, minHeight: 44, display: "flex", alignItems: "center", justifyContent: "center",
       }}>{"\u00D7"}</button>
     </div>
   );
@@ -933,7 +939,7 @@ function PlacedCourseChip({ course, onRemove }) {
 
 function RequirementTracker({ status, solverData }) {
   if (!status?.items?.length) return (
-    <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#22863a", textAlign: "center", padding: "0.5rem" }}>
+    <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: "#22863a", textAlign: "center", padding: "0.5rem" }}>
       All requirements satisfied!
     </div>
   );
@@ -950,7 +956,7 @@ function RequirementTracker({ status, solverData }) {
       {Object.entries(grouped).map(([code, group]) => (
         <div key={code}>
           <div style={{
-            fontFamily: FONT.mono, fontSize: "0.6rem", fontWeight: 700,
+            fontFamily: FONT.mono, fontSize: TYPE.xs, fontWeight: 700,
             color: programColor(code), marginBottom: "0.2rem",
           }}>
             {group.name}
@@ -961,7 +967,7 @@ function RequirementTracker({ status, solverData }) {
               <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.3rem", marginBottom: "0.15rem" }}>
                 <span style={{ width: 6, height: 6, borderRadius: "50%", background: covered ? "#22863a" : "#ddd", flexShrink: 0 }} />
                 <span style={{
-                  fontFamily: FONT.mono, fontSize: "0.55rem", color: covered ? "#22863a" : "#888",
+                  fontFamily: FONT.mono, fontSize: TYPE.xs, color: covered ? "#22863a" : "#888",
                   textDecoration: covered ? "line-through" : "none",
                   flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
                 }}>
@@ -985,7 +991,7 @@ function ValidationSection({ warnings, onValidate }) {
   return (
     <div style={{ marginTop: "0.5rem" }}>
       <button onClick={onValidate} style={{
-        fontFamily: FONT.mono, fontSize: "0.7rem", padding: "0.4rem 0.8rem",
+        fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.4rem 0.8rem",
         background: SURFACE.card, border: `1px solid ${BORDER}`, borderRadius: 6, cursor: "pointer",
         width: "100%",
       }}>
@@ -995,7 +1001,7 @@ function ValidationSection({ warnings, onValidate }) {
         <div style={{ marginTop: "0.4rem", display: "flex", flexDirection: "column", gap: "0.3rem" }}>
           {warnings.map((w, i) => (
             <div key={i} style={{
-              fontFamily: FONT.mono, fontSize: "0.65rem", padding: "0.4rem 0.6rem",
+              fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.4rem 0.6rem",
               borderRadius: 6,
               background: w.type === "time_conflict" ? "#fde8e8" : w.type === "overlap" ? "#fff3cd" : "#fff3cd",
               color: w.type === "time_conflict" ? "#c43b2d" : "#856404",
@@ -1101,7 +1107,7 @@ function WeeklyScheduleView({ plan, coursesByTerm, actualByTerm = {}, planTerms,
           const count = (coursesByTerm[t]?.length || 0) + (actualByTerm[t]?.length || 0);
           return (
             <button key={t} onClick={() => setWeeklyTerm(t)} style={{
-              fontFamily: FONT.mono, fontSize: "0.7rem", padding: "0.3rem 0.6rem",
+              fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.3rem 0.6rem",
               background: activeTerm === t ? "#1a1a1a" : "#fff",
               color: activeTerm === t ? "#fff" : "#666",
               border: `1px solid ${activeTerm === t ? "#1a1a1a" : BORDER}`,
@@ -1114,7 +1120,7 @@ function WeeklyScheduleView({ plan, coursesByTerm, actualByTerm = {}, planTerms,
       </div>
 
       {termCourses.length === 0 ? (
-        <div style={{ fontFamily: FONT.mono, fontSize: "0.8rem", color: TEXT.muted, textAlign: "center", padding: "3rem" }}>
+        <div style={{ fontFamily: FONT.mono, fontSize: TYPE.base, color: TEXT.muted, textAlign: "center", padding: "3rem" }}>
           No courses placed in {activeTerm}. Switch to Semester Plan to add courses.
         </div>
       ) : (
@@ -1129,7 +1135,7 @@ function WeeklyScheduleView({ plan, coursesByTerm, actualByTerm = {}, planTerms,
             <div style={{ marginBottom: "1rem" }}>
               {conflicts.map((c, i) => (
                 <div key={i} style={{
-                  fontFamily: FONT.mono, fontSize: "0.65rem", color: TEXT.danger,
+                  fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.danger,
                   background: "#fde8e8", border: "1px solid #f5c6cb", borderRadius: 6,
                   padding: "0.4rem 0.6rem", marginBottom: "0.3rem",
                 }}>
@@ -1142,9 +1148,9 @@ function WeeklyScheduleView({ plan, coursesByTerm, actualByTerm = {}, planTerms,
           {/* TBA courses */}
           {blocks.tba.length > 0 && (
             <div style={{ marginBottom: "1rem" }}>
-              <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", fontWeight: 700, marginBottom: "0.3rem", color: TEXT.muted }}>Off-grid (TBA / no section selected)</div>
+              <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, fontWeight: 700, marginBottom: "0.3rem", color: TEXT.muted }}>Off-grid (TBA / no section selected)</div>
               {blocks.tba.map(c => (
-                <div key={c.course_code} style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: TEXT.secondary, padding: "0.2rem 0" }}>
+                <div key={c.course_code} style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.secondary, padding: "0.2rem 0" }}>
                   {c.course_code} {c.title} {c.section ? `(${"\u00A7"}${c.section} — TBA)` : "(pick section below)"}
                 </div>
               ))}
@@ -1152,7 +1158,7 @@ function WeeklyScheduleView({ plan, coursesByTerm, actualByTerm = {}, planTerms,
           )}
 
           {/* Section pickers (only for planned courses, not actual enrolled/complete) */}
-          <div style={{ fontFamily: FONT.serif, fontSize: "0.9rem", fontWeight: 700, marginBottom: "0.5rem" }}>Pick Sections</div>
+          <div style={{ fontFamily: FONT.serif, fontSize: TYPE.md, fontWeight: 700, marginBottom: "0.5rem" }}>Pick Sections</div>
           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: "0.5rem" }}>
             {planCourses.map(c => (
               <SectionPicker key={c.course_code} course={c} term={activeTerm}
@@ -1197,7 +1203,7 @@ function TimeGrid({ blocks, conflictCodes, gridStart, gridEnd }) {
           {/* Day header */}
           <div style={{
             position: "sticky", top: 0, zIndex: 2,
-            fontFamily: FONT.mono, fontSize: "0.6rem", fontWeight: 700, textAlign: "center",
+            fontFamily: FONT.mono, fontSize: TYPE.xs, fontWeight: 700, textAlign: "center",
             background: BG, borderBottom: `1px solid ${BORDER}`, padding: "0.2rem 0",
           }}>
             {DAY_LABELS[dayIdx]}
@@ -1253,15 +1259,15 @@ function SectionPicker({ course, term, sections, onSelect }) {
       <div style={{
         background: SURFACE.card, border: `1px solid ${BORDER}`, borderRadius: 6, padding: "0.5rem",
       }}>
-        <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", fontWeight: 700 }}>{course.course_code}</div>
-        <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: TEXT.muted }}>No section data available</div>
+        <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, fontWeight: 700 }}>{course.course_code}</div>
+        <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted }}>No section data available</div>
       </div>
     );
   }
 
   return (
     <div style={{ background: SURFACE.card, border: `1px solid ${BORDER}`, borderRadius: 6, padding: "0.5rem" }}>
-      <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", fontWeight: 700, marginBottom: "0.3rem" }}>
+      <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, fontWeight: 700, marginBottom: "0.3rem" }}>
         {course.course_code}
         <span style={{ fontWeight: 400, color: TEXT.muted, marginLeft: "0.3rem" }}>{course.title}</span>
       </div>
@@ -1274,13 +1280,13 @@ function SectionPicker({ course, term, sections, onSelect }) {
               padding: "0.3rem 0.4rem", borderRadius: 4, cursor: "pointer",
               background: isSelected ? "#e8f5e9" : "transparent",
               border: `1px solid ${isSelected ? "#22863a" : "transparent"}`,
-              textAlign: "left", width: "100%",
+              textAlign: "left", width: "100%", minWidth: 44, minHeight: 44,
             }}>
-              <span style={{ width: 14, height: 14, borderRadius: "50%", border: `2px solid ${isSelected ? "#22863a" : "#ddd"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <span style={{ width: 18, height: 18, borderRadius: "50%", border: `2px solid ${isSelected ? "#22863a" : "#ddd"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 {isSelected && <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#22863a" }} />}
               </span>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem" }}>
+                <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs }}>
                   <span style={{ fontWeight: 700 }}>{"\u00A7"}{s.section}</span>
                   <span style={{ color: TEXT.muted, marginLeft: "0.3rem" }}>{s.days || "TBA"} {s.start_time && s.end_time ? `${s.start_time}-${s.end_time}` : ""}</span>
                 </div>
