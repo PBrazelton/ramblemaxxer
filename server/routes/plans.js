@@ -106,6 +106,7 @@ router.get("/me/plans/:id", (req, res) => {
   // Include actual student courses (enrolled/complete) as read-only layer
   const studentCourses = db.prepare(`
     SELECT sc.course_code, sc.semester as term, sc.status,
+           sc.section, sc.class_number,
            c.title, c.credits, c.department
     FROM student_courses sc
     LEFT JOIN courses c ON c.code = sc.course_code
@@ -401,9 +402,9 @@ router.post("/me/plans/:id/confirm-term", (req, res) => {
     return res.status(400).json({ error: "Cannot confirm enrollment for a future term" });
   }
 
-  // Fetch plan courses for this term
+  // Fetch plan courses for this term (include section data)
   const planCourses = db.prepare(
-    "SELECT course_code, term FROM plan_courses WHERE plan_id = ? AND term = ?"
+    "SELECT course_code, term, section, class_number FROM plan_courses WHERE plan_id = ? AND term = ?"
   ).all(plan.id, term);
 
   if (planCourses.length === 0) {
@@ -414,13 +415,13 @@ router.post("/me/plans/:id/confirm-term", (req, res) => {
   const inserted = [];
   db.transaction(() => {
     const insert = db.prepare(
-      "INSERT OR IGNORE INTO student_courses (user_id, course_code, semester, status) VALUES (?, ?, ?, 'enrolled')"
+      "INSERT OR IGNORE INTO student_courses (user_id, course_code, semester, status, section, class_number) VALUES (?, ?, ?, 'enrolled', ?, ?)"
     );
     const del = db.prepare(
       "DELETE FROM plan_courses WHERE plan_id = ? AND course_code = ? AND term = ?"
     );
     for (const pc of planCourses) {
-      insert.run(req.session.userId, pc.course_code, pc.term);
+      insert.run(req.session.userId, pc.course_code, pc.term, pc.section || null, pc.class_number || null);
       del.run(plan.id, pc.course_code, pc.term);
       inserted.push(pc.course_code);
     }
@@ -448,6 +449,7 @@ router.post("/me/plans/:id/confirm-term", (req, res) => {
   `).all(plan.id);
   const studentCourses = db.prepare(`
     SELECT sc.course_code, sc.semester as term, sc.status,
+           sc.section, sc.class_number,
            c.title, c.credits, c.department
     FROM student_courses sc LEFT JOIN courses c ON c.code = sc.course_code
     WHERE sc.user_id = ? AND sc.status IN ('enrolled', 'complete')

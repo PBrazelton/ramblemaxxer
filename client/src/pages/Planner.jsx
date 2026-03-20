@@ -377,25 +377,35 @@ export default function Planner({ user, onLogout }) {
           </div>
         </div>
 
-        {/* View toggle + credit bar */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.5rem" }}>
-          <div style={{ display: "flex", gap: "0.3rem" }}>
-            {["semester", "weekly"].map(v => (
-              <button key={v} onClick={() => setView(v)} style={{
-                fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.25rem 0.6rem",
-                background: view === v ? "#1a1a1a" : "transparent", color: view === v ? "#fff" : "#666",
-                border: `1px solid ${view === v ? "#1a1a1a" : BORDER}`, borderRadius: 4, cursor: "pointer",
+        {/* View toggle + credit display */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.5rem", gap: "0.75rem" }}>
+          <div style={{ display: "flex", borderRadius: 6, overflow: "hidden", border: `1px solid ${BORDER}`, flex: 1, maxWidth: 420 }}>
+            {[
+              { key: "semester", title: "Semester Plan", subtitle: "choose courses per term" },
+              { key: "weekly", title: "Weekly Schedule", subtitle: "pick sections & times" },
+            ].map(v => (
+              <button key={v.key} type="button" onClick={() => setView(v.key)} style={{
+                flex: 1, padding: "0.5rem 0.75rem", textAlign: "center",
+                background: view === v.key ? BTN.primary : "transparent",
+                color: view === v.key ? TEXT.inverse : TEXT.secondary,
+                border: "none", cursor: "pointer",
               }}>
-                {v === "semester" ? "Semester Plan" : "Weekly Schedule"}
+                <div style={{ fontFamily: FONT.serif, fontSize: TYPE.md, fontWeight: 700 }}>{v.title}</div>
+                <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, opacity: 0.7 }}>{v.subtitle}</div>
               </button>
             ))}
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-            <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.secondary }}>
-              {creditStats.current} + {creditStats.planned} = {creditStats.total} / {creditStats.goal} cr
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0 }}>
+            <div style={{ position: "relative", width: 48, height: 48 }}>
+              <ProgressRing value={creditStats.total} max={creditStats.goal} size={48} stroke={4} color={STATUS_COLOR.complete} />
+              <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
+                fontFamily: FONT.mono, fontSize: TYPE.xs, fontWeight: 700 }}>
+                {Math.round(creditStats.total / creditStats.goal * 100)}%
+              </div>
             </div>
-            <div style={{ position: "relative", width: 32, height: 32 }}>
-              <ProgressRing value={creditStats.total} max={creditStats.goal} size={32} stroke={3} color="#22863a" />
+            <div>
+              <div style={{ fontFamily: FONT.mono, fontSize: TYPE.md, fontWeight: 700 }}>{creditStats.total}cr</div>
+              <div style={{ ...mutedText(TYPE.xs) }}>{creditStats.current} earned + {creditStats.planned} planned</div>
             </div>
           </div>
         </div>
@@ -438,6 +448,18 @@ export default function Planner({ user, onLogout }) {
           weeklyTerm={weeklyTerm} setWeeklyTerm={setWeeklyTerm}
           sectionData={sectionData} loadSections={loadSections}
           assignSection={assignSection} isMobile={isMobile}
+          requirementStatus={requirementStatus} solverData={solverData}
+          onEnrolledSectionSelect={(courseCode, term, section, classNumber) => {
+            api.put(`/api/students/me/courses/${encodeURIComponent(courseCode)}?semester=${encodeURIComponent(term)}`, { section, classNumber })
+              .catch(() => setError("Failed to save section selection"));
+            // Optimistic local update
+            setPlan(prev => ({
+              ...prev,
+              studentCourses: (prev.studentCourses || []).map(c =>
+                c.course_code === courseCode && c.term === term ? { ...c, section, class_number: classNumber } : c
+              ),
+            }));
+          }}
         />
       )}
       </div>
@@ -1019,24 +1041,39 @@ function ValidationSection({ warnings, onValidate }) {
 
 // ── Weekly Schedule View ─────────────────────────────────────────────────────
 
-function WeeklyScheduleView({ plan, coursesByTerm, actualByTerm = {}, planTerms, weeklyTerm, setWeeklyTerm, sectionData, loadSections, assignSection, isMobile }) {
+function WeeklyScheduleView({ plan, coursesByTerm, actualByTerm = {}, planTerms, weeklyTerm, setWeeklyTerm, sectionData, loadSections, assignSection, isMobile, requirementStatus, solverData, onEnrolledSectionSelect }) {
+  const [showTracker, setShowTracker] = useState(false);
   // Terms that have courses (plan or actual)
   const termsWithCourses = planTerms.filter(t => (coursesByTerm[t]?.length > 0) || (actualByTerm[t]?.length > 0));
   const activeTerm = weeklyTerm || termsWithCourses[0] || planTerms[0];
+  const isPastTerm = termOrder(activeTerm) < termOrder(getCurrentAcademicTerm());
+
   // Plan courses for this term (editable, get section pickers)
   const planCourses = coursesByTerm[activeTerm] || [];
-  // Actual enrolled/complete courses (read-only, shown on grid but no section pickers)
+  // Actual enrolled/complete courses — shown on grid, get section pickers for current/future terms
   const actualCourses = (actualByTerm[activeTerm] || [])
     .filter(c => !planCourses.some(p => p.course_code === c.course_code))
     .map(c => ({ ...c, course_code: c.course_code, isActual: true }));
   const termCourses = [...planCourses, ...actualCourses];
 
-  // Load sections only for planned courses (actual courses don't need section pickers)
+  // Load sections for ALL term courses (plan + enrolled) in current/future terms
   useEffect(() => {
-    for (const c of planCourses) {
+    if (isPastTerm) return;
+    for (const c of termCourses) {
       loadSections(c.course_code, activeTerm);
     }
-  }, [planCourses, activeTerm, loadSections]);
+  }, [termCourses.map(c => c.course_code).join(","), activeTerm, isPastTerm, loadSections]);
+
+  // Section save handler — branches on plan vs enrolled
+  const onSectionSelect = useCallback((courseCode, section, classNumber) => {
+    const isPlanCourse = planCourses.some(c => c.course_code === courseCode);
+    if (isPlanCourse) {
+      assignSection(courseCode, section, classNumber);
+    } else {
+      // Enrolled course — persist via parent callback (handles API + optimistic update)
+      onEnrolledSectionSelect(courseCode, activeTerm, section, classNumber);
+    }
+  }, [planCourses, assignSection, activeTerm, onEnrolledSectionSelect]);
 
   // Gather scheduled blocks for the grid
   const blocks = useMemo(() => {
@@ -1096,38 +1133,57 @@ function WeeklyScheduleView({ plan, coursesByTerm, actualByTerm = {}, planTerms,
   // Time range
   const minTime = blocks.scheduled.length > 0 ? Math.min(...blocks.scheduled.map(b => b.startMin)) : 480;
   const maxTime = blocks.scheduled.length > 0 ? Math.max(...blocks.scheduled.map(b => b.endMin)) : 1080;
-  const gridStart = Math.floor(Math.max(minTime - 30, 420) / 30) * 30; // round down to 30min, min 7am
-  const gridEnd = Math.ceil(Math.min(maxTime + 30, 1260) / 30) * 30; // round up, max 9pm
+  const gridStart = Math.floor(Math.max(minTime - 30, 420) / 30) * 30;
+  const gridEnd = Math.ceil(Math.min(maxTime + 30, 1260) / 30) * 30;
 
-  return (
-    <div style={{ padding: "0.75rem" }}>
-      {/* Term selector */}
-      <div style={{ display: "flex", gap: "0.3rem", marginBottom: "0.75rem", flexWrap: "wrap" }}>
-        {planTerms.map(t => {
-          const count = (coursesByTerm[t]?.length || 0) + (actualByTerm[t]?.length || 0);
-          return (
-            <button key={t} onClick={() => setWeeklyTerm(t)} style={{
-              fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.3rem 0.6rem",
-              background: activeTerm === t ? "#1a1a1a" : "#fff",
-              color: activeTerm === t ? "#fff" : "#666",
-              border: `1px solid ${activeTerm === t ? "#1a1a1a" : BORDER}`,
-              borderRadius: 4, cursor: "pointer",
-            }}>
-              {termLabel(t)} ({count})
-            </button>
-          );
-        })}
+  // Term credits
+  const termCredits = termCourses.reduce((sum, c) => sum + (c.credits || 3), 0);
+  const needsSections = termCourses.filter(c => !c.section).length;
+
+  // Term header context line
+  const termContext = isPastTerm
+    ? `${termCredits}cr \u00B7 completed`
+    : conflicts.length > 0
+      ? `${termCredits}cr \u00B7 \u26A0 ${conflicts.length} time conflict${conflicts.length !== 1 ? "s" : ""}`
+      : needsSections > 0
+        ? `${termCredits}cr \u00B7 ${needsSections} course${needsSections !== 1 ? "s" : ""} need sections`
+        : `${termCredits}cr \u00B7 no conflicts \u2713`;
+
+  // Grid + tracker content
+  const gridContent = (
+    <div style={{ flex: 1, minWidth: 0, overflow: "auto" }}>
+      {/* Term header */}
+      <div style={{ display: "flex", alignItems: "baseline", gap: "0.5rem", marginBottom: "0.5rem" }}>
+        <span style={{ fontFamily: FONT.serif, fontSize: TYPE.lg, fontWeight: 700 }}>{activeTerm}</span>
+        <span style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.muted }}>{termContext}</span>
       </div>
 
-      {termCourses.length === 0 ? (
+      {isPastTerm ? (
+        /* Past semester: read-only course list */
+        <div style={{ ...cardStyle, padding: "1rem" }}>
+          {termCourses.map(c => (
+            <div key={c.course_code} style={{ display: "flex", justifyContent: "space-between", padding: "0.25rem 0", borderTop: `1px solid ${BORDER}` }}>
+              <span style={{ fontFamily: FONT.mono, fontSize: TYPE.sm }}>
+                <strong>{c.course_code}</strong> {c.title}
+              </span>
+              <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted }}>{c.credits || 3}cr</span>
+            </div>
+          ))}
+          {termCourses.length === 0 && (
+            <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.muted, textAlign: "center" }}>No courses in this term</div>
+          )}
+        </div>
+      ) : termCourses.length === 0 ? (
         <div style={{ fontFamily: FONT.mono, fontSize: TYPE.base, color: TEXT.muted, textAlign: "center", padding: "3rem" }}>
           No courses placed in {activeTerm}. Switch to Semester Plan to add courses.
         </div>
       ) : (
         <>
-          {/* Time grid */}
-          <div style={{ overflowX: isMobile ? "auto" : "visible", marginBottom: "1rem" }}>
-            <TimeGrid blocks={blocks.scheduled} conflictCodes={conflictCodes} gridStart={gridStart} gridEnd={gridEnd} />
+          {/* Time grid in card */}
+          <div style={{ ...cardStyle, padding: "0.75rem", overflow: "hidden", marginBottom: "1rem" }}>
+            <div style={{ overflowX: isMobile ? "auto" : "visible" }}>
+              <TimeGrid blocks={blocks.scheduled} conflictCodes={conflictCodes} gridStart={gridStart} gridEnd={gridEnd} />
+            </div>
           </div>
 
           {/* Conflict warnings */}
@@ -1157,17 +1213,77 @@ function WeeklyScheduleView({ plan, coursesByTerm, actualByTerm = {}, planTerms,
             </div>
           )}
 
-          {/* Section pickers (only for planned courses, not actual enrolled/complete) */}
+          {/* Section pickers for ALL term courses (plan + enrolled) */}
           <div style={{ fontFamily: FONT.serif, fontSize: TYPE.md, fontWeight: 700, marginBottom: "0.5rem" }}>Pick Sections</div>
           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: "0.5rem" }}>
-            {planCourses.map(c => (
+            {termCourses.map(c => (
               <SectionPicker key={c.course_code} course={c} term={activeTerm}
                 sections={sectionData[`${c.course_code}|${activeTerm}`] || []}
-                onSelect={(section, classNumber) => assignSection(c.course_code, section, classNumber)}
+                onSelect={(section, classNumber) => onSectionSelect(c.course_code, section, classNumber)}
+                autoSelect={!c.isActual}
               />
             ))}
           </div>
         </>
+      )}
+    </div>
+  );
+
+  return (
+    <div style={{ padding: "0.75rem", height: "100%", boxSizing: "border-box", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+      {/* Term selector */}
+      <div style={{ display: "flex", gap: "0.3rem", marginBottom: "0.75rem", flexWrap: "wrap", flexShrink: 0 }}>
+        {planTerms.map(t => {
+          const count = (coursesByTerm[t]?.length || 0) + (actualByTerm[t]?.length || 0);
+          return (
+            <button key={t} type="button" onClick={() => setWeeklyTerm(t)} style={{
+              fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.3rem 0.6rem",
+              background: activeTerm === t ? "#1a1a1a" : "#fff",
+              color: activeTerm === t ? "#fff" : "#666",
+              border: `1px solid ${activeTerm === t ? "#1a1a1a" : BORDER}`,
+              borderRadius: 4, cursor: "pointer",
+            }}>
+              {termLabel(t)} ({count})
+            </button>
+          );
+        })}
+      </div>
+
+      {isMobile ? (
+        /* Mobile: grid + collapsible tracker */
+        <div style={{ flex: 1, overflow: "auto" }}>
+          {gridContent}
+          <div style={{ marginTop: "0.75rem" }}>
+            <button type="button" onClick={() => setShowTracker(!showTracker)} style={{
+              width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center",
+              fontFamily: FONT.mono, fontSize: TYPE.base, fontWeight: 700,
+              padding: "0.5rem 0.7rem", background: SURFACE.card, border: `1px solid ${BORDER}`,
+              borderRadius: 8, cursor: "pointer",
+            }}>
+              <span>Requirements ({requirementStatus?.filled || 0}/{requirementStatus?.total || 0} covered)</span>
+              <span>{showTracker ? "\u25B2" : "\u25BC"}</span>
+            </button>
+            {showTracker && (
+              <div style={{ background: SURFACE.card, border: `1px solid ${BORDER}`, borderTop: "none", borderRadius: "0 0 8px 8px", padding: "0.5rem" }}>
+                <RequirementTracker status={requirementStatus} solverData={solverData} />
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        /* Desktop: grid + right sidebar tracker */
+        <div style={{ display: "flex", gap: "0.75rem", flex: 1, minHeight: 0, overflow: "hidden" }}>
+          {gridContent}
+          <div style={{ width: 220, minWidth: 160, flexShrink: 1, overflow: "auto" }}>
+            <div style={{ background: SURFACE.card, border: `1px solid ${BORDER}`, borderRadius: 8, padding: "0.6rem 0.7rem" }}>
+              <div style={{ fontFamily: FONT.serif, fontSize: TYPE.md, fontWeight: 700, marginBottom: "0.4rem" }}>Requirements</div>
+              <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.secondary, marginBottom: "0.5rem" }}>
+                {requirementStatus?.filled || 0}/{requirementStatus?.total || 0} covered by plan
+              </div>
+              <RequirementTracker status={requirementStatus} solverData={solverData} />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -1177,7 +1293,7 @@ function WeeklyScheduleView({ plan, coursesByTerm, actualByTerm = {}, planTerms,
 
 function TimeGrid({ blocks, conflictCodes, gridStart, gridEnd }) {
   const ROW_HEIGHT = 2; // px per minute
-  const COL_WIDTH = 120;
+  const COL_WIDTH = 100;
   const LABEL_WIDTH = 50;
   const totalHeight = (gridEnd - gridStart) * ROW_HEIGHT;
   const rows = [];
@@ -1204,10 +1320,19 @@ function TimeGrid({ blocks, conflictCodes, gridStart, gridEnd }) {
           <div style={{
             position: "sticky", top: 0, zIndex: 2,
             fontFamily: FONT.mono, fontSize: TYPE.xs, fontWeight: 700, textAlign: "center",
-            background: BG, borderBottom: `1px solid ${BORDER}`, padding: "0.2rem 0",
+            background: "#f5f0eb", borderBottom: `1px solid ${BORDER}`, padding: "0.3rem 0",
           }}>
             {DAY_LABELS[dayIdx]}
           </div>
+
+          {/* Alternating hour bands */}
+          {rows.map((t, i) => (
+            <div key={`bg-${t}`} style={{
+              position: "absolute", top: (t - gridStart) * ROW_HEIGHT,
+              width: "100%", height: 60 * ROW_HEIGHT,
+              background: i % 2 === 0 ? "transparent" : "#f8f5f0",
+            }} />
+          ))}
 
           {/* Hour lines */}
           {rows.map(t => (
@@ -1223,15 +1348,16 @@ function TimeGrid({ blocks, conflictCodes, gridStart, gridEnd }) {
               <div key={i} style={{
                 position: "absolute", top, height: Math.max(height, 20),
                 left: 2, right: 2, borderRadius: 4,
-                background: isConflict ? `repeating-linear-gradient(45deg, ${b.color}20, ${b.color}20 4px, #fde8e820 4px, #fde8e820 8px)` : `${b.color}20`,
-                border: `1px solid ${isConflict ? "#c43b2d" : b.color}40`,
-                padding: "2px 4px", overflow: "hidden", zIndex: 1,
+                background: isConflict ? `repeating-linear-gradient(45deg, ${b.color}35, ${b.color}35 4px, #fde8e830 4px, #fde8e830 8px)` : `${b.color}35`,
+                border: `1.5px solid ${isConflict ? "#c43b2d" : b.color}60`,
+                boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+                padding: "3px 5px", overflow: "hidden", zIndex: 1,
               }}>
-                <div style={{ fontFamily: FONT.mono, fontSize: "0.5rem", fontWeight: 700, color: b.color, lineHeight: 1.2 }}>
+                <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, fontWeight: 700, color: b.color, lineHeight: 1.2 }}>
                   {b.courseCode}
                 </div>
                 {height > 30 && (
-                  <div style={{ fontFamily: FONT.mono, fontSize: "0.4rem", color: TEXT.secondary, lineHeight: 1.2 }}>
+                  <div style={{ fontFamily: FONT.mono, fontSize: "0.45rem", color: TEXT.secondary, lineHeight: 1.2 }}>
                     {b.instructor?.split(",")[0] || ""}
                   </div>
                 )}
@@ -1246,13 +1372,13 @@ function TimeGrid({ blocks, conflictCodes, gridStart, gridEnd }) {
 
 // ── Section Picker ───────────────────────────────────────────────────────────
 
-function SectionPicker({ course, term, sections, onSelect }) {
-  // Auto-select if only 1 section
+function SectionPicker({ course, term, sections, onSelect, autoSelect = true }) {
+  // Auto-select if only 1 section (only for planned courses, not enrolled)
   useEffect(() => {
-    if (sections.length === 1 && !course.section) {
+    if (autoSelect && sections.length === 1 && !course.section) {
       onSelect(sections[0].section, sections[0].class_number);
     }
-  }, [sections]);
+  }, [sections, autoSelect, course.section, onSelect]);
 
   if (sections.length === 0) {
     return (

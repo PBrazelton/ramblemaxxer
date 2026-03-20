@@ -75,6 +75,16 @@ try {
   }
 } catch (e) { /* table may not exist yet — schema.sql will create it correctly */ }
 
+// Migration: add section + class_number to student_courses (for enrolled section tracking)
+try {
+  db.prepare("ALTER TABLE student_courses ADD COLUMN section TEXT").run();
+  console.log("  Migrated: added section column to student_courses");
+} catch (e) { /* already exists */ }
+try {
+  db.prepare("ALTER TABLE student_courses ADD COLUMN class_number TEXT").run();
+  console.log("  Migrated: added class_number column to student_courses");
+} catch (e) { /* already exists */ }
+
 // Migration: add active column to users
 try {
   db.prepare("ALTER TABLE users ADD COLUMN active INTEGER NOT NULL DEFAULT 1").run();

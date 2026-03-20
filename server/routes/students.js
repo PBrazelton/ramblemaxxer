@@ -34,7 +34,7 @@ function termOrder(semester) {
 // ── GET /api/students/me/courses ──────────────────────────────────────────
 router.get("/me/courses", (req, res) => {
   const rows = db.prepare(`
-    SELECT course_code as code, semester, status, credits_override, note
+    SELECT course_code as code, semester, status, credits_override, note, section, class_number
     FROM student_courses WHERE user_id = ?
   `).all(req.session.userId);
   rows.sort((a, b) => termOrder(a.semester) - termOrder(b.semester) || a.code.localeCompare(b.code));
@@ -65,7 +65,7 @@ router.post("/me/courses", (req, res) => {
 // ── PUT /api/students/me/courses/:code ────────────────────────────────────
 // Optional ?semester= query param to target a specific instance of a repeatable course
 router.put("/me/courses/:code", (req, res) => {
-  const { semester, status, creditsOverride, note, pinnedProgram, satisfiesJson } = req.body;
+  const { semester, status, creditsOverride, note, pinnedProgram, satisfiesJson, section, classNumber } = req.body;
   const code = req.params.code.toUpperCase().replace("-", " ");
   const targetSemester = req.query.semester; // optional: disambiguate repeatable courses
 
@@ -77,7 +77,7 @@ router.put("/me/courses/:code", (req, res) => {
     : [req.session.userId, code];
 
   const current = db.prepare(
-    `SELECT pinned_program, satisfies_json FROM student_courses WHERE ${whereClause}`
+    `SELECT pinned_program, satisfies_json, section, class_number FROM student_courses WHERE ${whereClause}`
   ).get(...whereParams);
 
   db.prepare(`
@@ -87,12 +87,16 @@ router.put("/me/courses/:code", (req, res) => {
         credits_override = COALESCE(?, credits_override),
         note = COALESCE(?, note),
         pinned_program = ?,
-        satisfies_json = ?
+        satisfies_json = ?,
+        section = ?,
+        class_number = ?
     WHERE ${whereClause}
   `).run(
     semester ?? null, status ?? null, creditsOverride ?? null, note ?? null,
     pinnedProgram !== undefined ? pinnedProgram : (current?.pinned_program ?? null),
     satisfiesJson !== undefined ? satisfiesJson : (current?.satisfies_json ?? null),
+    section !== undefined ? section : (current?.section ?? null),
+    classNumber !== undefined ? classNumber : (current?.class_number ?? null),
     ...whereParams
   );
 
