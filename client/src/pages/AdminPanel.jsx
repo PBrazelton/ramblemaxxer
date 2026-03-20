@@ -1142,6 +1142,8 @@ const sectionStyle = {
 function ToolsTab() {
   const [scrapeStatus, setScrapeStatus] = useState(null);
   const [polling, setPolling] = useState(false);
+  const [catalogStatus, setCatalogStatus] = useState(null);
+  const [catalogPolling, setCatalogPolling] = useState(false);
 
   const loadStatus = useCallback(async () => {
     const data = await api.get("/api/admin/scrape-locus/status");
@@ -1150,6 +1152,28 @@ function ToolsTab() {
   }, []);
 
   useEffect(() => { loadStatus(); }, [loadStatus]);
+
+  // Catalog refresh
+  const loadCatalogStatus = useCallback(async () => {
+    const data = await api.get("/api/admin/scrape-catalog/status");
+    setCatalogStatus(data);
+    return data;
+  }, []);
+  useEffect(() => { loadCatalogStatus(); }, [loadCatalogStatus]);
+  useEffect(() => {
+    if (!catalogPolling) return;
+    const id = setInterval(async () => {
+      const data = await loadCatalogStatus();
+      if (data.status !== "running") setCatalogPolling(false);
+    }, 3000);
+    return () => clearInterval(id);
+  }, [catalogPolling, loadCatalogStatus]);
+  const startCatalogRefresh = async () => {
+    await api.post("/api/admin/scrape-catalog");
+    setCatalogPolling(true);
+    loadCatalogStatus();
+  };
+  const catalogRunning = catalogStatus?.status === "running";
 
   // Poll while running
   useEffect(() => {
@@ -1171,6 +1195,64 @@ function ToolsTab() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+      {/* Catalog Refresh */}
+      <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 8, padding: "1rem" }}>
+        <div style={{ fontFamily: FONT.serif, fontSize: "1rem", fontWeight: 600, marginBottom: "0.5rem" }}>
+          Course Catalog
+        </div>
+        <p style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#666", marginBottom: "0.75rem", lineHeight: 1.5 }}>
+          Re-scrapes the full LUC course catalog from catalog.luc.edu and reloads into the database.
+          Takes about 1 minute. Run once per academic year when the new catalog is published.
+        </p>
+
+        {catalogStatus?.stats && (
+          <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#888", marginBottom: "0.75rem" }}>
+            {catalogStatus.stats.courses} courses across {catalogStatus.stats.departments} departments
+            {catalogStatus.finishedAt && (
+              <span style={{ marginLeft: 8 }}>
+                Last run: {new Date(catalogStatus.finishedAt).toLocaleDateString()}
+              </span>
+            )}
+          </div>
+        )}
+
+        <button onClick={startCatalogRefresh} disabled={catalogRunning} style={{
+          fontFamily: FONT.mono, fontSize: "0.75rem", padding: "0.5rem 1rem",
+          background: catalogRunning ? "#ccc" : "#7a4a1a", color: "#fff",
+          border: "none", borderRadius: 4, cursor: catalogRunning ? "not-allowed" : "pointer",
+        }}>
+          {catalogRunning ? `${catalogStatus?.phase || "Running"}...` : "Refresh Course Catalog"}
+        </button>
+
+        {catalogRunning && (
+          <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#888", marginTop: "0.5rem" }}>
+            {catalogStatus?.phase === "scraping" ? "Scraping catalog.luc.edu..." : "Seeding courses into database..."} This page will update automatically.
+          </div>
+        )}
+
+        {catalogStatus?.status === "error" && (
+          <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#c43b2d", marginTop: "0.5rem" }}>
+            Error: {catalogStatus.error}
+          </div>
+        )}
+
+        {catalogStatus?.log && catalogStatus.status !== "idle" && (
+          <details style={{ marginTop: "0.75rem" }}>
+            <summary style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#888", cursor: "pointer" }}>
+              Refresh log
+            </summary>
+            <pre style={{
+              fontFamily: FONT.mono, fontSize: "0.55rem", background: "#1a1a1a", color: "#ccc",
+              padding: "0.5rem", borderRadius: 4, marginTop: "0.3rem", maxHeight: 300,
+              overflow: "auto", whiteSpace: "pre-wrap", wordBreak: "break-all",
+            }}>
+              {catalogStatus.log}
+            </pre>
+          </details>
+        )}
+      </div>
+
+      {/* LOCUS Offerings */}
       <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 8, padding: "1rem" }}>
         <div style={{ fontFamily: FONT.serif, fontSize: "1rem", fontWeight: 600, marginBottom: "0.5rem" }}>
           LOCUS Course Offerings

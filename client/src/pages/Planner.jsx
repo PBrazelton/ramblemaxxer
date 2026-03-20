@@ -420,6 +420,17 @@ export default function Planner({ user, onLogout }) {
           showTracker={showTracker} setShowTracker={setShowTracker}
           warnings={warnings} runValidation={runValidation}
           onSwitchToWeekly={(t) => { setView("weekly"); setWeeklyTerm(t); }}
+          onConfirmTerm={async (t) => {
+            if (!plan) return;
+            try {
+              const res = await api.post(`/api/students/me/plans/${plan.id}/confirm-term`, { term: t });
+              if (res.plan) setPlan(res.plan);
+              if (res.solver) setSolverData(res.solver);
+              loadPlannableCourses(plan.id);
+            } catch (e) {
+              setError("Failed to confirm enrollment");
+            }
+          }}
         />
       ) : (
         <WeeklyScheduleView
@@ -461,7 +472,7 @@ function SemesterPlanView({
   termFilter, setTermFilter, isSearchingCatalog, programNames, scrapedTerms,
   requirementStatus, solverData, creditStats, isMobile,
   showBrowser, setShowBrowser, showTracker, setShowTracker,
-  warnings, runValidation, onSwitchToWeekly,
+  warnings, runValidation, onSwitchToWeekly, onConfirmTerm,
 }) {
   if (isMobile) {
     return (
@@ -501,6 +512,7 @@ function SemesterPlanView({
             selectedCourse={selectedCourse} placeCourse={placeCourse}
             removeCourse={removeCourse} scrapedTerms={scrapedTerms}
             onSwitchToWeekly={onSwitchToWeekly}
+            onConfirmTerm={onConfirmTerm}
           />
         ))}
 
@@ -566,6 +578,7 @@ function SemesterPlanView({
             selectedCourse={selectedCourse} placeCourse={placeCourse}
             removeCourse={removeCourse} scrapedTerms={scrapedTerms}
             onSwitchToWeekly={onSwitchToWeekly}
+            onConfirmTerm={onConfirmTerm}
           />
         ))}
         <ValidationSection warnings={warnings} onValidate={runValidation} />
@@ -713,7 +726,7 @@ function CourseCard({ course, isPlaced, isSelected, onSelect }) {
 
 // ── Semester Bucket ──────────────────────────────────────────────────────────
 
-function SemesterBucket({ term, courses, actualCourses: rawActual = [], selectedCourse, placeCourse, removeCourse, scrapedTerms, onSwitchToWeekly }) {
+function SemesterBucket({ term, courses, actualCourses: rawActual = [], selectedCourse, placeCourse, removeCourse, scrapedTerms, onSwitchToWeekly, onConfirmTerm }) {
   const [dragOver, setDragOver] = useState(false);
   // Filter out actual courses that also exist in plan (avoid duplicate keys)
   const actualCourses = rawActual.filter(a => !courses.some(p => p.course_code === a.course_code));
@@ -846,6 +859,17 @@ function SemesterBucket({ term, courses, actualCourses: rawActual = [], selected
           }}>
             switch to weekly view to pick sections {"\u2192"}
           </div>
+        )}
+
+        {/* Confirm enrollment button — shown when this is the current term and has plan courses */}
+        {onConfirmTerm && courses.length > 0 && termOrder(term) <= termOrder(getCurrentAcademicTerm()) && (
+          <button onClick={(e) => { e.stopPropagation(); onConfirmTerm(term); }} style={{
+            fontFamily: FONT.mono, fontSize: "0.6rem", padding: "0.4rem 0.8rem", marginTop: "0.4rem",
+            background: "#6f42c1", color: "#fff", border: "none", borderRadius: 4,
+            cursor: "pointer", width: "100%",
+          }}>
+            confirm enrollment for {term}
+          </button>
         )}
       </>}
     </div>

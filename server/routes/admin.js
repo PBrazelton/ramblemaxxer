@@ -21,6 +21,7 @@ const { sendInviteEmail } = require("../lib/email");
 
 // In-memory scrape job status (survives across requests, not across restarts)
 let scrapeJob = { status: "idle", log: "", startedAt: null, finishedAt: null, error: null };
+let catalogJob = { status: "idle", phase: "", log: "", startedAt: null, finishedAt: null, error: null };
 
 const router = express.Router();
 
@@ -209,6 +210,79 @@ router.get("/scrape-locus/status", (req, res) => {
     } catch (e) { /* tables may not exist */ }
   }
   res.json({ ...scrapeJob, stats });
+});
+
+// ── POST /api/admin/scrape-catalog ───────────────────────────────────────────
+router.post("/scrape-catalog", (req, res) => {
+  if (catalogJob.status === "running") {
+    return res.status(409).json({ error: "Catalog refresh already in progress", ...catalogJob });
+  }
+
+  catalogJob = { status: "running", phase: "scraping", log: "", startedAt: new Date().toISOString(), finishedAt: null, error: null };
+
+  const scrapeScript = path.join(__dirname, "../scripts/scrape-catalog.js");
+  const seedScript = path.join(__dirname, "../scripts/seed-courses.js");
+  const cwd = path.join(__dirname, "..");
+
+  // Phase 1: scrape catalog
+  const scraper = spawn(process.execPath, [scrapeScript], { cwd, env: { ...process.env } });
+  scraper.stdout.on("data", (data) => { catalogJob.log += data.toString(); });
+  scraper.stderr.on("data", (data) => { catalogJob.log += data.toString(); });
+
+  scraper.on("close", (code) => {
+    if (code !== 0) {
+      catalogJob.status = "error";
+      catalogJob.error = `Scrape failed with code ${code}`;
+      catalogJob.finishedAt = new Date().toISOString();
+      return;
+    }
+
+    // Phase 2: seed courses into DB
+    catalogJob.phase = "seeding";
+    catalogJob.log += "\n--- Seeding courses into database ---\n";
+    const seeder = spawn(process.execPath, [seedScript], { cwd, env: { ...process.env } });
+    seeder.stdout.on("data", (data) => { catalogJob.log += data.toString(); });
+    seeder.stderr.on("data", (data) => { catalogJob.log += data.toString(); });
+
+    seeder.on("close", (seedCode) => {
+      catalogJob.finishedAt = new Date().toISOString();
+      if (seedCode === 0) {
+        catalogJob.status = "done";
+        catalogJob.phase = "complete";
+      } else {
+        catalogJob.status = "error";
+        catalogJob.error = `Seed failed with code ${seedCode}`;
+      }
+    });
+
+    seeder.on("error", (err) => {
+      catalogJob.status = "error";
+      catalogJob.error = err.message;
+      catalogJob.finishedAt = new Date().toISOString();
+    });
+  });
+
+  scraper.on("error", (err) => {
+    catalogJob.status = "error";
+    catalogJob.error = err.message;
+    catalogJob.finishedAt = new Date().toISOString();
+  });
+
+  res.json({ ok: true, message: "Catalog refresh started" });
+});
+
+// ── GET /api/admin/scrape-catalog/status ─────────────────────────────────────
+router.get("/scrape-catalog/status", (req, res) => {
+  let stats = null;
+  if (catalogJob.status === "done" || catalogJob.status === "idle") {
+    try {
+      stats = {
+        courses: db.prepare("SELECT COUNT(*) as c FROM courses").get().c,
+        departments: db.prepare("SELECT COUNT(DISTINCT department) as c FROM courses").get().c,
+      };
+    } catch (e) { /* table may not exist */ }
+  }
+  res.json({ ...catalogJob, stats });
 });
 
 module.exports = router;
