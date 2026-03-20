@@ -1,6 +1,6 @@
 # Backlog
 
-Current sprint: **Audit Fixes** — accessibility, theming, and responsive polish before beta.
+Current sprint: **Beta ready** — audit complete, only blocked/P3 items remain.
 
 ## How this works
 
@@ -12,34 +12,12 @@ Current sprint: **Audit Fixes** — accessibility, theming, and responsive polis
 
 ---
 
-## Audit — Critical (A11y blockers)
-
-- [ ] #41 — Replace ~30 clickable divs/spans with semantic buttons
-- [ ] #42 — Add labels to all form inputs
-- [ ] #43 — Add visible focus indicators for keyboard navigation
-
-## Audit — High (A11y + theming + responsive)
-
-- [ ] #44 — Extract 150+ hard-coded colors into design tokens
-- [ ] #45 — Fix touch targets under 44px minimum
-- [ ] #46 — Fix color contrast ratios below WCAG AA 4.5:1
-- [ ] #47 — Fix Planner fixed-width panels for tablet viewports
-
-## Audit — Medium (Polish)
-
-- [ ] #48 — Add modal focus traps to BottomSheet and dialogs
-- [ ] #49 — Add keyboard alternative for drag-and-drop course placement
-- [ ] #50 — Extract font size scale to design tokens
-- [ ] #51 — Add loading/disabled states to async action buttons
-
-## Audit — Low (Nice-to-have)
+## P3 — Nice-to-have
 
 - [ ] #52 — Remove gradient badge and tone down feedback pulse animation
 - [ ] #53 — Add React.memo to frequently-rendered list components
 
----
-
-## Remaining — Blocked or Deferred
+## Blocked or Deferred
 
 - [ ] #7 — Model cohort programs (blocked — waiting on Penelope's 20 testers)
 - [ ] #11 — RateMyProfessor integration in section picker (P3, blocked)
@@ -49,10 +27,29 @@ Current sprint: **Audit Fixes** — accessibility, theming, and responsive polis
 
 ---
 
+## Completed — Audit Sprint (all done)
+
+<details>
+<summary>11 issues closed</summary>
+
+- [x] #41 — Replace ~30 clickable divs/spans with semantic buttons
+- [x] #42 — Add labels to all form inputs
+- [x] #43 — Add visible focus indicators for keyboard navigation
+- [x] #44 — Extract 150+ hard-coded colors into design tokens
+- [x] #45 — Fix touch targets under 44px minimum
+- [x] #46 — Fix color contrast ratios below WCAG AA 4.5:1
+- [x] #47 — Fix Planner fixed-width panels for tablet viewports
+- [x] #48 — Add modal focus traps to BottomSheet and dialogs
+- [x] #49 — Add keyboard alternative for drag-and-drop course placement
+- [x] #50 — Extract font size scale to design tokens
+- [x] #51 — Add loading/disabled states to async action buttons
+
+</details>
+
 ## Completed — Peeps Scenario (all done)
 
 <details>
-<summary>P0 + P1 + P2 — 25 issues closed</summary>
+<summary>25 issues closed</summary>
 
 - [x] #18 — HIST 104 parsed as 15,003 credits
 - [x] #19 — Stale planned courses survive transcript re-import
