@@ -750,6 +750,7 @@ function SemesterBucket({ term, courses, actualCourses: rawActual = [], selected
         background: dragOver ? "#e8f5e9" : "#fff",
         border: `1px ${totalCourseCount === 0 ? "dashed" : "solid"} ${dragOver ? "#22863a" : selectedCourse ? "#6f42c1" : BORDER}`,
         borderRadius: 8, padding: "0.6rem 0.7rem", marginBottom: "0.5rem",
+        flex: "1 0 auto", minHeight: totalCourseCount === 0 ? 80 : undefined,
         cursor: selectedCourse ? "pointer" : "default",
         transition: "background 0.15s, border-color 0.15s",
       }}

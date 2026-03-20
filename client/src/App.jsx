@@ -1172,7 +1172,7 @@ function CASCard({ casGrad, spanLang }) {
     <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 8, marginBottom: "0.75rem", overflow: "hidden" }}>
       <div onClick={() => setOpen(!open)} style={{ display: "flex", alignItems: "center", gap: "0.8rem", padding: "0.8rem 1rem", cursor: "pointer", borderLeft: `4px solid ${COLORS["CAS-GRAD"]}` }}>
         <div style={{ flex: 1 }}>
-          <div style={{ fontFamily: FONT.serif, fontSize: "1rem", fontWeight: 600, color: COLORS["CAS-GRAD"] }}>Graduation Requirements</div>
+          <div style={{ fontFamily: FONT.serif, fontSize: "1rem", fontWeight: 600, color: COLORS["CAS-GRAD"] }}>Graduation Requirements (Arts & Sciences)</div>
           <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#888" }}>{filled}/{allCats.length} satisfied</div>
         </div>
         <span style={{ fontFamily: FONT.mono, fontSize: "0.8rem", color: "#aaa", transform: open ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>▼</span>
@@ -2311,11 +2311,14 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
               background: "#fff", border: `1px solid ${BORDER}`, marginBottom: 16,
               fontFamily: FONT.mono, fontSize: "0.7rem",
             }}>
-              <span style={{ color: "#22863a" }}>{parseResult.summary.exact} matched</span>
-              <span style={{ color: "#b08800" }}>{parseResult.summary.fuzzy} fuzzy</span>
-              <span style={{ color: "#c43b2d" }}>{parseResult.summary.unmatched} unmatched</span>
-              {parseResult.summary.inferred > 0 && (
-                <span style={{ color: "#b08800" }}>{parseResult.summary.inferred} inferred</span>
+              <span style={{ color: "#22863a" }}>
+                found {parseResult.summary.exact + (parseResult.summary.fuzzy || 0)} of {parseResult.summary.exact + (parseResult.summary.fuzzy || 0) + parseResult.summary.unmatched} in catalog
+              </span>
+              {parseResult.summary.fuzzy > 0 && (
+                <span style={{ color: "#b08800" }}>{parseResult.summary.fuzzy} close match{parseResult.summary.fuzzy !== 1 ? "es" : ""}</span>
+              )}
+              {parseResult.summary.unmatched > 0 && (
+                <span style={{ color: "#c43b2d" }}>{parseResult.summary.unmatched} not found</span>
               )}
             </div>
 
