@@ -198,6 +198,20 @@ router.get("/me/plannable-courses", (req, res) => {
     excludeCodes,
   });
 
+  // Also compute fills for placed plan courses (needed for requirement tracker on refresh)
+  const placedFills = {};
+  if (excludeCodes.size > 0) {
+    const placedSuggestions = getSuggestions(solverResult, courseMap, programMap, declaredPrograms, {
+      minFills: 1,
+      excludeCodes: new Set(), // don't exclude anything
+    });
+    for (const s of placedSuggestions) {
+      if (excludeCodes.has(s.code)) {
+        placedFills[s.code] = s.fills;
+      }
+    }
+  }
+
   // Augment with term availability (batched to avoid SQLite variable limits)
   const codes = suggestions.map(s => s.code);
   if (codes.length > 0) {
@@ -248,6 +262,7 @@ router.get("/me/plannable-courses", (req, res) => {
     programs: solverResult.programs,
     overlaps: solverResult.overlaps,
     credits: solverResult.credits,
+    placedFills,
     futureTerms,
     scrapedTerms,
   });

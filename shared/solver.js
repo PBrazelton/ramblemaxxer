@@ -4,14 +4,14 @@
  */
 
 const CORE_KA_MAP = {
-  "Artistic Knowledge and Inquiry":                  ["Artistic Knowledge"],
+  "Artistic Knowledge and Inquiry":                  ["Artistic Knowledge","Artistic Knowledge and Experience"],
   "College Writing Seminar":                         ["College Writing Seminar"],
-  "Ethical Knowledge and Inquiry":                   ["Ethical Knowledge"],
+  "Ethical Knowledge and Inquiry":                   ["Ethical Knowledge","Ethics"],
   "Quantitative Knowledge and Inquiry":              ["Quantitative Knowledge"],
   "Historical Knowledge and Inquiry":                ["Foundational Historical Knowledge","Tier 2 Historical Knowledge"],
   "Literary Knowledge and Inquiry":                  ["Foundational Literary Knowledge","Tier 2 Literary Knowledge"],
   "Philosophical Knowledge and Inquiry":             ["Foundational Philosophical Knowledge","Tier 2 Philosophical Knowledge"],
-  "Scientific Knowledge and Inquiry":                ["Scientific Knowledge"],
+  "Scientific Knowledge and Inquiry":                ["Scientific Knowledge","Foundational Scientific Knowledge","Tier 2 Scientific Knowledge"],
   "Societal and Cultural Knowledge and Inquiry":     ["Foundational Societal Knowledge","Tier 2 Societal Knowledge"],
   "Theological and Religious Knowledge and Inquiry": ["Foundational Theological Knowledge","Tier 2 Theological Knowledge"],
 };

@@ -80,6 +80,7 @@ export default function Planner({ user, onLogout }) {
   const [warnings, setWarnings] = useState([]);
   const [showBrowser, setShowBrowser] = useState(true);
   const [showTracker, setShowTracker] = useState(false);
+  const [requirementFilter, setRequirementFilter] = useState(null); // { program, programName, category } or null
   const [weeklyTerm, setWeeklyTerm] = useState(null);
   const [sectionData, setSectionData] = useState({}); // { courseCode: [sections] }
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -122,6 +123,12 @@ export default function Planner({ user, onLogout }) {
       setFutureTerms(data.futureTerms || []);
       setScrapedTerms(data.scrapedTerms || []);
       if (!weeklyTerm && data.futureTerms?.length > 0) setWeeklyTerm(data.futureTerms[0]);
+      // Seed allBrowseRef with placed course fills so requirement tracker works on refresh
+      if (data.placedFills) {
+        for (const [code, fills] of Object.entries(data.placedFills)) {
+          allBrowseRef.current.set(code, { code, fills });
+        }
+      }
     } catch (e) {
       setError("Failed to load course suggestions.");
     }
@@ -306,7 +313,6 @@ export default function Planner({ user, onLogout }) {
   const isSearchingCatalog = catalogResults !== null;
   const filteredCourses = useMemo(() => {
     if (isSearchingCatalog) {
-      // Full catalog mode — normalize shape, skip program/term filters
       return catalogResults.map(c => ({
         ...c, fills: [], terms: [], boxCount: 0, isFullCatalog: true,
       })).filter(c => !placedCodes.has(c.code));
@@ -316,6 +322,10 @@ export default function Planner({ user, onLogout }) {
       const q = searchQuery.toLowerCase();
       list = list.filter(c => c.code.toLowerCase().includes(q) || c.title?.toLowerCase().includes(q));
     }
+    if (requirementFilter) {
+      const fillKey = `${requirementFilter.programName}: ${requirementFilter.category}`;
+      list = list.filter(c => c.fills?.some(f => f === fillKey));
+    }
     if (programFilter) {
       list = list.filter(c => c.fills?.some(f => f.includes(programFilter)));
     }
@@ -323,7 +333,7 @@ export default function Planner({ user, onLogout }) {
       list = list.filter(c => c.terms?.includes(termFilter));
     }
     return list;
-  }, [browseCourses, catalogResults, isSearchingCatalog, searchQuery, programFilter, termFilter, placedCodes]);
+  }, [browseCourses, catalogResults, isSearchingCatalog, searchQuery, programFilter, termFilter, requirementFilter, placedCodes]);
 
   // Program names for filter
   const programNames = useMemo(() => {
@@ -428,6 +438,7 @@ export default function Planner({ user, onLogout }) {
           creditStats={creditStats} isMobile={isMobile}
           showBrowser={showBrowser} setShowBrowser={setShowBrowser}
           showTracker={showTracker} setShowTracker={setShowTracker}
+          requirementFilter={requirementFilter} setRequirementFilter={setRequirementFilter}
           warnings={warnings} runValidation={runValidation}
           onSwitchToWeekly={(t) => { setView("weekly"); setWeeklyTerm(t); }}
           onConfirmTerm={async (t) => {
@@ -493,6 +504,7 @@ function SemesterPlanView({
   termFilter, setTermFilter, isSearchingCatalog, programNames, scrapedTerms,
   requirementStatus, solverData, creditStats, isMobile,
   showBrowser, setShowBrowser, showTracker, setShowTracker,
+  requirementFilter, setRequirementFilter,
   warnings, runValidation, onSwitchToWeekly, onConfirmTerm,
 }) {
   if (isMobile) {
@@ -517,10 +529,13 @@ function SemesterPlanView({
                 termFilter={termFilter} setTermFilter={setTermFilter}
                 programNames={programNames} scrapedTerms={scrapedTerms}
                 isSearchingCatalog={isSearchingCatalog}
+                requirementFilter={requirementFilter} setRequirementFilter={setRequirementFilter}
               />
               <CourseBrowserList
                 courses={filteredCourses} placedCodes={placedCodes}
                 selectedCourse={selectedCourse} setSelectedCourse={setSelectedCourse}
+                requirementFilter={requirementFilter} onClearRequirement={() => setRequirementFilter(null)}
+                onSearchCatalog={() => { setRequirementFilter(null); setSearchQuery(requirementFilter?.category?.split(" ")[0] || ""); }}
               />
             </div>
           )}
@@ -553,7 +568,7 @@ function SemesterPlanView({
           </button>
           {showTracker && (
             <div style={{ background: SURFACE.card, border: `1px solid ${BORDER}`, borderTop: "none", borderRadius: "0 0 8px 8px", padding: "0.5rem" }}>
-              <RequirementTracker status={requirementStatus} solverData={solverData} />
+              <RequirementTracker status={requirementStatus} solverData={solverData} activeFilter={requirementFilter} onRequirementClick={setRequirementFilter} />
             </div>
           )}
         </div>
@@ -617,7 +632,7 @@ function SemesterPlanView({
           <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.secondary, marginBottom: "0.5rem" }}>
             {requirementStatus.filled}/{requirementStatus.total} covered by plan
           </div>
-          <RequirementTracker status={requirementStatus} solverData={solverData} />
+          <RequirementTracker status={requirementStatus} solverData={solverData} activeFilter={requirementFilter} onRequirementClick={setRequirementFilter} />
         </div>
       </div>
     </div>
@@ -626,7 +641,7 @@ function SemesterPlanView({
 
 // ── Course Browser Filters ───────────────────────────────────────────────────
 
-function CourseBrowserFilters({ searchQuery, setSearchQuery, programFilter, setProgramFilter, termFilter, setTermFilter, programNames, scrapedTerms, isSearchingCatalog }) {
+function CourseBrowserFilters({ searchQuery, setSearchQuery, programFilter, setProgramFilter, termFilter, setTermFilter, programNames, scrapedTerms, isSearchingCatalog, requirementFilter, setRequirementFilter }) {
   const selectStyle = {
     fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.25rem 0.3rem",
     border: `1px solid ${BORDER}`, borderRadius: 4, background: "#fafaf8",
@@ -634,6 +649,24 @@ function CourseBrowserFilters({ searchQuery, setSearchQuery, programFilter, setP
   };
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+      {/* Requirement filter pill */}
+      {requirementFilter && (
+        <div style={{
+          display: "flex", alignItems: "center", gap: "0.3rem",
+          padding: "0.25rem 0.4rem", borderRadius: 4,
+          background: `${programColor(requirementFilter.program)}15`,
+          border: `1px solid ${programColor(requirementFilter.program)}40`,
+        }}>
+          <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: programColor(requirementFilter.program), flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {requirementFilter.category}
+          </span>
+          <button type="button" onClick={() => setRequirementFilter(null)} style={{
+            background: "none", border: "none", cursor: "pointer", padding: 0,
+            fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.muted, lineHeight: 1,
+            minWidth: 20, minHeight: 20, display: "flex", alignItems: "center", justifyContent: "center",
+          }}>{"\u00D7"}</button>
+        </div>
+      )}
       <input
         type="text" placeholder={isSearchingCatalog ? "Searching full catalog..." : "Search courses..."}
         aria-label="Search courses"
@@ -658,8 +691,20 @@ function CourseBrowserFilters({ searchQuery, setSearchQuery, programFilter, setP
 
 // ── Course Browser List ──────────────────────────────────────────────────────
 
-function CourseBrowserList({ courses, placedCodes, selectedCourse, setSelectedCourse }) {
+function CourseBrowserList({ courses, placedCodes, selectedCourse, setSelectedCourse, requirementFilter, onClearRequirement, onSearchCatalog }) {
   if (courses.length === 0) {
+    if (requirementFilter) {
+      return (
+        <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.muted, textAlign: "center", padding: "1rem" }}>
+          <div>No courses found for <strong>{requirementFilter.category}</strong></div>
+          <div style={{ fontSize: TYPE.xs, marginTop: "0.3rem" }}>in terms with section data</div>
+          <button type="button" onClick={onSearchCatalog} style={{
+            fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#6f42c1", cursor: "pointer",
+            background: "none", border: "none", padding: "0.3rem 0", textDecoration: "underline",
+          }}>search full catalog</button>
+        </div>
+      );
+    }
     return <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.muted, textAlign: "center", padding: "1rem" }}>No courses match filters</div>;
   }
   return (
@@ -958,7 +1003,9 @@ function PlacedCourseChip({ course, onRemove }) {
 
 // ── Requirement Tracker ──────────────────────────────────────────────────────
 
-function RequirementTracker({ status, solverData }) {
+function RequirementTracker({ status, solverData, activeFilter, onRequirementClick }) {
+  const [hovered, setHovered] = useState(null);
+
   if (!status?.items?.length) return (
     <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: "#22863a", textAlign: "center", padding: "0.5rem" }}>
       All requirements satisfied!
@@ -972,6 +1019,12 @@ function RequirementTracker({ status, solverData }) {
     grouped[item.program].items.push(item);
   }
 
+  const handleClick = (item) => {
+    if (!onRequirementClick) return;
+    const isActive = activeFilter?.program === item.program && activeFilter?.category === item.category;
+    onRequirementClick(isActive ? null : { program: item.program, programName: item.programName, category: item.category });
+  };
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
       {Object.entries(grouped).map(([code, group]) => (
@@ -984,8 +1037,23 @@ function RequirementTracker({ status, solverData }) {
           </div>
           {group.items.map((item, i) => {
             const covered = item.fillingCount >= item.needed;
+            const itemKey = `${item.program}|${item.category}`;
+            const isActive = activeFilter?.program === item.program && activeFilter?.category === item.category;
+            const isHovered = hovered === itemKey;
+            const pColor = programColor(item.program);
             return (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.3rem", marginBottom: "0.15rem" }}>
+              <button type="button" key={i}
+                onClick={() => handleClick(item)}
+                onMouseEnter={() => setHovered(itemKey)}
+                onMouseLeave={() => setHovered(null)}
+                style={{
+                  display: "flex", alignItems: "center", gap: "0.3rem", marginBottom: "0.15rem",
+                  width: "100%", padding: "0.15rem 0.25rem", borderRadius: 4, cursor: "pointer",
+                  background: isActive ? `${pColor}15` : isHovered ? `${pColor}08` : "transparent",
+                  border: "none", textAlign: "left",
+                  borderLeft: isActive ? `3px solid ${pColor}` : "3px solid transparent",
+                  transition: "background 0.1s",
+                }}>
                 <span style={{ width: 6, height: 6, borderRadius: "50%", background: covered ? "#22863a" : "#ddd", flexShrink: 0 }} />
                 <span style={{
                   fontFamily: FONT.mono, fontSize: TYPE.xs, color: covered ? "#22863a" : "#888",
@@ -994,10 +1062,14 @@ function RequirementTracker({ status, solverData }) {
                 }}>
                   {item.category}
                 </span>
-                <span style={{ fontFamily: FONT.mono, fontSize: "0.5rem", color: TEXT.disabled }}>
-                  {Math.min(item.fillingCount, item.needed)}/{item.needed}
-                </span>
-              </div>
+                {isActive ? (
+                  <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, flexShrink: 0 }}>{"\u00D7"}</span>
+                ) : (
+                  <span style={{ fontFamily: FONT.mono, fontSize: "0.5rem", color: TEXT.disabled, flexShrink: 0 }}>
+                    {Math.min(item.fillingCount, item.needed)}/{item.needed}
+                  </span>
+                )}
+              </button>
             );
           })}
         </div>
