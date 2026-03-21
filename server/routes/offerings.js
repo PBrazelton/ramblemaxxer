@@ -56,16 +56,20 @@ router.get("/:code/:term", (req, res) => {
   const term = req.params.term;
   let rows;
   try {
+    // Join RMP data: try exact instructor match, then first name in comma-separated list
     rows = db.prepare(`
       SELECT co.*,
-             pr.overall_rating AS rmp_rating,
-             pr.num_ratings AS rmp_num_ratings,
-             pr.difficulty AS rmp_difficulty,
-             pr.would_take_again AS rmp_would_take_again,
-             pr.rmp_url
+             COALESCE(pr.overall_rating, pr2.overall_rating) AS rmp_rating,
+             COALESCE(pr.num_ratings, pr2.num_ratings) AS rmp_num_ratings,
+             COALESCE(pr.difficulty, pr2.difficulty) AS rmp_difficulty,
+             COALESCE(pr.would_take_again, pr2.would_take_again) AS rmp_would_take_again,
+             COALESCE(pr.rmp_url, pr2.rmp_url) AS rmp_url
       FROM course_offerings co
       LEFT JOIN instructor_rmp_matches irm ON irm.instructor_name = co.instructor
       LEFT JOIN professor_ratings pr ON pr.rmp_id = irm.rmp_id
+      LEFT JOIN instructor_rmp_matches irm2 ON co.instructor LIKE '%,%'
+        AND irm2.instructor_name = TRIM(SUBSTR(co.instructor, 1, INSTR(co.instructor, ',') - 1))
+      LEFT JOIN professor_ratings pr2 ON pr2.rmp_id = irm2.rmp_id
       WHERE co.course_code = ? AND co.term = ?
       ORDER BY co.section
     `).all(code, term);
