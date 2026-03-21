@@ -285,4 +285,49 @@ router.get("/scrape-catalog/status", (req, res) => {
   res.json({ ...catalogJob, stats });
 });
 
+// ── RateMyProfessor scrape ─────────────────────────────────────────────────
+
+let rmpJob = { status: "idle", log: "", startedAt: null, finishedAt: null, error: null };
+
+// POST /api/admin/rmp-scrape
+router.post("/rmp-scrape", (req, res) => {
+  if (rmpJob.status === "running") {
+    return res.status(409).json({ error: "RMP scrape already in progress", ...rmpJob });
+  }
+  rmpJob = { status: "running", log: "", startedAt: new Date().toISOString(), finishedAt: null, error: null };
+
+  const script = path.join(__dirname, "../scripts/scrape-rmp.js");
+  const cwd = path.join(__dirname, "..");
+  const child = spawn(process.execPath, [script], { cwd, env: { ...process.env } });
+
+  child.stdout.on("data", (data) => { rmpJob.log += data.toString(); });
+  child.stderr.on("data", (data) => { rmpJob.log += data.toString(); });
+  child.on("close", (code) => {
+    rmpJob.finishedAt = new Date().toISOString();
+    rmpJob.status = code === 0 ? "done" : "error";
+    if (code !== 0) rmpJob.error = `Process exited with code ${code}`;
+  });
+  child.on("error", (err) => {
+    rmpJob.status = "error";
+    rmpJob.error = err.message;
+    rmpJob.finishedAt = new Date().toISOString();
+  });
+
+  res.json({ ok: true, message: "RMP scrape started" });
+});
+
+// GET /api/admin/rmp-scrape/status
+router.get("/rmp-scrape/status", (req, res) => {
+  let stats = null;
+  try {
+    stats = {
+      professors: db.prepare("SELECT COUNT(*) as c FROM professor_ratings").get().c,
+      matched: db.prepare("SELECT COUNT(*) as c FROM instructor_rmp_matches WHERE rmp_id IS NOT NULL").get().c,
+      unmatched: db.prepare("SELECT COUNT(*) as c FROM instructor_rmp_matches WHERE rmp_id IS NULL").get().c,
+      avgRating: db.prepare("SELECT ROUND(AVG(overall_rating), 2) as avg FROM professor_ratings WHERE num_ratings >= 3").get().avg,
+    };
+  } catch (e) { /* tables may not exist */ }
+  res.json({ ...rmpJob, stats });
+});
+
 module.exports = router;

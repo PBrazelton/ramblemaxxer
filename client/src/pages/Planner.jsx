@@ -61,6 +61,43 @@ function formatTime(minutes) {
 const DAY_COLS = ["M", "T", "W", "Th", "F"];
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 
+// ── RMP Rating Badge ─────────────────────────────────────────────────────────
+
+function RmpBadge({ rating, numRatings, difficulty, wouldTakeAgain, url, expanded }) {
+  if (!rating || !numRatings || numRatings < 1) return null;
+  const color = rating >= 4.0 ? "#22863a" : rating >= 3.0 ? "#8a6d00" : "#c43b2d";
+  const bg = rating >= 4.0 ? "#e8f5e9" : rating >= 3.0 ? "#fff8e1" : "#fde8e8";
+
+  const badge = (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: "0.15rem" }}>
+      <span style={{
+        fontFamily: FONT.mono, fontSize: "0.5rem", fontWeight: 700,
+        color, background: bg, padding: "1px 4px", borderRadius: 3, whiteSpace: "nowrap",
+      }}>
+        {"\u2605"}{rating.toFixed(1)}
+      </span>
+      <span style={{ fontFamily: FONT.mono, fontSize: "0.45rem", color: TEXT.muted }}>({numRatings})</span>
+    </span>
+  );
+
+  const expandedDetail = expanded && (difficulty != null || wouldTakeAgain != null) ? (
+    <span style={{ fontFamily: FONT.mono, fontSize: "0.45rem", color: TEXT.muted, display: "block" }}>
+      {difficulty != null && <span>Difficulty: {difficulty.toFixed(1)}</span>}
+      {difficulty != null && wouldTakeAgain != null && " · "}
+      {wouldTakeAgain != null && <span>{Math.round(wouldTakeAgain)}% would take again</span>}
+    </span>
+  ) : null;
+
+  const handleClick = url ? (e) => { e.stopPropagation(); e.preventDefault(); window.open(url, "_blank", "noopener"); } : undefined;
+
+  return (
+    <span onClick={handleClick} style={{ cursor: url ? "pointer" : "default" }}>
+      {badge}
+      {expandedDetail}
+    </span>
+  );
+}
+
 // ── Main Planner Component ───────────────────────────────────────────────────
 
 export default function Planner({ user, onLogout }) {
@@ -1254,7 +1291,12 @@ function WeeklyScheduleView({ plan, coursesByTerm, actualByTerm = {}, planTerms,
           } else if (c.isTBA) {
             rightContent = <span style={{ color: TEXT.muted, fontSize: TYPE.xs }}>{"\u00A7"}{c.section} {"\u00B7"} TBA</span>;
           } else if (c.chosen) {
-            rightContent = <span style={{ fontSize: TYPE.xs }}>{"\u00A7"}{c.section} {"\u00B7"} {c.chosen.days || ""} {c.chosen.start_time || ""}</span>;
+            rightContent = (
+              <span style={{ fontSize: TYPE.xs, display: "inline-flex", alignItems: "center", gap: "0.2rem" }}>
+                {"\u00A7"}{c.section} {"\u00B7"} {c.chosen.days || ""} {c.chosen.start_time || ""}
+                <RmpBadge rating={c.chosen.rmp_rating} numRatings={c.chosen.rmp_num_ratings} url={c.chosen.rmp_url} />
+              </span>
+            );
           } else {
             rightContent = <span style={{ color: "#b08800", fontSize: TYPE.xs }}>pick section {"\u25B8"}</span>;
           }
@@ -1316,8 +1358,12 @@ function WeeklyScheduleView({ plan, coursesByTerm, actualByTerm = {}, planTerms,
                             <span style={{ fontWeight: 700 }}>{"\u00A7"}{s.section}</span>
                             <span style={{ color: TEXT.muted, marginLeft: "0.3rem" }}>{s.days || "TBA"} {s.start_time && s.end_time ? `${s.start_time}\u2013${s.end_time}` : ""}</span>
                           </div>
-                          <div style={{ fontFamily: FONT.mono, fontSize: "0.5rem", color: TEXT.muted }}>
-                            {s.instructor || "TBA"}{s.location ? ` \u00B7 ${s.location}` : ""}
+                          <div style={{ fontFamily: FONT.mono, fontSize: "0.5rem", color: TEXT.muted, display: "flex", alignItems: "center", gap: "0.25rem", flexWrap: "wrap" }}>
+                            <span>{s.instructor || "TBA"}</span>
+                            <RmpBadge rating={s.rmp_rating} numRatings={s.rmp_num_ratings}
+                              difficulty={s.rmp_difficulty} wouldTakeAgain={s.rmp_would_take_again}
+                              url={s.rmp_url} expanded={true} />
+                            {s.location ? <span>{"\u00B7"} {s.location}</span> : null}
                           </div>
                         </div>
                       </button>

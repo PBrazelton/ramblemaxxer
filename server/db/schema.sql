@@ -230,6 +230,34 @@ CREATE TABLE IF NOT EXISTS course_terms (
   PRIMARY KEY (course_code, term)
 );
 
+-- RateMyProfessor cached professor data
+CREATE TABLE IF NOT EXISTS professor_ratings (
+  id              INTEGER PRIMARY KEY AUTOINCREMENT,
+  rmp_id          TEXT NOT NULL UNIQUE,
+  first_name      TEXT NOT NULL,
+  last_name       TEXT NOT NULL,
+  department      TEXT,
+  overall_rating  REAL,
+  difficulty      REAL,
+  would_take_again REAL,
+  num_ratings     INTEGER NOT NULL DEFAULT 0,
+  rmp_url         TEXT,
+  scraped_at      TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_prof_ratings_name ON professor_ratings(last_name, first_name);
+
+-- Mapping between course_offerings.instructor names and professor_ratings
+CREATE TABLE IF NOT EXISTS instructor_rmp_matches (
+  id              INTEGER PRIMARY KEY AUTOINCREMENT,
+  instructor_name TEXT NOT NULL UNIQUE,
+  rmp_id          TEXT,
+  match_quality   TEXT NOT NULL DEFAULT 'auto',
+  created_at      TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_instructor_rmp_rmpid ON instructor_rmp_matches(rmp_id);
+
 -- Semester plans (speculative course placement per future term)
 CREATE TABLE IF NOT EXISTS student_plans (
   id          INTEGER PRIMARY KEY AUTOINCREMENT,

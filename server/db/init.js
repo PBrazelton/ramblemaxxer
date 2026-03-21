@@ -354,6 +354,40 @@ db.exec(`
   )
 `);
 
+// Migration: create professor_ratings table (RMP cache)
+db.exec(`
+  CREATE TABLE IF NOT EXISTS professor_ratings (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    rmp_id          TEXT NOT NULL UNIQUE,
+    first_name      TEXT NOT NULL,
+    last_name       TEXT NOT NULL,
+    department      TEXT,
+    overall_rating  REAL,
+    difficulty      REAL,
+    would_take_again REAL,
+    num_ratings     INTEGER NOT NULL DEFAULT 0,
+    rmp_url         TEXT,
+    scraped_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  )
+`);
+try {
+  db.prepare("CREATE INDEX IF NOT EXISTS idx_prof_ratings_name ON professor_ratings(last_name, first_name)").run();
+} catch (e) { /* already exists */ }
+
+// Migration: create instructor_rmp_matches table
+db.exec(`
+  CREATE TABLE IF NOT EXISTS instructor_rmp_matches (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    instructor_name TEXT NOT NULL UNIQUE,
+    rmp_id          TEXT,
+    match_quality   TEXT NOT NULL DEFAULT 'auto',
+    created_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  )
+`);
+try {
+  db.prepare("CREATE INDEX IF NOT EXISTS idx_instructor_rmp_rmpid ON instructor_rmp_matches(rmp_id)").run();
+} catch (e) { /* already exists */ }
+
 // Migration: create student_plans table
 db.exec(`
   CREATE TABLE IF NOT EXISTS student_plans (

@@ -15,6 +15,7 @@
     "db:seed-courses": "cd server && node scripts/seed-courses.js",
     "db:seed-programs": "cd server && node scripts/seed-programs.js",
     "db:scrape-locus": "cd server && node scripts/scrape-locus.js",
+    "db:scrape-rmp": "cd server && node scripts/scrape-rmp.js",
     "db:reset": "npm run db:init && npm run db:seed && npm run db:seed-courses && npm run db:seed-programs"
   },
   "devDependencies": {

@@ -1314,6 +1314,99 @@ function ToolsTab() {
           </details>
         )}
       </div>
+
+      {/* RateMyProfessor Ratings */}
+      <RmpToolCard />
+    </div>
+  );
+}
+
+function RmpToolCard() {
+  const [rmpStatus, setRmpStatus] = useState(null);
+  const [rmpPolling, setRmpPolling] = useState(false);
+
+  const loadRmpStatus = useCallback(async () => {
+    try {
+      const data = await api.get("/api/admin/rmp-scrape/status");
+      setRmpStatus(data);
+      return data;
+    } catch { return null; }
+  }, []);
+
+  useEffect(() => { loadRmpStatus(); }, [loadRmpStatus]);
+  useEffect(() => {
+    if (!rmpPolling) return;
+    const id = setInterval(async () => {
+      const data = await loadRmpStatus();
+      if (data?.status !== "running") setRmpPolling(false);
+    }, 5000);
+    return () => clearInterval(id);
+  }, [rmpPolling, loadRmpStatus]);
+
+  const startRmpScrape = async () => {
+    await api.post("/api/admin/rmp-scrape");
+    setRmpPolling(true);
+    loadRmpStatus();
+  };
+
+  const isRunning = rmpStatus?.status === "running";
+
+  return (
+    <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 8, padding: "1rem" }}>
+      <div style={{ fontFamily: FONT.serif, fontSize: "1rem", fontWeight: 600, marginBottom: "0.5rem" }}>
+        RateMyProfessor Ratings
+      </div>
+      <p style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#666", marginBottom: "0.75rem", lineHeight: 1.5 }}>
+        Fetches professor ratings from RMP for all instructors in LOCUS data.
+        Takes about 6 minutes for a full run, seconds for incremental updates.
+      </p>
+
+      {rmpStatus?.stats && (
+        <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#888", marginBottom: "0.75rem" }}>
+          {rmpStatus.stats.professors} professors, {rmpStatus.stats.matched} matched, {rmpStatus.stats.unmatched} unmatched
+          {rmpStatus.stats.avgRating && <span style={{ marginLeft: 8 }}>avg: {"\u2605"}{rmpStatus.stats.avgRating}</span>}
+          {rmpStatus.finishedAt && (
+            <span style={{ marginLeft: 8 }}>
+              Last run: {new Date(rmpStatus.finishedAt).toLocaleDateString()}
+            </span>
+          )}
+        </div>
+      )}
+
+      <button onClick={startRmpScrape} disabled={isRunning} style={{
+        fontFamily: FONT.mono, fontSize: "0.75rem", padding: "0.5rem 1rem",
+        background: isRunning ? "#ccc" : "#6f42c1", color: "#fff",
+        border: "none", borderRadius: 4, cursor: isRunning ? "not-allowed" : "pointer",
+      }}>
+        {isRunning ? "Scraping..." : "Refresh RMP Data"}
+      </button>
+
+      {isRunning && (
+        <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#888", marginTop: "0.5rem" }}>
+          Running — this takes several minutes. Page updates automatically.
+        </div>
+      )}
+
+      {rmpStatus?.status === "error" && (
+        <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#c43b2d", marginTop: "0.5rem" }}>
+          Error: {rmpStatus.error}
+        </div>
+      )}
+
+      {rmpStatus?.log && rmpStatus.status !== "idle" && (
+        <details style={{ marginTop: "0.75rem" }}>
+          <summary style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#888", cursor: "pointer" }}>
+            Scrape log
+          </summary>
+          <pre style={{
+            fontFamily: FONT.mono, fontSize: "0.55rem", background: "#1a1a1a", color: "#ccc",
+            padding: "0.5rem", borderRadius: 4, marginTop: "0.3rem", maxHeight: 300,
+            overflow: "auto", whiteSpace: "pre-wrap", wordBreak: "break-all",
+          }}>
+            {rmpStatus.log}
+          </pre>
+        </details>
+      )}
     </div>
   );
 }

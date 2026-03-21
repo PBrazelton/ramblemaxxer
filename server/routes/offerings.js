@@ -54,9 +54,27 @@ router.get("/:code", (req, res) => {
 router.get("/:code/:term", (req, res) => {
   const code = req.params.code.toUpperCase().replace("-", " ");
   const term = req.params.term;
-  const rows = db.prepare(
-    `SELECT * FROM course_offerings WHERE course_code = ? AND term = ? ORDER BY section`
-  ).all(code, term);
+  let rows;
+  try {
+    rows = db.prepare(`
+      SELECT co.*,
+             pr.overall_rating AS rmp_rating,
+             pr.num_ratings AS rmp_num_ratings,
+             pr.difficulty AS rmp_difficulty,
+             pr.would_take_again AS rmp_would_take_again,
+             pr.rmp_url
+      FROM course_offerings co
+      LEFT JOIN instructor_rmp_matches irm ON irm.instructor_name = co.instructor
+      LEFT JOIN professor_ratings pr ON pr.rmp_id = irm.rmp_id
+      WHERE co.course_code = ? AND co.term = ?
+      ORDER BY co.section
+    `).all(code, term);
+  } catch (e) {
+    // Fallback if RMP tables don't exist yet
+    rows = db.prepare(
+      `SELECT * FROM course_offerings WHERE course_code = ? AND term = ? ORDER BY section`
+    ).all(code, term);
+  }
   res.json(rows);
 });
 
