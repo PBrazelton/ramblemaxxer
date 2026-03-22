@@ -1,10 +1,11 @@
 /**
  * client/src/pages/Planner.jsx
- * Interactive semester planner — two views: Semester Plan + Weekly Schedule.
+ * Interactive semester planner — three views: Semester Plan, Weekly Schedule, Campus Day.
  */
 
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef, lazy, Suspense } from "react";
 import { COLORS, STATUS_COLOR, programColor, FONT, TYPE, BG, BORDER, SURFACE, TEXT, BTN, SHADOW, api, ProgressRing, cardStyle, mutedText } from "../lib/ui.jsx";
+const CampusDay = lazy(() => import("./CampusDay.jsx"));
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -102,7 +103,7 @@ function RmpBadge({ rating, numRatings, difficulty, wouldTakeAgain, url, expande
 
 export default function Planner({ user, onLogout }) {
   const [plan, setPlan] = useState(null);
-  const [view, setView] = useState("semester"); // "semester" | "weekly"
+  const [view, setView] = useState("semester"); // "semester" | "weekly" | "campus"
   const [browseCourses, setBrowseCourses] = useState([]);
   const [solverData, setSolverData] = useState(null);
   const [programFilter, setProgramFilter] = useState("");
@@ -430,6 +431,7 @@ export default function Planner({ user, onLogout }) {
             {[
               { key: "semester", title: "Semester Plan", subtitle: "choose courses per term" },
               { key: "weekly", title: "Weekly Schedule", subtitle: "pick sections & times" },
+              { key: "campus", title: "Campus Day", subtitle: "map & transitions" },
             ].map(v => (
               <button key={v.key} type="button" onClick={() => setView(v.key)} style={{
                 flex: 1, padding: "0.5rem 0.75rem", textAlign: "center",
@@ -490,7 +492,7 @@ export default function Planner({ user, onLogout }) {
             }
           }}
         />
-      ) : (
+      ) : view === "weekly" ? (
         <WeeklyScheduleView
           plan={plan} coursesByTerm={coursesByTerm} actualByTerm={actualByTerm} planTerms={planTerms}
           weeklyTerm={weeklyTerm} setWeeklyTerm={setWeeklyTerm}
@@ -499,7 +501,6 @@ export default function Planner({ user, onLogout }) {
           onEnrolledSectionSelect={(courseCode, term, section, classNumber) => {
             api.put(`/api/students/me/courses/${encodeURIComponent(courseCode)}?semester=${encodeURIComponent(term)}`, { section, classNumber })
               .catch(() => setError("Failed to save section selection"));
-            // Optimistic local update
             setPlan(prev => ({
               ...prev,
               studentCourses: (prev.studentCourses || []).map(c =>
@@ -508,6 +509,10 @@ export default function Planner({ user, onLogout }) {
             }));
           }}
         />
+      ) : (
+        <Suspense fallback={<div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", fontFamily: FONT.mono, color: TEXT.muted }}>loading campus day...</div>}>
+          <CampusDay weeklyTerm={weeklyTerm} planTerms={planTerms} isMobile={isMobile} />
+        </Suspense>
       )}
       </div>
 

@@ -16,7 +16,8 @@
     "db:seed-programs": "cd server && node scripts/seed-programs.js",
     "db:scrape-locus": "cd server && node scripts/scrape-locus.js",
     "db:scrape-rmp": "cd server && node scripts/scrape-rmp.js",
-    "db:reset": "npm run db:init && npm run db:seed && npm run db:seed-courses && npm run db:seed-programs"
+    "db:seed-buildings": "cd server && node scripts/seed-buildings.js",
+    "db:reset": "npm run db:init && npm run db:seed && npm run db:seed-courses && npm run db:seed-programs && npm run db:seed-buildings"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

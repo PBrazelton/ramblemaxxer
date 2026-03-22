@@ -230,6 +230,18 @@ CREATE TABLE IF NOT EXISTS course_terms (
   PRIMARY KEY (course_code, term)
 );
 
+-- Campus building coordinates for map + walking time calculations
+CREATE TABLE IF NOT EXISTS campus_buildings (
+  id      INTEGER PRIMARY KEY AUTOINCREMENT,
+  name    TEXT NOT NULL UNIQUE,
+  code    TEXT,
+  campus  TEXT NOT NULL,
+  lat     REAL NOT NULL,
+  lng     REAL NOT NULL,
+  aliases TEXT,
+  address TEXT
+);
+
 -- RateMyProfessor cached professor data
 CREATE TABLE IF NOT EXISTS professor_ratings (
   id              INTEGER PRIMARY KEY AUTOINCREMENT,

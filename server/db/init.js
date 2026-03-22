@@ -354,6 +354,20 @@ db.exec(`
   )
 `);
 
+// Migration: create campus_buildings table
+db.exec(`
+  CREATE TABLE IF NOT EXISTS campus_buildings (
+    id      INTEGER PRIMARY KEY AUTOINCREMENT,
+    name    TEXT NOT NULL UNIQUE,
+    code    TEXT,
+    campus  TEXT NOT NULL,
+    lat     REAL NOT NULL,
+    lng     REAL NOT NULL,
+    aliases TEXT,
+    address TEXT
+  )
+`);
+
 // Migration: create professor_ratings table (RMP cache)
 db.exec(`
   CREATE TABLE IF NOT EXISTS professor_ratings (

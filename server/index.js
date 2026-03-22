@@ -29,6 +29,7 @@ const programRoutes = require("./routes/programs");
 const offeringsRoutes = require("./routes/offerings");
 const plansRoutes = require("./routes/plans");
 const feedbackRoutes = require("./routes/feedback");
+const campusRoutes = require("./routes/campus");
 const devRoutes = require("./routes/dev");
 
 const app = express();
@@ -74,6 +75,7 @@ app.use("/api/programs", programRoutes);
 app.use("/api/offerings", offeringsRoutes);
 app.use("/api/students", plansRoutes);
 app.use("/api/feedback", feedbackRoutes);
+app.use("/api/campus", campusRoutes);
 
 // Dev-only routes (personas) — blocked in production by the route itself
 app.use("/api/dev", devRoutes);

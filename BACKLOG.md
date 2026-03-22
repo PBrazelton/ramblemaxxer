@@ -21,9 +21,20 @@ Current sprint: **Weekly schedule + RMP** — section pickers, layout revision, 
 
 - [ ] #7 — Model cohort programs (blocked — waiting on Penelope's 20 testers)
 - [x] #11 — RateMyProfessor integration in section picker
-- [ ] #12 — Social layer: friend course history and shared enrollment (P3, blocked)
-- [ ] #13 — Walking/transit directions between classes (P3, blocked)
+- [ ] #12 — Social layer: friend course history and shared enrollment (Campus Day Phase 2)
+- [ ] #13 — Walking/transit directions between classes (Campus Day Phase 1 — in progress)
 - [ ] #14 — Prerequisite chain validation in planner (P3, blocked)
+
+## Future — Campus Day Spec Ideas
+
+- [ ] Mapbox custom style (warm branded tiles) — needs account setup
+- [ ] Campus Day Phase 2: Social layer (friends on map, serendipity engine) — addresses #12
+- [ ] Campus Day Phase 3: Polish (Red Line visualization, animations, "share my day" export)
+- [ ] Push notifications ("class in 10 minutes") — needs mobile app infrastructure
+- [ ] Indoor routing (room within building) — building is routing granularity for now
+- [ ] Shuttle schedule API — hardcode "~30 min" for now, link to schedule page
+- [ ] Weather integration (rain adds walk time)
+- [ ] Real-time location tracking (GPS/geofencing) — schedule-inferred only for now
 
 ---
 
