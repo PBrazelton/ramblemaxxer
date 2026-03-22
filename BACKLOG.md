@@ -1,6 +1,6 @@
 # Backlog
 
-Current sprint: **Beta ready** — audit complete, only blocked/P3 items remain.
+Current sprint: **Weekly schedule + RMP** — section pickers, layout revision, requirement filters, RMP ratings.
 
 ## How this works
 
@@ -20,12 +20,26 @@ Current sprint: **Beta ready** — audit complete, only blocked/P3 items remain.
 ## Blocked or Deferred
 
 - [ ] #7 — Model cohort programs (blocked — waiting on Penelope's 20 testers)
-- [ ] #11 — RateMyProfessor integration in section picker (P3, blocked)
+- [x] #11 — RateMyProfessor integration in section picker
 - [ ] #12 — Social layer: friend course history and shared enrollment (P3, blocked)
 - [ ] #13 — Walking/transit directions between classes (P3, blocked)
 - [ ] #14 — Prerequisite chain validation in planner (P3, blocked)
 
 ---
+
+## Completed — Weekly Schedule + RMP Sprint
+
+<details>
+<summary>6 items shipped</summary>
+
+- [x] Weekly schedule: section pickers for enrolled courses + schema migration
+- [x] Weekly schedule: two-zone sidebar layout (compressed grid + accordion picker)
+- [x] View toggle redesign (segmented control) + credit display uplift
+- [x] Clickable requirements → course browser filter
+- [x] Fix CORE knowledge area mappings (Scientific, Artistic, Ethical were incomplete)
+- [x] #11 — RateMyProfessor integration (scraper, API, rating badges, multi-instructor fix)
+
+</details>
 
 ## Completed — Audit Sprint (all done)
 
