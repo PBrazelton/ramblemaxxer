@@ -1,6 +1,6 @@
 # Backlog
 
-Current sprint: **Weekly schedule + RMP** — section pickers, layout revision, requirement filters, RMP ratings.
+Current sprint: **Campus Day + RMP** — all three phases shipped. Next up: program modeling or polish.
 
 ## How this works
 
@@ -12,24 +12,31 @@ Current sprint: **Weekly schedule + RMP** — section pickers, layout revision, 
 
 ---
 
+## P1 — High Priority
+
+- [ ] #7 — Model cohort programs (blocked — waiting on Penelope's 20 testers)
+- [ ] #58 — Model CAS Humanities BAs (Batch 1 of 7)
+- [ ] #59 — Model CAS Social Sciences (Batch 2 of 7)
+- [ ] #60 — Model Music & Fine Arts concentrations (Batch 3 of 7)
+- [ ] #61 — Model Environmental Studies cluster (Batch 4 of 7)
+- [ ] #62 — Model Life Sciences programs (Batch 5 of 7)
+- [ ] #63 — Model Math, CS & Engineering programs (Batch 6 of 7)
+- [ ] #64 — Model Physical Sciences programs (Batch 7 of 7)
+
+## P2 — Should Do
+
+- [ ] #66 — RMP name matching false positives need admin correction UI
+- [ ] #67 — Create custom Mapbox Studio style for Campus Day map
+- [ ] #65 — Upgrade to React 19
+
 ## P3 — Nice-to-have
 
 - [ ] #52 — Remove gradient badge and tone down feedback pulse animation
 - [ ] #53 — Add React.memo to frequently-rendered list components
+- [ ] #14 — Prerequisite chain validation in planner
 
-## Blocked or Deferred
+## Future — Campus Day Ideas
 
-- [ ] #7 — Model cohort programs (blocked — waiting on Penelope's 20 testers)
-- [x] #11 — RateMyProfessor integration in section picker
-- [ ] #12 — Social layer: friend course history and shared enrollment (Campus Day Phase 2)
-- [ ] #13 — Walking/transit directions between classes (Campus Day Phase 1 — in progress)
-- [ ] #14 — Prerequisite chain validation in planner (P3, blocked)
-
-## Future — Campus Day Spec Ideas
-
-- [ ] Mapbox custom style (warm branded tiles) — needs account setup
-- [ ] Campus Day Phase 2: Social layer (friends on map, serendipity engine) — addresses #12
-- [ ] Campus Day Phase 3: Polish (Red Line visualization, animations, "share my day" export)
 - [ ] Push notifications ("class in 10 minutes") — needs mobile app infrastructure
 - [ ] Indoor routing (room within building) — building is routing granularity for now
 - [ ] Shuttle schedule API — hardcode "~30 min" for now, link to schedule page
@@ -38,10 +45,10 @@ Current sprint: **Weekly schedule + RMP** — section pickers, layout revision, 
 
 ---
 
-## Completed — Weekly Schedule + RMP Sprint
+## Completed — Campus Day + RMP Sprint
 
 <details>
-<summary>6 items shipped</summary>
+<summary>10 items shipped</summary>
 
 - [x] Weekly schedule: section pickers for enrolled courses + schema migration
 - [x] Weekly schedule: two-zone sidebar layout (compressed grid + accordion picker)
@@ -49,6 +56,10 @@ Current sprint: **Weekly schedule + RMP** — section pickers, layout revision, 
 - [x] Clickable requirements → course browser filter
 - [x] Fix CORE knowledge area mappings (Scientific, Artistic, Ethical were incomplete)
 - [x] #11 — RateMyProfessor integration (scraper, API, rating badges, multi-instructor fix)
+- [x] #13 — Campus Day Phase 1: map, buildings, walking transitions, time scrubber
+- [x] #12 — Campus Day Phase 2: social layer, friend graph, serendipity engine
+- [x] Campus Day Phase 3: Red Line, pulse animation, shuttle link, share-as-image
+- [x] Requirement tracker refresh fix (placedFills from plannable-courses endpoint)
 
 </details>
 
