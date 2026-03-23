@@ -685,10 +685,10 @@ function SettingsSheet({ user, onClose, onUpdate, onReimport }) {
               {["private", "friends"].map(v => (
                 <button key={v} onClick={() => setPrivacy(v)}
                   style={{ flex: 1, padding: "10px 0", borderRadius: 8,
-                    border: `2px solid ${privacy === v ? COLORS["PLSC-BA"] : BORDER}`,
-                    background: privacy === v ? COLORS["PLSC-BA"] + "11" : "transparent",
+                    border: `2px solid ${privacy === v ? "#1a1a1a" : BORDER}`,
+                    background: privacy === v ? "#1a1a1a" : "transparent",
                     cursor: "pointer", fontFamily: FONT.mono, fontSize: 13,
-                    color: privacy === v ? COLORS["PLSC-BA"] : "#5a5550" }}>
+                    color: privacy === v ? "#fff" : "#5a5550" }}>
                   {v === "private" ? "private" : "friends"}
                 </button>
               ))}
@@ -1198,9 +1198,9 @@ function CASCard({ casGrad, spanLang }) {
 
   return (
     <div style={{ background: SURFACE.card, border: `1px solid ${BORDER}`, borderRadius: 8, marginBottom: "0.75rem", overflow: "hidden" }}>
-      <button type="button" aria-expanded={open} onClick={() => setOpen(!open)} style={{ display: "flex", alignItems: "center", gap: "0.8rem", padding: "0.8rem 1rem", cursor: "pointer", background: "none", border: "none", borderLeft: `4px solid ${COLORS["CAS-GRAD"]}`, textAlign: "left", width: "100%" }}>
+      <button type="button" aria-expanded={open} onClick={() => setOpen(!open)} style={{ display: "flex", alignItems: "center", gap: "0.8rem", padding: "0.8rem 1rem", cursor: "pointer", background: "none", border: "none", borderLeft: `4px solid ${programColor("CAS-GRAD")}`, textAlign: "left", width: "100%" }}>
         <div style={{ flex: 1 }}>
-          <div style={{ fontFamily: FONT.serif, fontSize: TYPE.lg, fontWeight: 600, color: COLORS["CAS-GRAD"] }}>Graduation Requirements (Arts & Sciences)</div>
+          <div style={{ fontFamily: FONT.serif, fontSize: TYPE.lg, fontWeight: 600, color: programColor("CAS-GRAD") }}>{casGrad?.name || "Graduation Requirements"}</div>
           <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.muted }}>{filled}/{allCats.length} satisfied</div>
         </div>
         <span style={{ fontFamily: FONT.mono, fontSize: TYPE.base, color: TEXT.disabled, transform: open ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>▼</span>
@@ -1222,28 +1222,27 @@ function CASCard({ casGrad, spanLang }) {
               </span>
             </div>
           ))}
-          {spanLang && (
+          {spanLang && spanLang.categories?.[0]?.slots && (
             <div style={{ padding: "0.5rem 0", borderTop: `1px solid ${BORDER}` }}>
-              <div style={{ fontFamily: FONT.mono, fontSize: TYPE.base, fontWeight: 600, marginBottom: "0.3rem", color: COLORS["SPAN-LANG"] }}>Spanish Sequence</div>
+              <div style={{ fontFamily: FONT.mono, fontSize: TYPE.base, fontWeight: 600, marginBottom: "0.3rem", color: programColor(spanLang.code) }}>{spanLang.name}</div>
               <div style={{ display: "flex", gap: "0.3rem", flexWrap: "wrap" }}>
-                {["SPAN 102", "SPAN 103", "SPAN 104"].map(code => {
-                  const slot = spanLang.categories[0]?.slots.find(s => s.code === code);
-                  return (
-                    <div key={code} style={{
-                      padding: "3px 8px", borderRadius: 4, fontSize: TYPE.sm, fontFamily: FONT.mono,
-                      background: slot ? `${COLORS["SPAN-LANG"]}15` : "#f5f0e8",
-                      border: `1px solid ${slot ? COLORS["SPAN-LANG"] + "40" : "#ddd"}`,
-                      color: slot ? "#333" : "#aaa",
-                    }}>
-                      {slot && <span style={{ display: "inline-block", width: 6, height: 6, borderRadius: "50%", background: STATUS_COLOR[slot.status], marginRight: 4 }} />}
-                      {code}
-                    </div>
-                  );
-                })}
+                {spanLang.categories[0].slots.map(slot => (
+                  <div key={slot.label || slot.code || slot.id} style={{
+                    padding: "3px 8px", borderRadius: 4, fontSize: TYPE.sm, fontFamily: FONT.mono,
+                    background: slot.code ? `${programColor(spanLang.code)}15` : "#f5f0e8",
+                    border: `1px solid ${slot.code ? programColor(spanLang.code) + "40" : "#ddd"}`,
+                    color: slot.code ? "#333" : "#aaa",
+                  }}>
+                    {slot.code && <span style={{ display: "inline-block", width: 6, height: 6, borderRadius: "50%", background: STATUS_COLOR[slot.status], marginRight: 4 }} />}
+                    {slot.code || slot.label || "—"}
+                  </div>
+                ))}
               </div>
-              <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, marginTop: "0.3rem" }}>
-                SPAN 102 satisfies CAS · SPAN 104 satisfies GLST · does not count toward 33 major credits
-              </div>
+              {spanLang.notes && (
+                <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, marginTop: "0.3rem" }}>
+                  {Array.isArray(spanLang.notes) ? spanLang.notes.join(" · ") : spanLang.notes}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -2229,7 +2228,7 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
                 expected graduation
               </div>
               <div style={{ display: "flex", gap: 8 }}>
-                {[2026, 2027, 2028, 2029].map(y => (
+                {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() + i).map(y => (
                   <button key={y} onClick={() => setGradYear(y)}
                     style={{
                       flex: 1, padding: "10px 0", borderRadius: 8, cursor: "pointer",
@@ -2326,8 +2325,8 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
 
             {error && <div style={{ marginTop: 12 }}><ErrMsg>{error}</ErrMsg></div>}
 
-            <button onClick={() => {
-              api.put("/api/students/me/onboarding", { step: 0 });
+            <button onClick={async () => {
+              await api.put("/api/students/me/onboarding", { step: 0 });
               onComplete();
             }}
               style={{
@@ -2965,8 +2964,12 @@ function Dashboard({ user, setUser, onLogout, setOnboardingActive }) {
     </div>
   );
 
-  const majorOrder = ["PLSC-BA", "GLST-BA", "CORE"];
-  const majors = majorOrder.map(code => data.programs[code]).filter(Boolean);
+  // Build program list dynamically from solver data
+  const allPrograms = Object.values(data.programs || {});
+  const declaredMajors = allPrograms.filter(p => p.type === "major");
+  const declaredMinors = allPrograms.filter(p => p.type === "minor" || p.type === "requirement");
+  const corePrograms = allPrograms.filter(p => p.type === "core" || p.type === "college");
+  const majors = [...declaredMajors, ...corePrograms];
   const remainingCount = data.remaining?.length || 0;
 
   return (
@@ -2979,6 +2982,30 @@ function Dashboard({ user, setUser, onLogout, setOnboardingActive }) {
       <div style={{ maxWidth: 680, margin: "0 auto", padding: "1rem" }}>
         <CreditMeter credits={data.credits} hasUnmappedTransfer={hasUnmappedTransfer}
           onTransferWarningTap={() => nextStepsRef.current?.scrollIntoView({ behavior: "smooth" })} />
+
+        {/* Declared programs */}
+        {allPrograms.length > 0 && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", marginBottom: "0.75rem" }}>
+            {declaredMajors.map(p => (
+              <span key={p.code} style={{
+                fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "0.2rem 0.5rem", borderRadius: 4,
+                background: `${programColor(p.code)}15`, color: programColor(p.code),
+                border: `1px solid ${programColor(p.code)}30`,
+              }}>
+                {p.name}
+              </span>
+            ))}
+            {declaredMinors.map(p => (
+              <span key={p.code} style={{
+                fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "0.2rem 0.5rem", borderRadius: 4,
+                background: `${programColor(p.code)}10`, color: programColor(p.code),
+                border: `1px solid ${programColor(p.code)}20`,
+              }}>
+                {p.name} <span style={{ opacity: 0.6 }}>minor</span>
+              </span>
+            ))}
+          </div>
+        )}
 
         <div ref={nextStepsRef}>
           <NextStepsSection data={data}
@@ -3003,7 +3030,7 @@ function Dashboard({ user, setUser, onLogout, setOnboardingActive }) {
 
         {majors.map(prog => (
           <ProgramCard key={prog.code} prog={prog} conflicts={conflicts} onPipClick={handlePipClick} onSlotTap={handleSlotTap}
-            defaultOpen={prog.code === "PLSC-BA" || prog.code === "GLST-BA"} />
+            defaultOpen={prog.type === "major"} />
         ))}
 
         <OverlapBudget overlaps={data.overlaps} programs={data.programs} conflicts={conflicts} onPipClick={handlePipClick} />

@@ -10,8 +10,20 @@ import { useEffect, useRef } from "react";
 export const COLORS = {
   "PLSC-BA": "#c43b2d", "GLST-BA": "#1a7a5a", "CORE": "#7a4a1a",
   "CAS-GRAD": "#5a6a7a", "SPAN-LANG": "#6f42c1",
+  // Modeled programs
+  "PHIL-BA": "#7a4a8a", "HIST-BA": "#8a6a2a", "ENGL-BA": "#2a6a8a",
+  "SPAN-BA": "#9a4a6a", "THEO-BA": "#5a4a7a", "ANTH-BA": "#4a7a6a",
+  "FNAR-BA": "#c47a2a",
 };
-export const programColor = (code) => COLORS[code] || "#5a6a7a";
+// Deterministic color for unknown programs based on code hash
+export const programColor = (code) => {
+  if (COLORS[code]) return COLORS[code];
+  // Generate a warm muted color from the code string
+  let hash = 0;
+  for (let i = 0; i < (code || "").length; i++) hash = ((hash << 5) - hash + code.charCodeAt(i)) | 0;
+  const hue = ((hash & 0xFFFF) % 360);
+  return `hsl(${hue}, 35%, 40%)`;
+};
 
 // Course/requirement status colors
 export const STATUS_COLOR = {
