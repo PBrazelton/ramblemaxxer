@@ -2735,6 +2735,11 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
                         );
                       })}
                     </div>
+                    {(row.satisfies || []).length === 0 && (
+                      <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#22863a", marginTop: 4, display: "flex", alignItems: "center", gap: 4 }}>
+                        <span style={{ fontSize: "0.7rem" }}>ℹ</span> General credit — counts toward your 120 total
+                      </div>
+                    )}
                   </div>
                 )}
                 {/* Optional: map to specific LUC course */}

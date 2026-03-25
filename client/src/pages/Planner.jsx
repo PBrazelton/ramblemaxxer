@@ -119,6 +119,8 @@ export default function Planner({ user, onLogout }) {
   const [showBrowser, setShowBrowser] = useState(true);
   const [showTracker, setShowTracker] = useState(false);
   const [requirementFilter, setRequirementFilter] = useState(null); // { program, programName, category } or null
+  const [wiFilter, setWiFilter] = useState(false);
+  const [elFilter, setElFilter] = useState(false);
   const [weeklyTerm, setWeeklyTerm] = useState(null);
   const [sectionData, setSectionData] = useState({}); // { courseCode: [sections] }
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -370,8 +372,14 @@ export default function Planner({ user, onLogout }) {
     if (termFilter) {
       list = list.filter(c => c.terms?.includes(termFilter));
     }
+    if (wiFilter) {
+      list = list.filter(c => c.writing_intensive);
+    }
+    if (elFilter) {
+      list = list.filter(c => c.engaged_learning);
+    }
     return list;
-  }, [browseCourses, catalogResults, isSearchingCatalog, searchQuery, programFilter, termFilter, requirementFilter, placedCodes]);
+  }, [browseCourses, catalogResults, isSearchingCatalog, searchQuery, programFilter, termFilter, requirementFilter, wiFilter, elFilter, placedCodes]);
 
   // Program names for filter
   const programNames = useMemo(() => {
@@ -471,6 +479,7 @@ export default function Planner({ user, onLogout }) {
           searchQuery={searchQuery} setSearchQuery={setSearchQuery}
           programFilter={programFilter} setProgramFilter={setProgramFilter}
           termFilter={termFilter} setTermFilter={setTermFilter}
+          wiFilter={wiFilter} setWiFilter={setWiFilter} elFilter={elFilter} setElFilter={setElFilter}
           isSearchingCatalog={isSearchingCatalog}
           programNames={programNames} scrapedTerms={scrapedTerms}
           requirementStatus={requirementStatus} solverData={solverData}
@@ -543,7 +552,8 @@ function SemesterPlanView({
   plan, filteredCourses, placedCodes, coursesByTerm, actualByTerm = {}, planTerms,
   selectedCourse, setSelectedCourse, placeCourse, removeCourse,
   searchQuery, setSearchQuery, programFilter, setProgramFilter,
-  termFilter, setTermFilter, isSearchingCatalog, programNames, scrapedTerms,
+  termFilter, setTermFilter, wiFilter, setWiFilter, elFilter, setElFilter,
+  isSearchingCatalog, programNames, scrapedTerms,
   requirementStatus, solverData, creditStats, isMobile,
   showBrowser, setShowBrowser, showTracker, setShowTracker,
   requirementFilter, setRequirementFilter,
@@ -569,6 +579,7 @@ function SemesterPlanView({
                 searchQuery={searchQuery} setSearchQuery={setSearchQuery}
                 programFilter={programFilter} setProgramFilter={setProgramFilter}
                 termFilter={termFilter} setTermFilter={setTermFilter}
+          wiFilter={wiFilter} setWiFilter={setWiFilter} elFilter={elFilter} setElFilter={setElFilter}
                 programNames={programNames} scrapedTerms={scrapedTerms}
                 isSearchingCatalog={isSearchingCatalog}
                 requirementFilter={requirementFilter} setRequirementFilter={setRequirementFilter}
@@ -635,6 +646,7 @@ function SemesterPlanView({
               searchQuery={searchQuery} setSearchQuery={setSearchQuery}
               programFilter={programFilter} setProgramFilter={setProgramFilter}
               termFilter={termFilter} setTermFilter={setTermFilter}
+          wiFilter={wiFilter} setWiFilter={setWiFilter} elFilter={elFilter} setElFilter={setElFilter}
               programNames={programNames} scrapedTerms={scrapedTerms}
               isSearchingCatalog={isSearchingCatalog}
             />
@@ -683,7 +695,7 @@ function SemesterPlanView({
 
 // ── Course Browser Filters ───────────────────────────────────────────────────
 
-function CourseBrowserFilters({ searchQuery, setSearchQuery, programFilter, setProgramFilter, termFilter, setTermFilter, programNames, scrapedTerms, isSearchingCatalog, requirementFilter, setRequirementFilter }) {
+function CourseBrowserFilters({ searchQuery, setSearchQuery, programFilter, setProgramFilter, termFilter, setTermFilter, wiFilter, setWiFilter, elFilter, setElFilter, programNames, scrapedTerms, isSearchingCatalog, requirementFilter, setRequirementFilter }) {
   const selectStyle = {
     fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.25rem 0.3rem",
     border: `1px solid ${BORDER}`, borderRadius: 4, background: "#fafaf8",
@@ -715,7 +727,7 @@ function CourseBrowserFilters({ searchQuery, setSearchQuery, programFilter, setP
         value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
         style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.3rem 0.5rem", border: `1px solid ${isSearchingCatalog ? "#6f42c1" : BORDER}`, borderRadius: 4, background: "#fafaf8", width: "100%", boxSizing: "border-box" }}
       />
-      {!isSearchingCatalog && (
+      {!isSearchingCatalog && (<>
         <div style={{ display: "flex", gap: "0.3rem" }}>
           <select value={programFilter} onChange={e => setProgramFilter(e.target.value)} aria-label="Filter by program" style={selectStyle}>
             <option value="">All programs</option>
@@ -726,7 +738,21 @@ function CourseBrowserFilters({ searchQuery, setSearchQuery, programFilter, setP
             {scrapedTerms.map(t => <option key={t} value={t}>{termLabel(t)}</option>)}
           </select>
         </div>
-      )}
+        <div style={{ display: "flex", gap: "0.3rem" }}>
+          <button type="button" onClick={() => setWiFilter(!wiFilter)} style={{
+            flex: 1, fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "0.2rem 0.3rem",
+            border: `1px solid ${wiFilter ? "#2a6a8a" : BORDER}`, borderRadius: 4,
+            background: wiFilter ? "#2a6a8a15" : "transparent", color: wiFilter ? "#2a6a8a" : TEXT.muted,
+            cursor: "pointer",
+          }}>WI</button>
+          <button type="button" onClick={() => setElFilter(!elFilter)} style={{
+            flex: 1, fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "0.2rem 0.3rem",
+            border: `1px solid ${elFilter ? "#8a6a2a" : BORDER}`, borderRadius: 4,
+            background: elFilter ? "#8a6a2a15" : "transparent", color: elFilter ? "#8a6a2a" : TEXT.muted,
+            cursor: "pointer",
+          }}>EL</button>
+        </div>
+      </>)}
     </div>
   );
 }
@@ -800,10 +826,16 @@ function CourseCard({ course, isPlaced, isSelected, onSelect }) {
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
             <span style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, fontWeight: 700 }}>{course.code}</span>
-            {course.boxCount > 0 && (
+            {course.boxCount > 1 && (
               <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, background: "#f5e6d0", color: "#7a4a1a", padding: "1px 4px", borderRadius: 3 }}>
-                {"\u26A1"}{course.boxCount}
+                ⚡{course.boxCount}
               </span>
+            )}
+            {course.writing_intensive && (
+              <span style={{ fontFamily: FONT.mono, fontSize: "0.45rem", background: "#2a6a8a15", color: "#2a6a8a", padding: "1px 3px", borderRadius: 2 }}>WI</span>
+            )}
+            {course.engaged_learning && (
+              <span style={{ fontFamily: FONT.mono, fontSize: "0.45rem", background: "#8a6a2a15", color: "#8a6a2a", padding: "1px 3px", borderRadius: 2 }}>EL</span>
             )}
           </div>
           <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#555", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -1348,10 +1380,10 @@ function WeeklyScheduleView({ plan, coursesByTerm, actualByTerm = {}, planTerms,
                     border: `2px solid ${c.section ? c.color : "#ccc"}`,
                   }} />
                 )}
-                <span style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, fontWeight: 700, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                <span style={{ fontFamily: FONT.mono, fontSize: TYPE.base, fontWeight: 700, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {c.course_code}
                 </span>
-                <span style={{ fontFamily: FONT.mono, flexShrink: 0 }}>{rightContent}</span>
+                <span style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, flexShrink: 0 }}>{rightContent}</span>
               </RowTag>
 
               {/* Expanded: section alternatives */}
@@ -1364,9 +1396,9 @@ function WeeklyScheduleView({ plan, coursesByTerm, actualByTerm = {}, planTerms,
                         onClick={() => onSectionSelect(c.course_code, s.section, s.class_number)}
                         style={{
                           display: "flex", alignItems: "flex-start", gap: "0.4rem", width: "100%",
-                          padding: "0.3rem 0.2rem", cursor: "pointer", borderRadius: 4,
+                          padding: "0.4rem 0.3rem", cursor: "pointer", borderRadius: 4,
                           background: isSelected ? "#e8f5e9" : "transparent",
-                          border: "none", textAlign: "left", minHeight: 36,
+                          border: "none", textAlign: "left", minHeight: 44,
                         }}>
                         <span style={{
                           width: 14, height: 14, borderRadius: "50%", flexShrink: 0, marginTop: 1,
@@ -1376,11 +1408,11 @@ function WeeklyScheduleView({ plan, coursesByTerm, actualByTerm = {}, planTerms,
                           {isSelected && <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22863a" }} />}
                         </span>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs }}>
-                            <span style={{ fontWeight: 700 }}>{"\u00A7"}{s.section}</span>
-                            <span style={{ color: TEXT.muted, marginLeft: "0.3rem" }}>{s.days || "TBA"} {s.start_time && s.end_time ? `${s.start_time}\u2013${s.end_time}` : ""}</span>
+                          <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm }}>
+                            <span style={{ fontWeight: 700 }}>§{s.section}</span>
+                            <span style={{ color: TEXT.muted, marginLeft: "0.3rem" }}>{s.days || "TBA"} {s.start_time && s.end_time ? `${s.start_time}–${s.end_time}` : ""}</span>
                           </div>
-                          <div style={{ fontFamily: FONT.mono, fontSize: "0.5rem", color: TEXT.muted, display: "flex", alignItems: "center", gap: "0.25rem", flexWrap: "wrap" }}>
+                          <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, display: "flex", alignItems: "center", gap: "0.25rem", flexWrap: "wrap" }}>
                             <span>{s.instructor || "TBA"}</span>
                             <RmpBadge rating={s.rmp_rating} numRatings={s.rmp_num_ratings}
                               difficulty={s.rmp_difficulty} wouldTakeAgain={s.rmp_would_take_again}

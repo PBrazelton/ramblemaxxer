@@ -54,9 +54,23 @@ router.get("/:code", (req, res) => {
 router.get("/:code/:term", (req, res) => {
   const code = req.params.code.toUpperCase().replace("-", " ");
   const term = req.params.term;
-  let rows;
+
+  // Collect all codes to search (primary + cross-listed)
+  const codes = [code];
   try {
-    // Join RMP data: try exact instructor match, then first name in comma-separated list
+    const crossListings = db.prepare(
+      "SELECT cross_listed_code FROM course_cross_listings WHERE course_code = ? UNION SELECT course_code FROM course_cross_listings WHERE cross_listed_code = ?"
+    ).all(code, code);
+    for (const cl of crossListings) {
+      if (!codes.includes(cl.cross_listed_code || cl.course_code)) {
+        codes.push(cl.cross_listed_code || cl.course_code);
+      }
+    }
+  } catch (e) { /* table may not exist */ }
+
+  let rows;
+  const placeholders = codes.map(() => "?").join(",");
+  try {
     rows = db.prepare(`
       SELECT co.*,
              COALESCE(pr.overall_rating, pr2.overall_rating) AS rmp_rating,
@@ -70,14 +84,13 @@ router.get("/:code/:term", (req, res) => {
       LEFT JOIN instructor_rmp_matches irm2 ON co.instructor LIKE '%,%'
         AND irm2.instructor_name = TRIM(SUBSTR(co.instructor, 1, INSTR(co.instructor, ',') - 1))
       LEFT JOIN professor_ratings pr2 ON pr2.rmp_id = irm2.rmp_id
-      WHERE co.course_code = ? AND co.term = ?
+      WHERE co.course_code IN (${placeholders}) AND co.term = ?
       ORDER BY co.section
-    `).all(code, term);
+    `).all(...codes, term);
   } catch (e) {
-    // Fallback if RMP tables don't exist yet
     rows = db.prepare(
-      `SELECT * FROM course_offerings WHERE course_code = ? AND term = ? ORDER BY section`
-    ).all(code, term);
+      `SELECT * FROM course_offerings WHERE course_code IN (${placeholders}) AND term = ? ORDER BY section`
+    ).all(...codes, term);
   }
   res.json(rows);
 });
