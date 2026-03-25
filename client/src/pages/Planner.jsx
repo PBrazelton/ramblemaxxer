@@ -1123,15 +1123,32 @@ function RequirementTracker({ status, solverData, activeFilter, onRequirementCli
 // ── Validation Section ───────────────────────────────────────────────────────
 
 function ValidationSection({ warnings, onValidate }) {
+  const [validating, setValidating] = useState(false);
+  const [validated, setValidated] = useState(false);
+
+  const handleValidate = async () => {
+    setValidating(true);
+    setValidated(false);
+    await onValidate();
+    setValidating(false);
+    setValidated(true);
+  };
+
   return (
     <div style={{ marginTop: "0.5rem" }}>
-      <button onClick={onValidate} style={{
+      <button onClick={handleValidate} disabled={validating} style={{
         fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.4rem 0.8rem",
-        background: SURFACE.card, border: `1px solid ${BORDER}`, borderRadius: 6, cursor: "pointer",
-        width: "100%",
+        background: SURFACE.card, border: `1px solid ${BORDER}`, borderRadius: 6, cursor: validating ? "wait" : "pointer",
+        width: "100%", opacity: validating ? 0.6 : 1,
       }}>
-        Validate Plan
+        {validating ? "Validating..." : "Validate Plan"}
       </button>
+      {validated && warnings.length === 0 && (
+        <div style={{ marginTop: "0.4rem", fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.4rem 0.6rem",
+          borderRadius: 6, background: "#e8f5e9", color: "#22863a", border: "1px solid #c8e6c9" }}>
+          ✓ Plan looks good — no conflicts or warnings
+        </div>
+      )}
       {warnings.length > 0 && (
         <div style={{ marginTop: "0.4rem", display: "flex", flexDirection: "column", gap: "0.3rem" }}>
           {warnings.map((w, i) => (

@@ -2968,7 +2968,8 @@ function Dashboard({ user, setUser, onLogout, setOnboardingActive }) {
   const allPrograms = Object.values(data.programs || {});
   const declaredMajors = allPrograms.filter(p => p.type === "major");
   const declaredMinors = allPrograms.filter(p => p.type === "minor" || p.type === "requirement");
-  const corePrograms = allPrograms.filter(p => p.type === "core" || p.type === "college");
+  const corePrograms = allPrograms.filter(p => p.type === "core");
+  // CAS-GRAD and SPAN-LANG rendered separately by CASCard — exclude from majors list
   const majors = [...declaredMajors, ...corePrograms];
   const remainingCount = data.remaining?.length || 0;
 
