@@ -1589,17 +1589,45 @@ function DetailItem({ label, value }) {
 }
 
 // ── CourseDetailModal (standalone, for pip taps) ────────────────────────────
-function CourseDetailModal({ code, onClose }) {
+function CourseDetailModal({ code, onClose, onRefresh }) {
   const [course, setCourse] = useState(null);
   const [studentCourse, setStudentCourse] = useState(null);
+  const [editing, setEditing] = useState(false);
+  const [editTerm, setEditTerm] = useState("");
+  const [editStatus, setEditStatus] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
     api.get(`/api/courses/${encodeURIComponent(code)}`).then(setCourse).catch(() => {});
     api.get("/api/students/me/courses").then(courses => {
       const match = courses.find(c => c.code === code || c.course_code === code);
       setStudentCourse(match || null);
+      if (match) { setEditTerm(match.semester || ""); setEditStatus(match.status || ""); }
     }).catch(() => {});
   }, [code]);
+
+  const handleSave = async () => {
+    setSaving(true);
+    const safeCode = code.replace(" ", "-");
+    const oldSemester = studentCourse?.semester;
+    await api.put(`/api/students/me/courses/${safeCode}${oldSemester ? `?semester=${encodeURIComponent(oldSemester)}` : ""}`, {
+      semester: editTerm || undefined,
+      status: editStatus || undefined,
+    });
+    setSaving(false);
+    setEditing(false);
+    onRefresh?.();
+    onClose();
+  };
+
+  const handleDelete = async () => {
+    const safeCode = code.replace(" ", "-");
+    const semester = studentCourse?.semester;
+    await api.delete(`/api/students/me/courses/${safeCode}${semester ? `?semester=${encodeURIComponent(semester)}` : ""}`);
+    onRefresh?.();
+    onClose();
+  };
 
   return (
     <BottomSheet onClose={onClose} maxWidth={480}>
@@ -1613,10 +1641,66 @@ function CourseDetailModal({ code, onClose }) {
           </div>
           <div style={{ fontFamily: FONT.serif, fontSize: TYPE.xl, fontWeight: 600, marginBottom: "1rem" }}>{course.title}</div>
 
-          {studentCourse?.semester && (
-            <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.primary, marginBottom: "0.8rem" }}>
-              <strong>Term:</strong> {studentCourse.semester}
-              {studentCourse.status && <span style={{ marginLeft: "0.5rem", fontSize: TYPE.xs, background: `${STATUS_COLOR[studentCourse.status] || "#888"}18`, color: STATUS_COLOR[studentCourse.status] || "#888", padding: "1px 6px", borderRadius: 3 }}>{studentCourse.status}</span>}
+          {studentCourse && !editing && (
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.8rem" }}>
+              <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.primary }}>
+                <strong>Term:</strong> {studentCourse.semester}
+                {studentCourse.status && <span style={{ marginLeft: "0.5rem", fontSize: TYPE.xs, background: `${STATUS_COLOR[studentCourse.status] || "#888"}18`, color: STATUS_COLOR[studentCourse.status] || "#888", padding: "1px 6px", borderRadius: 3 }}>{studentCourse.status}</span>}
+              </div>
+              <button type="button" onClick={() => setEditing(true)} style={{
+                fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#6f42c1", background: "none", border: "none", cursor: "pointer",
+              }}>edit</button>
+            </div>
+          )}
+
+          {editing && (
+            <div style={{ background: SURFACE.hover, border: `1px solid ${BORDER}`, borderRadius: 6, padding: "0.6rem", marginBottom: "0.8rem" }}>
+              <div style={{ display: "flex", gap: "0.4rem", marginBottom: "0.4rem" }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, marginBottom: 2 }}>Term</div>
+                  <input value={editTerm} onChange={e => setEditTerm(e.target.value)}
+                    placeholder="e.g. Spring 2026"
+                    style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.3rem 0.4rem", border: `1px solid ${BORDER}`, borderRadius: 4, width: "100%", boxSizing: "border-box" }} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, marginBottom: 2 }}>Status</div>
+                  <select value={editStatus} onChange={e => setEditStatus(e.target.value)}
+                    style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.3rem 0.4rem", border: `1px solid ${BORDER}`, borderRadius: 4, width: "100%", boxSizing: "border-box" }}>
+                    <option value="complete">complete</option>
+                    <option value="enrolled">enrolled</option>
+                    <option value="planned">planned</option>
+                    <option value="transfer">transfer</option>
+                  </select>
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: "0.4rem" }}>
+                <button type="button" disabled={saving} onClick={handleSave} style={{
+                  flex: 1, fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.35rem",
+                  background: BTN.primary, color: TEXT.inverse, border: "none", borderRadius: 4, cursor: "pointer",
+                }}>{saving ? "saving..." : "save"}</button>
+                <button type="button" onClick={() => setEditing(false)} style={{
+                  fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.35rem 0.6rem",
+                  background: "transparent", border: `1px solid ${BORDER}`, borderRadius: 4, cursor: "pointer",
+                }}>cancel</button>
+              </div>
+              <div style={{ borderTop: `1px solid ${BORDER}`, marginTop: "0.5rem", paddingTop: "0.5rem" }}>
+                {!confirmDelete ? (
+                  <button type="button" onClick={() => setConfirmDelete(true)} style={{
+                    fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.danger, background: "none", border: "none", cursor: "pointer",
+                  }}>remove this course</button>
+                ) : (
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                    <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.danger }}>Are you sure?</span>
+                    <button type="button" onClick={handleDelete} style={{
+                      fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "0.2rem 0.5rem",
+                      background: TEXT.danger, color: TEXT.inverse, border: "none", borderRadius: 3, cursor: "pointer",
+                    }}>yes, remove</button>
+                    <button type="button" onClick={() => setConfirmDelete(false)} style={{
+                      fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, background: "none", border: "none", cursor: "pointer",
+                    }}>cancel</button>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -1951,6 +2035,61 @@ function ProgramPickerList({ label, items, selected, onToggle, search, onSearch,
 }
 
 // ── OnboardingWizard ─────────────────────────────────────────────────────────
+// ── Transfer Credit Course Search ──────────────────────────────────────────
+function TransferCourseSearch({ value, onSelect, onChange }) {
+  const [query, setQuery] = useState(value || "");
+  const [results, setResults] = useState([]);
+  const [focused, setFocused] = useState(false);
+  const debounceRef = useRef(null);
+
+  useEffect(() => { setQuery(value || ""); }, [value]);
+
+  useEffect(() => {
+    if (query.length < 2) { setResults([]); return; }
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const data = await api.get(`/api/courses/search?q=${encodeURIComponent(query)}`);
+        setResults((Array.isArray(data) ? data : []).slice(0, 6));
+      } catch { setResults([]); }
+    }, 250);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [query]);
+
+  return (
+    <div style={{ position: "relative", marginTop: 6 }}>
+      <Input placeholder="Search LUC course (e.g. BIOL 101)" aria-label="Map to LUC course"
+        value={query}
+        onChange={e => { setQuery(e.target.value); onChange?.(e.target.value); }}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setTimeout(() => setFocused(false), 200)}
+        style={{ fontSize: TYPE.xs, color: TEXT.muted }} />
+      {focused && results.length > 0 && (
+        <div style={{
+          position: "absolute", top: "100%", left: 0, right: 0, zIndex: 10,
+          background: SURFACE.card, border: `1px solid ${BORDER}`, borderRadius: 4,
+          boxShadow: SHADOW.card, maxHeight: 180, overflow: "auto",
+        }}>
+          {results.map(c => (
+            <button key={c.code} type="button" onClick={() => {
+              onSelect(c.code, c.knowledge_area);
+              setQuery(c.code);
+              setResults([]);
+            }} style={{
+              display: "block", width: "100%", padding: "0.3rem 0.5rem", textAlign: "left",
+              fontFamily: FONT.mono, fontSize: TYPE.xs, border: "none", cursor: "pointer",
+              background: "transparent", borderBottom: `1px solid ${BORDER}`,
+            }}>
+              <strong>{c.code}</strong> {c.title}
+              {c.knowledge_area && <span style={{ color: TEXT.muted, marginLeft: "0.3rem" }}>· {c.knowledge_area}</span>}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function OnboardingWizard({ user, onComplete, initialStep }) {
   const [step, setStep] = useState(initialStep || 1);
   const [gradYear, setGradYear] = useState(user.grad_year || "");
@@ -2742,14 +2881,23 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
                     )}
                   </div>
                 )}
-                {/* Optional: map to specific LUC course */}
-                <Input placeholder="maps to LUC course code (optional, e.g. BIOL 101)" aria-label="LUC course code equivalent" value={row.satisfiesCode}
-                  onChange={e => {
-                    const next = [...transferRows];
-                    next[i] = { ...next[i], satisfiesCode: e.target.value };
-                    setTransferRows(next);
-                  }}
-                  style={{ fontSize: TYPE.xs, marginTop: 6, color: TEXT.muted }} />
+                {/* Map to specific LUC course with search */}
+                <TransferCourseSearch value={row.satisfiesCode} onSelect={(courseCode, knowledgeArea) => {
+                  const next = [...transferRows];
+                  next[i] = { ...next[i], satisfiesCode: courseCode };
+                  // Auto-populate Core area from knowledge_area if not already set
+                  if (knowledgeArea && (next[i].satisfies || []).length === 0) {
+                    const matchingCat = coreCategories.find(cat =>
+                      knowledgeArea.toLowerCase().includes(cat.replace(" and Inquiry", "").replace("Knowledge", "").trim().toLowerCase())
+                    );
+                    if (matchingCat) next[i] = { ...next[i], satisfies: [matchingCat] };
+                  }
+                  setTransferRows(next);
+                }} onChange={(val) => {
+                  const next = [...transferRows];
+                  next[i] = { ...next[i], satisfiesCode: val };
+                  setTransferRows(next);
+                }} />
               </div>
             ))}
 
@@ -3062,7 +3210,7 @@ function Dashboard({ user, setUser, onLogout, setOnboardingActive }) {
       )}
 
       {courseDetailModal && (
-        <CourseDetailModal code={courseDetailModal.code} onClose={() => setCourseDetailModal(null)} />
+        <CourseDetailModal code={courseDetailModal.code} onClose={() => setCourseDetailModal(null)} onRefresh={refresh} />
       )}
 
       {addCoursesSheet && (
