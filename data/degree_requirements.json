@@ -193,7 +193,8 @@
         "Elective coursework must be from at least 3 departments.",
         "Language proficiency at 104-level required (does not count toward 33 credits).",
         "Portfolio submission required in final semester.",
-        "Only 3 credits of GLST 370 count toward major."
+        "Only 3 credits of GLST 370 count toward major.",
+        "GLST 370 (Internship) is an elective, not required \u2014 verified against LUC catalog March 2026"
       ],
       "categories": [
         {
@@ -228,14 +229,6 @@
             "GLST 305",
             "GLST 306",
             "GLST 398"
-          ]
-        },
-        {
-          "name": "Internship",
-          "slots": 1,
-          "credits_per_slot": 3,
-          "eligible_courses": [
-            "GLST 370"
           ]
         },
         {
@@ -432,7 +425,9 @@
       "total_credits": 33,
       "unique_credits_required": 21,
       "double_dip_policy": "CAS_DEFAULT",
-      "core_waivers": ["Philosophical/Ethical"],
+      "core_waivers": [
+        "Philosophical/Ethical"
+      ],
       "notes": [
         "At least 7 of 11 courses must be 300-level (8 if PHIL 301 taken instead of PHIL 274).",
         "At least 4 of 5 electives should be 300-level.",
@@ -456,8 +451,14 @@
           "slots": 2,
           "credits_per_slot": 3,
           "eligible_courses_fixed": [
-            { "course": "PHIL 304", "required": true },
-            { "course": "PHIL 309", "required": true }
+            {
+              "course": "PHIL 304",
+              "required": true
+            },
+            {
+              "course": "PHIL 309",
+              "required": true
+            }
           ]
         },
         {
@@ -554,7 +555,7 @@
       ],
       "categories": [
         {
-          "name": "Introductory Courses — Tier 1",
+          "name": "Introductory Courses \u2014 Tier 1",
           "description": "Select one foundational history course",
           "slots": 1,
           "credits_per_slot": 3,
@@ -568,7 +569,7 @@
           ]
         },
         {
-          "name": "Introductory Courses — Tier 2",
+          "name": "Introductory Courses \u2014 Tier 2",
           "description": "Select one Tier 2 history course",
           "slots": 1,
           "credits_per_slot": 3,
@@ -836,7 +837,10 @@
           "slots": 1,
           "credits_per_slot": 3,
           "eligible_courses_fixed": [
-            { "course": "ENGL 390", "required": true }
+            {
+              "course": "ENGL 390",
+              "required": true
+            }
           ]
         },
         {
@@ -1012,7 +1016,10 @@
           "slots": 1,
           "credits_per_slot": 3,
           "eligible_courses_fixed": [
-            { "course": "SPAN 270", "required": true }
+            {
+              "course": "SPAN 270",
+              "required": true
+            }
           ]
         },
         {
@@ -1217,8 +1224,14 @@
           "slots": 2,
           "credits_per_slot": 3,
           "eligible_courses_fixed": [
-            { "course": "ANTH 101", "required": true },
-            { "course": "ANTH 231", "required": true }
+            {
+              "course": "ANTH 101",
+              "required": true
+            },
+            {
+              "course": "ANTH 231",
+              "required": true
+            }
           ]
         },
         {
@@ -1335,8 +1348,14 @@
           "slots": 2,
           "credits_per_slot": 3,
           "eligible_courses_fixed": [
-            { "course": "FNAR 110", "required": true },
-            { "course": "FNAR 113", "required": true }
+            {
+              "course": "FNAR 110",
+              "required": true
+            },
+            {
+              "course": "FNAR 113",
+              "required": true
+            }
           ]
         },
         {
@@ -1386,8 +1405,14 @@
           "slots": 2,
           "credits_per_slot": 3,
           "eligible_courses_fixed": [
-            { "course": "FNAR 388", "required": true },
-            { "course": "FNAR 398", "required": true }
+            {
+              "course": "FNAR 388",
+              "required": true
+            },
+            {
+              "course": "FNAR 398",
+              "required": true
+            }
           ]
         },
         {

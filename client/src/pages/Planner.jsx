@@ -1386,44 +1386,10 @@ function WeeklyScheduleView({ plan, coursesByTerm, actualByTerm = {}, planTerms,
                 <span style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, flexShrink: 0 }}>{rightContent}</span>
               </RowTag>
 
-              {/* Expanded: section alternatives */}
+              {/* Expanded: section alternatives with professor filter */}
               {isExpanded && (
-                <div style={{ padding: "0 0.6rem 0.4rem 0.6rem" }}>
-                  {c.sections.map(s => {
-                    const isSelected = c.section === s.section;
-                    return (
-                      <button type="button" key={s.section || s.class_number}
-                        onClick={() => onSectionSelect(c.course_code, s.section, s.class_number)}
-                        style={{
-                          display: "flex", alignItems: "flex-start", gap: "0.4rem", width: "100%",
-                          padding: "0.4rem 0.3rem", cursor: "pointer", borderRadius: 4,
-                          background: isSelected ? "#e8f5e9" : "transparent",
-                          border: "none", textAlign: "left", minHeight: 44,
-                        }}>
-                        <span style={{
-                          width: 14, height: 14, borderRadius: "50%", flexShrink: 0, marginTop: 1,
-                          border: `2px solid ${isSelected ? "#22863a" : "#ddd"}`,
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                        }}>
-                          {isSelected && <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22863a" }} />}
-                        </span>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm }}>
-                            <span style={{ fontWeight: 700 }}>§{s.section}</span>
-                            <span style={{ color: TEXT.muted, marginLeft: "0.3rem" }}>{s.days || "TBA"} {s.start_time && s.end_time ? `${s.start_time}–${s.end_time}` : ""}</span>
-                          </div>
-                          <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, display: "flex", alignItems: "center", gap: "0.25rem", flexWrap: "wrap" }}>
-                            <span>{s.instructor || "TBA"}</span>
-                            <RmpBadge rating={s.rmp_rating} numRatings={s.rmp_num_ratings}
-                              difficulty={s.rmp_difficulty} wouldTakeAgain={s.rmp_would_take_again}
-                              url={s.rmp_url} expanded={true} />
-                            {s.location ? <span>{"\u00B7"} {s.location}</span> : null}
-                          </div>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
+                <SectionList sections={c.sections} selectedSection={c.section}
+                  courseCode={c.course_code} onSectionSelect={onSectionSelect} />
               )}
             </div>
           );
@@ -1555,6 +1521,65 @@ function WeeklyScheduleView({ plan, coursesByTerm, actualByTerm = {}, planTerms,
           {sectionSidebar}
         </div>
       )}
+    </div>
+  );
+}
+
+// ── Section List with professor filter ────────────────────────────────────────
+
+function SectionList({ sections, selectedSection, courseCode, onSectionSelect }) {
+  const [filter, setFilter] = useState("");
+  const filtered = filter
+    ? sections.filter(s => (s.instructor || "").toLowerCase().includes(filter.toLowerCase()))
+    : sections;
+
+  return (
+    <div style={{ padding: "0 0.6rem 0.4rem 0.6rem" }}>
+      {sections.length >= 3 && (
+        <input type="text" placeholder="filter by professor..." aria-label="Filter by professor"
+          value={filter} onChange={e => setFilter(e.target.value)}
+          style={{
+            fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "0.25rem 0.4rem", marginBottom: "0.3rem",
+            border: `1px solid ${BORDER}`, borderRadius: 4, width: "100%", boxSizing: "border-box",
+          }} />
+      )}
+      {filtered.length === 0 && filter && (
+        <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, padding: "0.3rem 0" }}>No sections match "{filter}"</div>
+      )}
+      {filtered.map(s => {
+        const isSelected = selectedSection === s.section;
+        return (
+          <button type="button" key={s.section || s.class_number}
+            onClick={() => onSectionSelect(courseCode, s.section, s.class_number)}
+            style={{
+              display: "flex", alignItems: "flex-start", gap: "0.4rem", width: "100%",
+              padding: "0.4rem 0.3rem", cursor: "pointer", borderRadius: 4,
+              background: isSelected ? "#e8f5e9" : "transparent",
+              border: "none", textAlign: "left", minHeight: 44,
+            }}>
+            <span style={{
+              width: 14, height: 14, borderRadius: "50%", flexShrink: 0, marginTop: 1,
+              border: `2px solid ${isSelected ? "#22863a" : "#ddd"}`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              {isSelected && <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22863a" }} />}
+            </span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm }}>
+                <span style={{ fontWeight: 700 }}>§{s.section}</span>
+                <span style={{ color: TEXT.muted, marginLeft: "0.3rem" }}>{s.days || "TBA"} {s.start_time && s.end_time ? `${s.start_time}–${s.end_time}` : ""}</span>
+              </div>
+              <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, display: "flex", alignItems: "center", gap: "0.25rem", flexWrap: "wrap" }}>
+                <span>{s.instructor || "TBA"}</span>
+                <RmpBadge rating={s.rmp_rating} numRatings={s.rmp_num_ratings}
+                  difficulty={s.rmp_difficulty} wouldTakeAgain={s.rmp_would_take_again}
+                  url={s.rmp_url} expanded={true} />
+                {s.location ? <span>· {s.location}</span> : null}
+              </div>
+            </div>
+          </button>
+        );
+      })}
     </div>
   );
 }
