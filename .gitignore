@@ -7,3 +7,4 @@ server/public/
 *.log
 .DS_Store
 data/transcript-debug.txt
+client/.env
