@@ -23,6 +23,45 @@
         outline: 2px solid #6f42c1;
         outline-offset: 2px;
       }
+
+      /* Micro-interactions: buttons and interactive cards */
+      button, [role="button"] {
+        transition: transform 0.1s, box-shadow 0.1s, background 0.15s;
+      }
+      button:active:not(:disabled), [role="button"]:active {
+        transform: translateY(1px);
+      }
+
+      /* BottomSheet slide-up */
+      @keyframes slideUp {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+
+      /* Content expand */
+      @keyframes expandIn {
+        from { opacity: 0; transform: translateY(-4px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      /* Celebration pulse */
+      @keyframes celebratePulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+      }
+
+      /* Reduced motion: respect user preference */
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: 0.01ms !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
     </style>
   </head>
   <body>

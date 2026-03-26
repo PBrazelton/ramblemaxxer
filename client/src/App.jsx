@@ -58,7 +58,7 @@ export default function App() {
 
   if (loading) return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: BG }}>
-      <span style={{ fontFamily: FONT.mono, color: TEXT.muted }}>loading...</span>
+      <span style={{ fontFamily: FONT.mono, color: TEXT.muted }}>checking in...</span>
     </div>
   );
   const doLogout = async () => {
@@ -788,8 +788,8 @@ function CreditMeter({ credits, hasUnmappedTransfer, onTransferWarningTap }) {
             <span><span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: STATUS_COLOR.enrolled, marginRight: 4 }} />{enrolled} enrolled</span>
             <span><span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: STATUS_COLOR.planned, marginRight: 4 }} />{planned} planned</span>
           </div>
-          <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.muted, marginTop: "0.3rem" }}>
-            {max - total > 0 ? `${max - total} credits remaining` : "Credit requirement met"}
+          <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: total >= max ? TEXT.success : TEXT.muted, marginTop: "0.3rem", animation: total >= max ? "celebratePulse 0.4s ease-out" : "none" }}>
+            {max - total > 0 ? `${max - total} credits remaining` : "120 credits — you've hit the mark"}
           </div>
           {hasUnmappedTransfer && (
             <button type="button" onClick={onTransferWarningTap} style={{
@@ -970,7 +970,7 @@ function ProgramCard({ prog, conflicts, onPipClick, onSlotTap, defaultOpen = fal
         const incomplete = prog.categories.filter(cat => !cat.isSatisfied && !cat.isWaived);
         const completed = prog.categories.filter(cat => cat.isSatisfied || cat.isWaived);
         return (
-          <div style={{ padding: "0 1rem 0.8rem 1rem" }}>
+          <div style={{ padding: "0 1rem 0.8rem 1rem", animation: "expandIn 0.2s ease-out" }}>
             {incomplete.map((cat, i) => (
               <CategoryRow key={`inc-${i}`} cat={cat} color={color} conflicts={conflicts} onPipClick={onPipClick}
                 onSlotTap={onSlotTap ? () => onSlotTap(prog.code, cat.name) : null} />
@@ -996,7 +996,7 @@ function CompletedCategoriesGroup({ categories, color, conflicts, onPipClick }) 
       }}>
         <span style={{ color: TEXT.success, fontSize: TYPE.sm }}>&#10003;</span>
         <span style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, fontWeight: 600, color: TEXT.success }}>
-          {categories.length} completed
+          {categories.length} done
         </span>
         <span style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.disabled, transform: expanded ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>&#9660;</span>
       </button>
@@ -1341,7 +1341,7 @@ function SuggestionsCard({ suggestions, remaining, scrapedTerms, programs }) {
       </div>
       {top.length === 0 && termFilter && (
         <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.disabled, padding: "0.5rem 0" }}>
-          No suggestions offered in {termFilter}
+          Nothing jumping out for {termFilter} — try another semester?
         </div>
       )}
       {top.map((s, i) => {
@@ -1521,11 +1521,11 @@ function SlotModal({ programCode, categoryName, onClose }) {
       <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: COLORS[programCode] || "#666", marginBottom: "0.2rem" }}>{programCode}</div>
       <div style={{ fontFamily: FONT.serif, fontSize: TYPE.xl, fontWeight: 600, marginBottom: "0.8rem" }}>{categoryName}</div>
 
-      {!courses && <div style={{ fontFamily: FONT.mono, fontSize: TYPE.base, color: TEXT.muted, textAlign: "center", padding: "2rem" }}>loading...</div>}
+      {!courses && <div style={{ fontFamily: FONT.mono, fontSize: TYPE.base, color: TEXT.muted, textAlign: "center", padding: "2rem" }}>finding eligible courses...</div>}
 
       {courses && courses.length === 0 && (
         <div style={{ fontFamily: FONT.mono, fontSize: TYPE.base, color: TEXT.muted, textAlign: "center", padding: "2rem" }}>
-          No eligible courses found in catalog.
+          No courses match this slot yet.
         </div>
       )}
 
@@ -1675,7 +1675,7 @@ function CourseDetailModal({ code, onClose, onRefresh }) {
   return (
     <BottomSheet onClose={onClose} maxWidth={480}>
       {!course ? (
-        <div style={{ fontFamily: FONT.mono, fontSize: TYPE.base, color: TEXT.muted, padding: "2rem", textAlign: "center" }}>loading...</div>
+        <div style={{ fontFamily: FONT.mono, fontSize: TYPE.base, color: TEXT.muted, padding: "2rem", textAlign: "center" }}>pulling course details...</div>
       ) : (
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.3rem" }}>
@@ -3022,10 +3022,10 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
 
           return (
             <div>
-              <h2 style={{ fontFamily: FONT.serif, fontSize: TYPE.xxl, fontWeight: 700, marginBottom: 4, textAlign: "center" }}>
+              <h2 style={{ fontFamily: FONT.serif, fontSize: TYPE.xxl, fontWeight: 700, marginBottom: 4, textAlign: "center", animation: "expandIn 0.3s ease-out" }}>
                 you're all set
               </h2>
-              <p style={{ fontFamily: FONT.mono, fontSize: TYPE.base, color: TEXT.muted, marginBottom: 24, textAlign: "center" }}>
+              <p style={{ fontFamily: FONT.mono, fontSize: TYPE.base, color: TEXT.muted, marginBottom: 24, textAlign: "center", animation: "fadeIn 0.4s ease-out 0.15s both" }}>
                 here's where you stand
               </p>
 

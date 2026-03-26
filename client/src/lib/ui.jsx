@@ -244,8 +244,8 @@ export function BottomSheet({ onClose, children, maxWidth = 400 }) {
   }, [onClose]);
 
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: SURFACE.overlay, zIndex: 100, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-      <div ref={dialogRef} role="dialog" aria-modal="true" tabIndex={-1} onClick={e => e.stopPropagation()} style={{ background: SURFACE.card, borderRadius: "16px 16px 0 0", padding: "1.5rem", width: "100%", maxWidth, maxHeight: "80vh", overflow: "auto", outline: "none" }}>
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: SURFACE.overlay, zIndex: 100, display: "flex", alignItems: "flex-end", justifyContent: "center", animation: "fadeIn 0.15s ease-out" }}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" tabIndex={-1} onClick={e => e.stopPropagation()} style={{ background: SURFACE.card, borderRadius: "16px 16px 0 0", padding: "1.5rem", width: "100%", maxWidth, maxHeight: "80vh", overflow: "auto", outline: "none", animation: "slideUp 0.25s ease-out" }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: BORDER, margin: "0 auto 1rem" }} />
         {children}
       </div>
