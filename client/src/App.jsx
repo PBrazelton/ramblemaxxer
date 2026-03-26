@@ -1151,7 +1151,7 @@ function OverlapBudget({ overlaps, programs, conflicts, onPipClick }) {
                 {pair.count}/{pair.max}
               </span>
             </div>
-            <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.secondary, lineHeight: 1.5, marginBottom: "0.4rem" }}>
+            <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.secondary, lineHeight: 1.5, marginBottom: "0.4rem" }}>
               {explain}
             </div>
             <div style={{ display: "flex", gap: "0.3rem" }}>
@@ -1297,7 +1297,7 @@ function RemainingCard({ remaining, onSlotTap }) {
 }
 
 // ── SuggestionsCard ─────────────────────────────────────────────────────────
-function SuggestionsCard({ suggestions, remaining, scrapedTerms }) {
+function SuggestionsCard({ suggestions, remaining, scrapedTerms, programs }) {
   if (!suggestions || suggestions.length === 0) return null;
 
   const [termFilter, setTermFilter] = useState("");
@@ -1309,6 +1309,13 @@ function SuggestionsCard({ suggestions, remaining, scrapedTerms }) {
       neededLookup[r.category] = r.needed;
     }
   }
+
+  // Precompute program name → code map for fill chip colors
+  const progNameToCode = useMemo(() => {
+    const map = {};
+    for (const [code, p] of Object.entries(programs || {})) map[p.name] = code;
+    return map;
+  }, [programs]);
 
   // Apply term filter
   const filtered = termFilter
@@ -1337,16 +1344,27 @@ function SuggestionsCard({ suggestions, remaining, scrapedTerms }) {
           No suggestions offered in {termFilter}
         </div>
       )}
-      {top.map((s, i) => (
-        <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem", padding: "0.4rem 0", borderTop: i ? `1px solid ${BORDER}` : "none" }}>
+      {top.map((s, i) => {
+        const isHighValue = s.boxCount >= 3;
+        const badgeSize = isHighValue ? 28 : 22;
+        return (
+        <div key={i} style={{
+          display: "flex", alignItems: "flex-start", gap: "0.5rem",
+          padding: isHighValue && i === 0 ? "0.6rem 0.5rem" : "0.4rem 0",
+          borderTop: i ? `1px solid ${BORDER}` : "none",
+          background: isHighValue && i === 0 ? `${SURFACE.hover}` : "transparent",
+          borderRadius: isHighValue && i === 0 ? 6 : 0,
+          margin: isHighValue && i === 0 ? "0 -0.5rem" : 0,
+        }}>
           <span style={{
-            fontFamily: FONT.mono, fontSize: TYPE.xs, fontWeight: 700, width: 22, height: 22, borderRadius: "50%",
+            fontFamily: FONT.mono, fontSize: isHighValue ? TYPE.sm : TYPE.xs, fontWeight: 700,
+            width: badgeSize, height: badgeSize, borderRadius: "50%",
             display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-            background: s.boxCount >= 3 ? `linear-gradient(135deg, ${programColor("PLSC-BA")}, ${programColor("GLST-BA")})` : "#e8e4df",
-            color: s.boxCount >= 3 ? "#fff" : "#444",
+            background: isHighValue ? TEXT.primary : "#e8e4df",
+            color: isHighValue ? TEXT.inverse : "#444",
           }}>{s.boxCount}</span>
           <div style={{ flex: 1 }}>
-            <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, fontWeight: 600 }}>
+            <div style={{ fontFamily: FONT.mono, fontSize: isHighValue && i === 0 ? TYPE.base : TYPE.sm, fontWeight: 600 }}>
               {s.code} <span style={{ fontWeight: 400, color: TEXT.secondary }}>{s.title}</span>
               {s.writing_intensive && <span style={{ marginLeft: 4, fontSize: TYPE.xs, background: "#e3f2fd", padding: "1px 4px", borderRadius: 2, color: "#1565c0" }}>WI</span>}
               {s.engaged_learning && <span style={{ marginLeft: 4, fontSize: TYPE.xs, background: "#f3e5f5", padding: "1px 4px", borderRadius: 2, color: "#7b1fa2" }}>EL</span>}
@@ -1354,8 +1372,15 @@ function SuggestionsCard({ suggestions, remaining, scrapedTerms }) {
             <div style={{ display: "flex", flexWrap: "wrap", gap: "0.25rem", marginTop: "0.2rem" }}>
               {s.fills.map((f, j) => {
                 const needed = neededLookup[f];
+                const progName = f.split(":")[0]?.trim();
+                const progCode = progNameToCode[progName];
+                const color = progCode ? programColor(progCode) : TEXT.secondary;
+                // Use COLORS lookup for hex (supports alpha suffix); fallback for HSL colors
+                const hasHex = COLORS[progCode];
+                const bg = hasHex ? `${color}12` : "rgba(0,0,0,0.04)";
+                const borderColor = hasHex ? `${color}25` : "rgba(0,0,0,0.08)";
                 return (
-                  <span key={j} style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, background: SURFACE.hover, padding: "1px 5px", borderRadius: 3, color: TEXT.secondary }}>
+                  <span key={j} style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, background: bg, padding: "1px 5px", borderRadius: 3, color, border: `1px solid ${borderColor}` }}>
                     {f}{needed ? ` (${needed} needed)` : ""}
                   </span>
                 );
@@ -1368,7 +1393,8 @@ function SuggestionsCard({ suggestions, remaining, scrapedTerms }) {
             </div>
           </div>
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -1394,7 +1420,7 @@ function RemainingPill({ count, remainingRef }) {
     <button type="button" onClick={() => remainingRef.current?.scrollIntoView({ behavior: "smooth" })}
       style={{
         position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)",
-        background: BTN.primary, color: TEXT.inverse, padding: "10px 20px", borderRadius: 24,
+        background: "#3a3530", color: TEXT.inverse, padding: "10px 20px", borderRadius: 24,
         fontFamily: FONT.mono, fontSize: TYPE.base, fontWeight: 600, cursor: "pointer",
         zIndex: 50, boxShadow: "0 4px 16px rgba(0,0,0,0.2)", border: "none",
       }}>
@@ -3130,7 +3156,7 @@ function Dashboard({ user, setUser, onLogout, setOnboardingActive }) {
 
   if (!data) return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: BG }}>
-      <span style={{ fontFamily: FONT.mono, color: TEXT.muted }}>computing...</span>
+      <span style={{ fontFamily: FONT.mono, color: TEXT.muted }}>crunching your requirements...</span>
     </div>
   );
 
@@ -3217,7 +3243,7 @@ function Dashboard({ user, setUser, onLogout, setOnboardingActive }) {
           <div ref={remainingRef}>
             <RemainingCard remaining={data.remaining} onSlotTap={handleSlotTap} />
           </div>
-          <SuggestionsCard suggestions={data.suggestions} remaining={data.remaining} scrapedTerms={data.scrapedTerms} />
+          <SuggestionsCard suggestions={data.suggestions} remaining={data.remaining} scrapedTerms={data.scrapedTerms} programs={data.programs} />
         </div>
 
       </div>
