@@ -9,6 +9,15 @@ const CampusDay = lazy(() => import("./CampusDay.jsx"));
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
+// Placeholder course codes: PH:{program}:{category}
+function isPlaceholder(courseCode) { return courseCode?.startsWith("PH:"); }
+function makePlaceholderCode(program, category) { return `PH:${program}:${category}`; }
+function parsePlaceholder(courseCode) {
+  if (!isPlaceholder(courseCode)) return null;
+  const [, program, ...rest] = courseCode.split(":");
+  return { program, category: rest.join(":") };
+}
+
 function termOrder(semester) {
   if (!semester || semester === "Transfer") return 0;
   const m = String(semester).match(/^(Fall|Spring|Summer)\s+(\d{4})$/);
@@ -329,14 +338,17 @@ export default function Planner({ user, onLogout }) {
     if (!solverData?.remaining) return { filled: 0, total: 0, items: [] };
     const remaining = solverData.remaining;
     const items = remaining.map(r => {
-      // Build the expected fill prefix: "ProgramName: CategoryName"
       const fillPrefix = `${r.programName}: ${r.category}`;
+      const phCode = makePlaceholderCode(r.program, r.category);
       const filling = (plan?.courses || []).filter(c => {
+        // Count placeholders for this exact requirement
+        if (c.course_code === phCode) return true;
+        // Count real courses that fill this requirement
         const bc = allBrowseRef.current.get(c.course_code);
-        // Match on exact "ProgramName: CategoryName" to avoid cross-program false positives
         return bc?.fills?.some(f => f === fillPrefix);
       });
-      return { ...r, fillingCount: filling.length };
+      const placeholderCount = filling.filter(c => isPlaceholder(c.course_code)).length;
+      return { ...r, fillingCount: filling.length, placeholderCount };
     });
     const filled = items.filter(i => i.fillingCount >= i.needed).length;
     return { filled, total: items.length, items };
@@ -380,6 +392,33 @@ export default function Planner({ user, onLogout }) {
     }
     return list;
   }, [browseCourses, catalogResults, isSearchingCatalog, searchQuery, programFilter, termFilter, requirementFilter, wiFilter, elFilter, placedCodes]);
+
+  // Placeholder cards from unfilled requirements (not already placed as placeholder)
+  const placeholderCards = useMemo(() => {
+    if (!requirementStatus?.items) return [];
+    return requirementStatus.items
+      .filter(r => r.fillingCount < r.needed)
+      .map(r => {
+        const phCode = makePlaceholderCode(r.program, r.category);
+        const alreadyPlaced = (plan?.courses || []).some(c => c.course_code === phCode);
+        if (alreadyPlaced) return null;
+        return {
+          code: phCode,
+          title: r.category,
+          credits: 3,
+          department: r.program,
+          fills: [`${r.programName}: ${r.category}`],
+          boxCount: 0,
+          terms: [],
+          isPlaceholder: true,
+          program: r.program,
+          programName: r.programName,
+          category: r.category,
+          needed: r.needed - r.fillingCount,
+        };
+      })
+      .filter(Boolean);
+  }, [requirementStatus, plan]);
 
   // Program names for filter
   const programNames = useMemo(() => {
@@ -487,6 +526,7 @@ export default function Planner({ user, onLogout }) {
           showBrowser={showBrowser} setShowBrowser={setShowBrowser}
           showTracker={showTracker} setShowTracker={setShowTracker}
           requirementFilter={requirementFilter} setRequirementFilter={setRequirementFilter}
+          placeholderCards={placeholderCards}
           warnings={warnings} runValidation={runValidation}
           onSwitchToWeekly={(t) => { setView("weekly"); setWeeklyTerm(t); }}
           onConfirmTerm={async (t) => {
@@ -556,7 +596,7 @@ function SemesterPlanView({
   isSearchingCatalog, programNames, scrapedTerms,
   requirementStatus, solverData, creditStats, isMobile,
   showBrowser, setShowBrowser, showTracker, setShowTracker,
-  requirementFilter, setRequirementFilter,
+  requirementFilter, setRequirementFilter, placeholderCards,
   warnings, runValidation, onSwitchToWeekly, onConfirmTerm,
 }) {
   if (isMobile) {
@@ -589,6 +629,7 @@ function SemesterPlanView({
                 selectedCourse={selectedCourse} setSelectedCourse={setSelectedCourse}
                 requirementFilter={requirementFilter} onClearRequirement={() => setRequirementFilter(null)}
                 onSearchCatalog={() => { setRequirementFilter(null); setSearchQuery(requirementFilter?.category?.split(" ")[0] || ""); }}
+                placeholderCards={placeholderCards}
               />
             </div>
           )}
@@ -759,7 +800,7 @@ function CourseBrowserFilters({ searchQuery, setSearchQuery, programFilter, setP
 
 // ── Course Browser List ──────────────────────────────────────────────────────
 
-function CourseBrowserList({ courses, placedCodes, selectedCourse, setSelectedCourse, requirementFilter, onClearRequirement, onSearchCatalog }) {
+function CourseBrowserList({ courses, placedCodes, selectedCourse, setSelectedCourse, requirementFilter, onClearRequirement, onSearchCatalog, placeholderCards = [] }) {
   if (courses.length === 0) {
     if (requirementFilter) {
       return (
@@ -777,6 +818,32 @@ function CourseBrowserList({ courses, placedCodes, selectedCourse, setSelectedCo
   }
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+      {/* Placeholder cards for unfilled requirements */}
+      {placeholderCards.length > 0 && !requirementFilter && (
+        <>
+          {placeholderCards.slice(0, 5).map(ph => (
+            <button key={ph.code} type="button"
+              onClick={() => setSelectedCourse(selectedCourse?.code === ph.code ? null : ph)}
+              style={{
+                padding: "0.4rem 0.5rem", borderRadius: 6,
+                border: `1.5px dashed ${programColor(ph.program)}60`,
+                background: selectedCourse?.code === ph.code ? "#f5f0e8" : `${programColor(ph.program)}08`,
+                cursor: "pointer", textAlign: "left", width: "100%",
+              }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                <span style={{ fontSize: TYPE.sm }}>📌</span>
+                <span style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, fontWeight: 700, color: programColor(ph.program) }}>
+                  {ph.category}
+                </span>
+              </div>
+              <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted }}>
+                placeholder · 3cr · drag to reserve slot
+              </div>
+            </button>
+          ))}
+          <div style={{ borderTop: `1px solid ${BORDER}`, marginTop: "0.1rem", marginBottom: "0.1rem" }} />
+        </>
+      )}
       {courses.slice(0, 100).map(course => (
         <CourseCard key={course.code} course={course}
           isPlaced={placedCodes.has(course.code)}
@@ -1045,9 +1112,33 @@ function SemesterBucket({ term, courses, actualCourses: rawActual = [], selected
 
 // ── Placed Course Chip ───────────────────────────────────────────────────────
 
-function PlacedCourseChip({ course, onRemove }) {
+function PlacedCourseChip({ course, onRemove, onPlaceholderClick }) {
+  const ph = parsePlaceholder(course.course_code);
   const dept = course.department || course.course_code.split(" ")[0];
-  const color = COLORS[Object.keys(COLORS).find(k => k.startsWith(dept))] || "#5a6a7a";
+  const color = ph ? programColor(ph.program) : COLORS[Object.keys(COLORS).find(k => k.startsWith(dept))] || "#5a6a7a";
+
+  if (ph) {
+    return (
+      <div style={{
+        display: "inline-flex", alignItems: "center", gap: "0.3rem",
+        background: `${color}08`, border: `1.5px dashed ${color}50`,
+        borderRadius: 6, padding: "0.3rem 0.5rem", cursor: "pointer",
+      }} onClick={e => { e.stopPropagation(); onPlaceholderClick?.(ph); }}>
+        <span style={{ fontSize: TYPE.sm }}>📌</span>
+        <div>
+          <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, fontWeight: 700, color }}>{ph.category}</div>
+          <div style={{ fontFamily: FONT.mono, fontSize: "0.5rem", color: TEXT.muted }}>pick a course</div>
+        </div>
+        <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted }}>3cr</span>
+        <button onClick={e => { e.stopPropagation(); onRemove(); }} style={{
+          background: "none", border: "none", cursor: "pointer", padding: "0 0 0 0.2rem",
+          fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.danger, lineHeight: 1,
+          minWidth: 44, minHeight: 44, display: "flex", alignItems: "center", justifyContent: "center",
+        }}>×</button>
+      </div>
+    );
+  }
+
   return (
     <div style={{
       display: "inline-flex", alignItems: "center", gap: "0.3rem",
@@ -1063,14 +1154,14 @@ function PlacedCourseChip({ course, onRemove }) {
       <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted }}>{course.credits || 3}cr</span>
       {course.section && (
         <span style={{ fontFamily: FONT.mono, fontSize: "0.5rem", background: "#eee", padding: "1px 3px", borderRadius: 2 }}>
-          {"\u00A7"}{course.section}
+          §{course.section}
         </span>
       )}
       <button onClick={e => { e.stopPropagation(); onRemove(); }} style={{
         background: "none", border: "none", cursor: "pointer", padding: "0 0 0 0.2rem",
         fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.danger, lineHeight: 1,
         minWidth: 44, minHeight: 44, display: "flex", alignItems: "center", justifyContent: "center",
-      }}>{"\u00D7"}</button>
+      }}>×</button>
     </div>
   );
 }
@@ -1111,6 +1202,7 @@ function RequirementTracker({ status, solverData, activeFilter, onRequirementCli
           </div>
           {group.items.map((item, i) => {
             const covered = item.fillingCount >= item.needed;
+            const reserved = !covered && item.placeholderCount > 0;
             const itemKey = `${item.program}|${item.category}`;
             const isActive = activeFilter?.program === item.program && activeFilter?.category === item.category;
             const isHovered = hovered === itemKey;
@@ -1128,9 +1220,9 @@ function RequirementTracker({ status, solverData, activeFilter, onRequirementCli
                   borderLeft: isActive ? `3px solid ${pColor}` : "3px solid transparent",
                   transition: "background 0.1s",
                 }}>
-                <span style={{ width: 6, height: 6, borderRadius: "50%", background: covered ? "#22863a" : "#ddd", flexShrink: 0 }} />
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: covered ? "#22863a" : reserved ? "#b08800" : "#ddd", flexShrink: 0 }} />
                 <span style={{
-                  fontFamily: FONT.mono, fontSize: TYPE.xs, color: covered ? "#22863a" : "#888",
+                  fontFamily: FONT.mono, fontSize: TYPE.xs, color: covered ? "#22863a" : reserved ? "#b08800" : "#888",
                   textDecoration: covered ? "line-through" : "none",
                   flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
                 }}>
