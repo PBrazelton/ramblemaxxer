@@ -34,14 +34,14 @@ export const STATUS_COLOR = {
 // Typography
 export const FONT = { serif: "'Source Serif 4', Georgia, serif", mono: "'DM Mono', monospace" };
 export const TYPE = {
-  xs: "0.55rem",     // badges, tiny labels
-  sm: "0.65rem",     // secondary text, mono data
-  base: "0.75rem",   // body text, inputs
-  md: "0.85rem",     // section titles, card headers
-  lg: "1rem",        // page section titles
-  xl: "1.1rem",      // subsection headings
-  xxl: "1.3rem",     // page headings
-  display: "1.8rem", // logo
+  xs: "0.7rem",      // badges, tiny labels (was 0.55)
+  sm: "0.8rem",      // secondary text, mono data (was 0.65)
+  base: "0.9rem",    // body text, inputs (was 0.75)
+  md: "1rem",        // section titles, card headers (was 0.85)
+  lg: "1.15rem",     // page section titles (was 1)
+  xl: "1.3rem",      // subsection headings (was 1.1)
+  xxl: "1.5rem",     // page headings (was 1.3)
+  display: "1.8rem", // logo (unchanged)
 };
 
 // Surfaces and backgrounds
