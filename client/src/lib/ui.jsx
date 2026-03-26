@@ -134,7 +134,7 @@ export const secondaryCardStyle = { ...cardStyle, background: "transparent" };
 
 // Badge — small inline label with background
 export const badgeStyle = (bg, color) => ({
-  fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "1px 5px", borderRadius: 3,
+  fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "2px 6px", borderRadius: 3,
   background: bg, color,
 });
 

@@ -1041,8 +1041,8 @@ function CategoryRow({ cat, color, conflicts, onPipClick, onSlotTap }) {
       }}>
         <div style={{ fontFamily: FONT.mono, fontSize: TYPE.base, fontWeight: 600 }}>
           {cat.name}
-          {cat.isWaived && <span style={{ marginLeft: 6, fontSize: TYPE.xs, background: "#f0ede8", padding: "1px 6px", borderRadius: 3, color: TEXT.muted }}>waived</span>}
-          {hasConflict && <span style={{ marginLeft: 6, fontSize: TYPE.xs, background: "#e8f0fe", padding: "1px 6px", borderRadius: 3, color: "#1a5276" }}>shared</span>}
+          {cat.isWaived && <span style={{ marginLeft: 6, fontSize: TYPE.xs, background: "#f0ede8", padding: "2px 6px", borderRadius: 3, color: TEXT.muted }}>waived</span>}
+          {hasConflict && <span style={{ marginLeft: 6, fontSize: TYPE.xs, background: "#e8f0fe", padding: "2px 6px", borderRadius: 3, color: "#1a5276" }}>shared</span>}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
           <span style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: cat.isSatisfied ? "#22863a" : "#b08800", fontWeight: 600 }}>
@@ -1051,7 +1051,7 @@ function CategoryRow({ cat, color, conflicts, onPipClick, onSlotTap }) {
           {onSlotTap && <span style={{ color: "#c0b8b0", fontSize: TYPE.sm }}>&rsaquo;</span>}
         </div>
       </div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem" }}>{pips}</div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>{pips}</div>
     </div>
   );
 }
@@ -1060,7 +1060,7 @@ function FilledPip({ slot, color, isConflict, onClick, label }) {
   return (
     <button type="button" onClick={onClick} style={{
       display: "inline-flex", alignItems: "center", gap: 4,
-      padding: "3px 8px", borderRadius: 4, fontSize: TYPE.sm, fontFamily: FONT.mono,
+      padding: "4px 8px", borderRadius: 4, fontSize: TYPE.sm, fontFamily: FONT.mono,
       background: `${color}12`, border: `1px solid ${isConflict ? "#ffc107" : color + "40"}`,
       cursor: "pointer", boxShadow: isConflict ? "0 0 0 1px #ffc107" : "none",
       textAlign: "left",
@@ -1077,7 +1077,7 @@ function EmptyPip({ onClick }) {
   if (onClick) {
     return (
       <button type="button" onClick={onClick} style={{
-        width: 60, height: 24, borderRadius: 4,
+        width: 70, height: 28, borderRadius: 4,
         border: `1.5px dashed #999`,
         background: "#fafaf8",
         cursor: "pointer",
@@ -1090,7 +1090,7 @@ function EmptyPip({ onClick }) {
   }
   return (
     <div style={{
-      width: 60, height: 24, borderRadius: 4,
+      width: 70, height: 28, borderRadius: 4,
       border: `1.5px dashed #ccc`,
       background: "transparent",
       display: "flex", alignItems: "center", justifyContent: "center",
@@ -1101,7 +1101,7 @@ function EmptyPip({ onClick }) {
 
 function WaivedPip() {
   return (
-    <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 60, height: 24, borderRadius: 4, background: SURFACE.hover, border: `1px solid ${BORDER}`, fontSize: TYPE.xs, color: TEXT.muted }}>
+    <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 70, height: 28, borderRadius: 4, background: SURFACE.hover, border: `1px solid ${BORDER}`, fontSize: TYPE.xs, color: TEXT.muted }}>
       &#10003; waived
     </div>
   );
@@ -1147,7 +1147,7 @@ function OverlapBudget({ overlaps, programs, conflicts, onPipClick }) {
               <span style={{ fontFamily: FONT.mono, fontSize: TYPE.base, fontWeight: 600 }}>
                 {nameA} &#x2194; {nameB}
               </span>
-              <span style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "1px 8px", borderRadius: 10, background: overBudget ? "#fde8e8" : "#e8f5e9", color: overBudget ? "#c43b2d" : "#22863a", fontWeight: 600 }}>
+              <span style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "2px 8px", borderRadius: 10, background: overBudget ? "#fde8e8" : "#e8f5e9", color: overBudget ? "#c43b2d" : "#22863a", fontWeight: 600 }}>
                 {pair.count}/{pair.max}
               </span>
             </div>
@@ -1245,7 +1245,7 @@ function CASCard({ casGrad, spanLang }) {
               <div style={{ display: "flex", gap: "0.3rem", flexWrap: "wrap" }}>
                 {spanLang.categories[0].slots.map(slot => (
                   <div key={slot.label || slot.code || slot.id} style={{
-                    padding: "3px 8px", borderRadius: 4, fontSize: TYPE.sm, fontFamily: FONT.mono,
+                    padding: "4px 8px", borderRadius: 4, fontSize: TYPE.sm, fontFamily: FONT.mono,
                     background: slot.code ? `${programColor(spanLang.code)}15` : "#f5f0e8",
                     border: `1px solid ${slot.code ? programColor(spanLang.code) + "40" : "#ddd"}`,
                     color: slot.code ? "#333" : "#aaa",
@@ -1277,7 +1277,7 @@ function RemainingCard({ remaining, onSlotTap }) {
       {remaining.map((r, i) => (
         onSlotTap ? (
           <button type="button" key={i} onClick={() => onSlotTap(r.program, r.category)}
-            style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.25rem 0", fontFamily: FONT.mono, fontSize: TYPE.sm, cursor: "pointer", background: "none", border: "none", textAlign: "left", width: "100%" }}>
+            style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.35rem 0", fontFamily: FONT.mono, fontSize: TYPE.sm, cursor: "pointer", background: "none", border: "none", textAlign: "left", width: "100%" }}>
             <span style={{ width: 8, height: 8, borderRadius: "50%", background: COLORS[r.program] || "#888", flexShrink: 0 }} />
             <span style={{ color: TEXT.primary }}>{r.category}</span>
             <span style={{ color: TEXT.muted, marginLeft: "auto", fontSize: TYPE.xs }}>{r.programName} · {r.needed} needed</span>
@@ -1285,7 +1285,7 @@ function RemainingCard({ remaining, onSlotTap }) {
           </button>
         ) : (
           <div key={i}
-            style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.25rem 0", fontFamily: FONT.mono, fontSize: TYPE.sm }}>
+            style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.35rem 0", fontFamily: FONT.mono, fontSize: TYPE.sm }}>
             <span style={{ width: 8, height: 8, borderRadius: "50%", background: COLORS[r.program] || "#888", flexShrink: 0 }} />
             <span style={{ color: TEXT.primary }}>{r.category}</span>
             <span style={{ color: TEXT.muted, marginLeft: "auto", fontSize: TYPE.xs }}>{r.programName} · {r.needed} needed</span>
@@ -1366,8 +1366,8 @@ function SuggestionsCard({ suggestions, remaining, scrapedTerms, programs }) {
           <div style={{ flex: 1 }}>
             <div style={{ fontFamily: FONT.mono, fontSize: isHighValue && i === 0 ? TYPE.base : TYPE.sm, fontWeight: 600 }}>
               {s.code} <span style={{ fontWeight: 400, color: TEXT.secondary }}>{s.title}</span>
-              {s.writing_intensive && <span style={{ marginLeft: 4, fontSize: TYPE.xs, background: "#e3f2fd", padding: "1px 4px", borderRadius: 2, color: "#1565c0" }}>WI</span>}
-              {s.engaged_learning && <span style={{ marginLeft: 4, fontSize: TYPE.xs, background: "#f3e5f5", padding: "1px 4px", borderRadius: 2, color: "#7b1fa2" }}>EL</span>}
+              {s.writing_intensive && <span style={{ marginLeft: 4, fontSize: TYPE.xs, background: "#e3f2fd", padding: "2px 5px", borderRadius: 2, color: "#1565c0" }}>WI</span>}
+              {s.engaged_learning && <span style={{ marginLeft: 4, fontSize: TYPE.xs, background: "#f3e5f5", padding: "2px 5px", borderRadius: 2, color: "#7b1fa2" }}>EL</span>}
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "0.25rem", marginTop: "0.2rem" }}>
               {s.fills.map((f, j) => {
@@ -1380,13 +1380,13 @@ function SuggestionsCard({ suggestions, remaining, scrapedTerms, programs }) {
                 const bg = hasHex ? `${color}12` : "rgba(0,0,0,0.04)";
                 const borderColor = hasHex ? `${color}25` : "rgba(0,0,0,0.08)";
                 return (
-                  <span key={j} style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, background: bg, padding: "1px 5px", borderRadius: 3, color, border: `1px solid ${borderColor}` }}>
+                  <span key={j} style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, background: bg, padding: "2px 6px", borderRadius: 3, color, border: `1px solid ${borderColor}` }}>
                     {f}{needed ? ` (${needed} needed)` : ""}
                   </span>
                 );
               })}
               {s.terms && s.terms.length > 0 && s.terms.map((t, j) => (
-                <span key={`t${j}`} style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, background: "#e8f5e9", padding: "1px 5px", borderRadius: 3, color: "#2e7d32" }}>
+                <span key={`t${j}`} style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, background: "#e8f5e9", padding: "2px 6px", borderRadius: 3, color: "#2e7d32" }}>
                   {t.replace(/\d{4}/, "").trim()}
                 </span>
               ))}
@@ -1547,9 +1547,9 @@ function SlotModal({ programCode, categoryName, onClose }) {
                 </div>
               )}
               <div style={{ display: "flex", gap: "0.3rem", flexWrap: "wrap" }}>
-                {c.alreadyTaken && <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, background: "#e8f5e9", padding: "1px 5px", borderRadius: 3, color: TEXT.success }}>taking</span>}
-                {c.writing_intensive && <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, background: "#e3f2fd", padding: "1px 4px", borderRadius: 2, color: "#1565c0" }}>WI</span>}
-                {c.engaged_learning && <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, background: "#f3e5f5", padding: "1px 4px", borderRadius: 2, color: "#7b1fa2" }}>EL</span>}
+                {c.alreadyTaken && <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, background: "#e8f5e9", padding: "2px 6px", borderRadius: 3, color: TEXT.success }}>taking</span>}
+                {c.writing_intensive && <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, background: "#e3f2fd", padding: "2px 5px", borderRadius: 2, color: "#1565c0" }}>WI</span>}
+                {c.engaged_learning && <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, background: "#f3e5f5", padding: "2px 5px", borderRadius: 2, color: "#7b1fa2" }}>EL</span>}
               </div>
               {c.friends.length > 0 && (
                 <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, marginTop: "0.2rem" }}>
@@ -1604,7 +1604,7 @@ function CourseDetailSheet({ course, categoryName, onBack }) {
           <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, fontWeight: 600, marginBottom: "0.2rem" }}>Interdisciplinary</div>
           <div style={{ display: "flex", gap: "0.3rem", flexWrap: "wrap" }}>
             {course.interdisciplinary_options.map(opt => (
-              <span key={opt} style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, background: SURFACE.hover, padding: "1px 5px", borderRadius: 3, color: TEXT.secondary }}>{opt}</span>
+              <span key={opt} style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, background: SURFACE.hover, padding: "2px 6px", borderRadius: 3, color: TEXT.secondary }}>{opt}</span>
             ))}
           </div>
         </div>
@@ -1688,7 +1688,7 @@ function CourseDetailModal({ code, onClose, onRefresh }) {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.8rem" }}>
               <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.primary }}>
                 <strong>Term:</strong> {studentCourse.semester}
-                {studentCourse.status && <span style={{ marginLeft: "0.5rem", fontSize: TYPE.xs, background: `${STATUS_COLOR[studentCourse.status] || "#888"}18`, color: STATUS_COLOR[studentCourse.status] || "#888", padding: "1px 6px", borderRadius: 3 }}>{studentCourse.status}</span>}
+                {studentCourse.status && <span style={{ marginLeft: "0.5rem", fontSize: TYPE.xs, background: `${STATUS_COLOR[studentCourse.status] || "#888"}18`, color: STATUS_COLOR[studentCourse.status] || "#888", padding: "2px 6px", borderRadius: 3 }}>{studentCourse.status}</span>}
               </div>
               <button type="button" onClick={() => setEditing(true)} style={{
                 fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#6f42c1", background: "none", border: "none", cursor: "pointer",
@@ -1772,7 +1772,7 @@ function CourseDetailModal({ code, onClose, onRefresh }) {
               <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, fontWeight: 600, marginBottom: "0.2rem" }}>Interdisciplinary</div>
               <div style={{ display: "flex", gap: "0.3rem", flexWrap: "wrap" }}>
                 {course.interdisciplinary_options.map(opt => (
-                  <span key={opt} style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, background: SURFACE.hover, padding: "1px 5px", borderRadius: 3, color: TEXT.secondary }}>{opt}</span>
+                  <span key={opt} style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, background: SURFACE.hover, padding: "2px 6px", borderRadius: 3, color: TEXT.secondary }}>{opt}</span>
                 ))}
               </div>
             </div>
@@ -2056,16 +2056,16 @@ function ProgramPickerList({ label, items, selected, onToggle, search, onSearch,
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   <span style={{ fontFamily: FONT.mono, fontSize: TYPE.base, fontWeight: 600, color: isSelected ? color : "#333" }}>{p.name}</span>
                   {p.degree && <span style={{
-                    fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "1px 5px", borderRadius: 3,
+                    fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "2px 6px", borderRadius: 3,
                     background: "#eee", color: TEXT.secondary, flexShrink: 0,
                   }}>{p.degree}</span>}
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
                   <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.disabled }}>{p.code}</span>
                   {p.modeled ? (
-                    <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "1px 5px", borderRadius: 3, background: "#e8f5e9", color: TEXT.success }}>full tracking</span>
+                    <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "2px 6px", borderRadius: 3, background: "#e8f5e9", color: TEXT.success }}>full tracking</span>
                   ) : (
-                    <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "1px 5px", borderRadius: 3, background: "#f0f0f0", color: TEXT.disabled }}>credit tracking only</span>
+                    <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "2px 6px", borderRadius: 3, background: "#f0f0f0", color: TEXT.disabled }}>credit tracking only</span>
                   )}
                 </div>
               </div>
