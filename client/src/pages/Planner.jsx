@@ -81,17 +81,17 @@ function RmpBadge({ rating, numRatings, difficulty, wouldTakeAgain, url, expande
   const badge = (
     <span style={{ display: "inline-flex", alignItems: "center", gap: "0.15rem" }}>
       <span style={{
-        fontFamily: FONT.mono, fontSize: "0.5rem", fontWeight: 700,
+        fontFamily: FONT.mono, fontSize: TYPE.xs, fontWeight: 700,
         color, background: bg, padding: "1px 4px", borderRadius: 3, whiteSpace: "nowrap",
       }}>
         {"\u2605"}{rating.toFixed(1)}
       </span>
-      <span style={{ fontFamily: FONT.mono, fontSize: "0.45rem", color: TEXT.muted }}>({numRatings})</span>
+      <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted }}>({numRatings})</span>
     </span>
   );
 
   const expandedDetail = expanded && (difficulty != null || wouldTakeAgain != null) ? (
-    <span style={{ fontFamily: FONT.mono, fontSize: "0.45rem", color: TEXT.muted, display: "block" }}>
+    <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, display: "block" }}>
       {difficulty != null && <span>Difficulty: {difficulty.toFixed(1)}</span>}
       {difficulty != null && wouldTakeAgain != null && " · "}
       {wouldTakeAgain != null && <span>{Math.round(wouldTakeAgain)}% would take again</span>}
@@ -899,10 +899,10 @@ function CourseCard({ course, isPlaced, isSelected, onSelect }) {
               </span>
             )}
             {course.writing_intensive && (
-              <span style={{ fontFamily: FONT.mono, fontSize: "0.45rem", background: "#2a6a8a15", color: "#2a6a8a", padding: "1px 3px", borderRadius: 2 }}>WI</span>
+              <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, background: "#2a6a8a15", color: "#2a6a8a", padding: "1px 3px", borderRadius: 2 }}>WI</span>
             )}
             {course.engaged_learning && (
-              <span style={{ fontFamily: FONT.mono, fontSize: "0.45rem", background: "#8a6a2a15", color: "#8a6a2a", padding: "1px 3px", borderRadius: 2 }}>EL</span>
+              <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, background: "#8a6a2a15", color: "#8a6a2a", padding: "1px 3px", borderRadius: 2 }}>EL</span>
             )}
           </div>
           <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#555", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -915,7 +915,7 @@ function CourseCard({ course, isPlaced, isSelected, onSelect }) {
       {course.terms?.length > 0 && (
         <div style={{ display: "flex", gap: "0.2rem", marginTop: "0.2rem", flexWrap: "wrap" }}>
           {course.terms.slice(0, 4).map(t => (
-            <span key={t} style={{ fontFamily: FONT.mono, fontSize: "0.45rem", background: "#eee", padding: "1px 3px", borderRadius: 2 }}>
+            <span key={t} style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, background: "#eee", padding: "1px 3px", borderRadius: 2 }}>
               {termLabel(t)}
             </span>
           ))}
@@ -923,12 +923,12 @@ function CourseCard({ course, isPlaced, isSelected, onSelect }) {
       )}
       {/* Fills */}
       {course.fills?.length > 0 && (
-        <div style={{ fontFamily: FONT.mono, fontSize: "0.5rem", color: TEXT.muted, marginTop: "0.15rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, marginTop: "0.15rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {course.fills.slice(0, 2).join(", ")}
         </div>
       )}
       {course.isFullCatalog && !course.fills?.length && (
-        <div style={{ fontFamily: FONT.mono, fontSize: "0.45rem", color: "#bbb", marginTop: "0.15rem" }}>
+        <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#bbb", marginTop: "0.15rem" }}>
           not in your requirements
         </div>
       )}
@@ -1013,7 +1013,7 @@ function SemesterBucket({ term, courses, actualCourses: rawActual = [], selected
               );
             })()}
             {!hasData && (
-              <span style={{ fontFamily: FONT.mono, fontSize: "0.5rem", color: "#b08800" }}>no schedule data</span>
+              <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#b08800" }}>no schedule data</span>
             )}
           </div>
         </button>
@@ -1029,7 +1029,7 @@ function SemesterBucket({ term, courses, actualCourses: rawActual = [], selected
           </div>
           <div style={{ display: "flex", gap: "0.3rem", alignItems: "center" }}>
             {!hasData && (
-              <span style={{ fontFamily: FONT.mono, fontSize: "0.5rem", color: "#b08800" }}>no schedule data</span>
+              <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#b08800" }}>no schedule data</span>
             )}
           </div>
         </div>
@@ -1051,12 +1051,12 @@ function SemesterBucket({ term, courses, actualCourses: rawActual = [], selected
                 }}>
                   <div>
                     <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, fontWeight: 700, color }}>{c.course_code}</div>
-                    <div style={{ fontFamily: FONT.mono, fontSize: "0.5rem", color: TEXT.secondary, maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.secondary, maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {c.title || ""}
                     </div>
                   </div>
                   <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted }}>{c.credits || 3}cr</span>
-                  <span style={{ fontFamily: FONT.mono, fontSize: "0.45rem", background: `${statusColor}20`, color: statusColor, padding: "1px 4px", borderRadius: 3 }}>
+                  <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, background: `${statusColor}20`, color: statusColor, padding: "1px 4px", borderRadius: 3 }}>
                     {c.status}
                   </span>
                 </div>
@@ -1127,7 +1127,7 @@ function PlacedCourseChip({ course, onRemove, onPlaceholderClick }) {
         <span style={{ fontSize: TYPE.sm }}>📌</span>
         <div>
           <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, fontWeight: 700, color }}>{ph.category}</div>
-          <div style={{ fontFamily: FONT.mono, fontSize: "0.5rem", color: TEXT.muted }}>pick a course</div>
+          <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted }}>pick a course</div>
         </div>
         <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted }}>3cr</span>
         <button onClick={e => { e.stopPropagation(); onRemove(); }} style={{
@@ -1147,13 +1147,13 @@ function PlacedCourseChip({ course, onRemove, onPlaceholderClick }) {
     }}>
       <div>
         <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, fontWeight: 700, color }}>{course.course_code}</div>
-        <div style={{ fontFamily: FONT.mono, fontSize: "0.5rem", color: TEXT.secondary, maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.secondary, maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {course.title || ""}
         </div>
       </div>
       <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted }}>{course.credits || 3}cr</span>
       {course.section && (
-        <span style={{ fontFamily: FONT.mono, fontSize: "0.5rem", background: "#eee", padding: "1px 3px", borderRadius: 2 }}>
+        <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, background: "#eee", padding: "1px 3px", borderRadius: 2 }}>
           §{course.section}
         </span>
       )}
@@ -1231,7 +1231,7 @@ function RequirementTracker({ status, solverData, activeFilter, onRequirementCli
                 {isActive ? (
                   <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, flexShrink: 0 }}>{"\u00D7"}</span>
                 ) : (
-                  <span style={{ fontFamily: FONT.mono, fontSize: "0.5rem", color: TEXT.disabled, flexShrink: 0 }}>
+                  <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.disabled, flexShrink: 0 }}>
                     {Math.min(item.fillingCount, item.needed)}/{item.needed}
                   </span>
                 )}
@@ -1464,7 +1464,7 @@ function WeeklyScheduleView({ plan, coursesByTerm, actualByTerm = {}, planTerms,
               }}>
                 {/* Colored dot */}
                 {c.noData ? (
-                  <span style={{ fontFamily: FONT.mono, fontSize: "0.45rem", color: TEXT.muted, width: 10, textAlign: "center", flexShrink: 0 }}>{"\u2013"}</span>
+                  <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, width: 10, textAlign: "center", flexShrink: 0 }}>{"\u2013"}</span>
                 ) : (
                   <span style={{
                     width: 10, height: 10, borderRadius: "50%", flexShrink: 0,
@@ -1693,7 +1693,7 @@ function TimeGrid({ blocks, conflictCodes, gridStart, gridEnd }) {
         {rows.map(t => (
           <div key={t} style={{
             position: "absolute", top: (t - gridStart) * ROW_HEIGHT,
-            fontFamily: FONT.mono, fontSize: "0.5rem", color: TEXT.disabled, width: LABEL_WIDTH, textAlign: "right", paddingRight: 4,
+            fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.disabled, width: LABEL_WIDTH, textAlign: "right", paddingRight: 4,
           }}>
             {formatTime(t)}
           </div>
@@ -1742,11 +1742,11 @@ function TimeGrid({ blocks, conflictCodes, gridStart, gridEnd }) {
                 boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
                 padding: "1px 4px", overflow: "hidden", zIndex: 1,
               }}>
-                <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", fontWeight: 700, color: b.color, lineHeight: 1.2 }}>
+                <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, fontWeight: 700, color: b.color, lineHeight: 1.2 }}>
                   {b.courseCode}
                 </div>
                 {height > 25 && (
-                  <div style={{ fontFamily: FONT.mono, fontSize: "0.5rem", color: TEXT.secondary, lineHeight: 1.1 }}>
+                  <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.secondary, lineHeight: 1.1 }}>
                     {b.instructor?.split(",")[0]?.split(" ").pop() || ""}
                   </div>
                 )}

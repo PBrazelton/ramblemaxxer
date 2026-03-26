@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { COLORS, STATUS_COLOR, FONT, BG, BORDER, api, ProgressRing, BottomSheet, StickyHeader, ErrMsg, sharedStyles, programColor } from "../lib/ui.jsx";
+import { COLORS, STATUS_COLOR, FONT, TYPE, BG, BORDER, api, ProgressRing, BottomSheet, StickyHeader, ErrMsg, sharedStyles, programColor } from "../lib/ui.jsx";
 
 export default function AdminPanel({ user, onLogout }) {
   const [tab, setTab] = useState("students");
@@ -76,7 +76,7 @@ export default function AdminPanel({ user, onLogout }) {
         <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
           {["students", "invites", "programs", "tools", "feedback"].map(t => (
             <button key={t} onClick={() => setTab(t)} style={{
-              fontFamily: FONT.mono, fontSize: "0.8rem", padding: "0.5rem 1rem",
+              fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.5rem 1rem",
               background: tab === t ? "#1a1a1a" : "#f5f0e8",
               color: tab === t ? "#fff" : "#666",
               border: "none", borderRadius: 4, cursor: "pointer",
@@ -86,7 +86,7 @@ export default function AdminPanel({ user, onLogout }) {
               {t === "feedback" && feedbackCount > 0 && (
                 <span style={{
                   position: "absolute", top: -4, right: -4,
-                  background: "#c43b2d", color: "#fff", fontSize: "0.55rem",
+                  background: "#c43b2d", color: "#fff", fontSize: TYPE.xs,
                   fontFamily: FONT.mono, minWidth: 16, height: 16,
                   borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center",
                   padding: "0 4px",
@@ -130,25 +130,25 @@ export default function AdminPanel({ user, onLogout }) {
       {/* Temp password dialog */}
       {tempPassword && (
         <BottomSheet onClose={() => setTempPassword(null)}>
-          <div style={{ fontFamily: FONT.serif, fontSize: "1.1rem", fontWeight: 600, marginBottom: "0.5rem" }}>
+          <div style={{ fontFamily: FONT.serif, fontSize: TYPE.md, fontWeight: 600, marginBottom: "0.5rem" }}>
             Password Reset
           </div>
-          <p style={{ fontFamily: FONT.mono, fontSize: "0.8rem", color: "#666", marginBottom: "0.5rem" }}>
+          <p style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: "#666", marginBottom: "0.5rem" }}>
             New temporary password for {tempPassword.name}:
           </p>
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "1rem" }}>
             <code style={{
-              fontFamily: FONT.mono, fontSize: "1.2rem", fontWeight: 700,
+              fontFamily: FONT.mono, fontSize: TYPE.xl, fontWeight: 700,
               background: "#f5f0e8", padding: "0.5rem 1rem", borderRadius: 4, flex: 1, textAlign: "center",
             }}>
               {tempPassword.password}
             </code>
             <button onClick={() => copyToClipboard(tempPassword.password)} style={{
-              fontFamily: FONT.mono, fontSize: "0.75rem", padding: "0.5rem 0.8rem",
+              fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.5rem 0.8rem",
               background: "#1a1a1a", color: "#fff", border: "none", borderRadius: 4, cursor: "pointer",
             }}>copy</button>
           </div>
-          <p style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#888" }}>
+          <p style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#888" }}>
             This password cannot be retrieved again. Share it with the student directly.
           </p>
         </BottomSheet>
@@ -157,17 +157,17 @@ export default function AdminPanel({ user, onLogout }) {
       {/* New invite URL dialog */}
       {newInviteUrl && (
         <BottomSheet onClose={() => setNewInviteUrl(null)}>
-          <div style={{ fontFamily: FONT.serif, fontSize: "1.1rem", fontWeight: 600, marginBottom: "0.5rem" }}>
+          <div style={{ fontFamily: FONT.serif, fontSize: TYPE.md, fontWeight: 600, marginBottom: "0.5rem" }}>
             Invite Created
           </div>
           <div style={{
-            fontFamily: FONT.mono, fontSize: "0.7rem", wordBreak: "break-all",
+            fontFamily: FONT.mono, fontSize: TYPE.sm, wordBreak: "break-all",
             background: "#f5f0e8", padding: "0.5rem 1rem", borderRadius: 4, marginBottom: "0.5rem",
           }}>
             {newInviteUrl}
           </div>
           <button onClick={() => { copyToClipboard(newInviteUrl); setNewInviteUrl(null); }} style={{
-            fontFamily: FONT.mono, fontSize: "0.8rem", padding: "0.5rem 1rem", width: "100%",
+            fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.5rem 1rem", width: "100%",
             background: "#1a1a1a", color: "#fff", border: "none", borderRadius: 4, cursor: "pointer",
           }}>copy & close</button>
         </BottomSheet>
@@ -180,7 +180,7 @@ export default function AdminPanel({ user, onLogout }) {
 function StudentsTab({ students, currentUserId, onView, onResetPassword, onResetUser, onToggleActive }) {
   if (students.length === 0) {
     return (
-      <div style={{ fontFamily: FONT.mono, fontSize: "0.8rem", color: "#888", textAlign: "center", padding: "2rem" }}>
+      <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: "#888", textAlign: "center", padding: "2rem" }}>
         No students yet. Generate an invite to get started.
       </div>
     );
@@ -197,21 +197,21 @@ function StudentsTab({ students, currentUserId, onView, onResetPassword, onReset
             <div style={{
               width: 32, height: 32, borderRadius: "50%", background: "#1a1a1a", color: "#fff",
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontFamily: FONT.mono, fontSize: "0.75rem", fontWeight: 700, flexShrink: 0,
+              fontFamily: FONT.mono, fontSize: TYPE.sm, fontWeight: 700, flexShrink: 0,
             }}>
               {s.name.charAt(0).toUpperCase()}
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontFamily: FONT.serif, fontSize: "0.95rem", fontWeight: 600 }}>
+              <div style={{ fontFamily: FONT.serif, fontSize: TYPE.base, fontWeight: 600 }}>
                 {s.name}
-                {s.active === 0 && <span style={{ marginLeft: 6, fontSize: "0.6rem", fontFamily: FONT.mono, background: "#fde8e8", padding: "1px 6px", borderRadius: 3, color: "#c43b2d" }}>inactive</span>}
+                {s.active === 0 && <span style={{ marginLeft: 6, fontSize: TYPE.xs, fontFamily: FONT.mono, background: "#fde8e8", padding: "1px 6px", borderRadius: 3, color: "#c43b2d" }}>inactive</span>}
               </div>
-              <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#888" }}>
+              <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#888" }}>
                 {s.email} {s.grad_year ? `· Class of ${s.grad_year}` : ""}
               </div>
             </div>
           </div>
-          <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#888", marginBottom: "0.5rem", paddingLeft: 38 }}>
+          <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#888", marginBottom: "0.5rem", paddingLeft: 38 }}>
             {s.course_count} courses {s.invited_by_name ? `· invited by ${s.invited_by_name}` : ""}
           </div>
           <div style={{ display: "flex", gap: "0.4rem", paddingLeft: 38 }}>
@@ -234,7 +234,7 @@ function StudentsTab({ students, currentUserId, onView, onResetPassword, onReset
 
 function btnStyle(bg) {
   return {
-    fontFamily: FONT.mono, fontSize: "0.65rem", padding: "0.35rem 0.6rem",
+    fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "0.35rem 0.6rem",
     background: bg, color: "#fff", border: "none", borderRadius: 4, cursor: "pointer",
   };
 }
@@ -265,12 +265,12 @@ function InvitesTab({ invites, onGenerate, onCopy }) {
           onChange={e => setInviteEmail(e.target.value)}
           onKeyDown={e => e.key === "Enter" && handleGenerate()}
           style={{
-            flex: 1, fontFamily: FONT.mono, fontSize: "0.8rem", padding: "0.6rem 0.8rem",
+            flex: 1, fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.6rem 0.8rem",
             border: `1px solid ${BORDER}`, borderRadius: 4, background: "#fafaf8", outline: "none",
           }}
         />
         <button onClick={handleGenerate} style={{
-          fontFamily: FONT.mono, fontSize: "0.8rem", padding: "0.6rem 1rem",
+          fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.6rem 1rem",
           background: "#1a1a1a", color: "#fff", border: "none", borderRadius: 4, cursor: "pointer",
           whiteSpace: "nowrap",
         }}>
@@ -280,7 +280,7 @@ function InvitesTab({ invites, onGenerate, onCopy }) {
 
       {Object.entries(byInviter).map(([inviterId, group]) => (
         <div key={inviterId} style={{ marginBottom: "1rem" }}>
-          <div style={{ fontFamily: FONT.serif, fontSize: "0.9rem", fontWeight: 600, marginBottom: "0.4rem" }}>
+          <div style={{ fontFamily: FONT.serif, fontSize: TYPE.base, fontWeight: 600, marginBottom: "0.4rem" }}>
             {group.name}
           </div>
           {group.invites.map(inv => {
@@ -295,23 +295,23 @@ function InvitesTab({ invites, onGenerate, onCopy }) {
                 paddingLeft: "1.5rem", marginBottom: "0.4rem",
                 borderLeft: `2px solid ${BORDER}`,
               }}>
-                <span style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#444" }}>
+                <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#444" }}>
                   {isUsed ? (inv.invitee_name || inv.email || "unknown") : (inv.email || "open invite")}
                 </span>
                 <span style={{
-                  fontFamily: FONT.mono, fontSize: "0.55rem", padding: "1px 6px", borderRadius: 3,
+                  fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "1px 6px", borderRadius: 3,
                   background: `${statusColor}15`, color: statusColor,
                 }}>
                   {status}
                 </span>
                 {isUsed && (
-                  <span style={{ fontFamily: FONT.mono, fontSize: "0.55rem", color: "#888" }}>
+                  <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#888" }}>
                     {new Date(inv.used_at).toLocaleDateString()}
                   </span>
                 )}
                 {status === "pending" && (
                   <button onClick={() => onCopy(`${window.location.origin}/#/register?token=${inv.token}`)} style={{
-                    fontFamily: FONT.mono, fontSize: "0.55rem", padding: "2px 6px",
+                    fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "2px 6px",
                     background: "#f5f0e8", color: "#666", border: `1px solid ${BORDER}`,
                     borderRadius: 3, cursor: "pointer",
                   }}>copy link</button>
@@ -323,7 +323,7 @@ function InvitesTab({ invites, onGenerate, onCopy }) {
       ))}
 
       {invites.length === 0 && (
-        <div style={{ fontFamily: FONT.mono, fontSize: "0.8rem", color: "#888", textAlign: "center", padding: "2rem" }}>
+        <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: "#888", textAlign: "center", padding: "2rem" }}>
           No invites yet.
         </div>
       )}
@@ -340,10 +340,10 @@ function StudentDashboardView({ data }) {
 
   return (
     <div>
-      <div style={{ fontFamily: FONT.serif, fontSize: "1.1rem", fontWeight: 600, marginBottom: "0.2rem" }}>
+      <div style={{ fontFamily: FONT.serif, fontSize: TYPE.md, fontWeight: 600, marginBottom: "0.2rem" }}>
         {student.name}'s Dashboard
       </div>
-      <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#888", marginBottom: "1rem" }}>
+      <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: "#888", marginBottom: "1rem" }}>
         {student.email} {student.grad_year ? `· Class of ${student.grad_year}` : ""}
       </div>
 
@@ -355,7 +355,7 @@ function StudentDashboardView({ data }) {
           { label: "Enrolled", value: data.credits.enrolled, color: STATUS_COLOR.enrolled },
           { label: "Planned", value: data.credits.planned, color: STATUS_COLOR.planned },
         ].map(c => (
-          <div key={c.label} style={{ fontFamily: FONT.mono, fontSize: "0.7rem" }}>
+          <div key={c.label} style={{ fontFamily: FONT.mono, fontSize: TYPE.sm }}>
             <span style={{ fontWeight: 700, color: c.color }}>{c.value}</span>
             <span style={{ color: "#888" }}> {c.label.toLowerCase()}</span>
           </div>
@@ -373,8 +373,8 @@ function StudentDashboardView({ data }) {
             borderRadius: 6, padding: "0.6rem 0.8rem", marginBottom: "0.5rem",
           }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div style={{ fontFamily: FONT.serif, fontSize: "0.85rem", fontWeight: 600, color }}>{prog.name}</div>
-              <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: filled === total ? "#22863a" : "#888" }}>
+              <div style={{ fontFamily: FONT.serif, fontSize: TYPE.base, fontWeight: 600, color }}>{prog.name}</div>
+              <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: filled === total ? "#22863a" : "#888" }}>
                 {filled}/{total}
               </div>
             </div>
@@ -385,9 +385,9 @@ function StudentDashboardView({ data }) {
       {/* Remaining */}
       {data.remaining.length > 0 && (
         <div style={{ marginTop: "0.8rem" }}>
-          <div style={{ fontFamily: FONT.serif, fontSize: "0.85rem", fontWeight: 600, marginBottom: "0.3rem" }}>Remaining</div>
+          <div style={{ fontFamily: FONT.serif, fontSize: TYPE.base, fontWeight: 600, marginBottom: "0.3rem" }}>Remaining</div>
           {data.remaining.map((r, i) => (
-            <div key={i} style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#666", marginBottom: "0.2rem" }}>
+            <div key={i} style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#666", marginBottom: "0.2rem" }}>
               <span style={{ display: "inline-block", width: 6, height: 6, borderRadius: "50%", background: programColor(r.program), marginRight: 6 }} />
               {r.label}
             </div>
@@ -532,11 +532,11 @@ function ProgramsTab() {
   return (
     <div>
       <button onClick={() => openEditor(null)} style={{
-        ...sharedStyles.button, fontSize: "0.8rem", padding: "0.5rem 1rem", marginBottom: "1rem",
+        ...sharedStyles.button, fontSize: TYPE.sm, padding: "0.5rem 1rem", marginBottom: "1rem",
       }}>+ New Program</button>
 
       {loading && (
-        <div style={{ fontFamily: FONT.mono, fontSize: "0.8rem", color: "#888", textAlign: "center", padding: "2rem" }}>
+        <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: "#888", textAlign: "center", padding: "2rem" }}>
           Loading programs...
         </div>
       )}
@@ -550,19 +550,19 @@ function ProgramsTab() {
               borderRadius: 8, padding: "0.8rem 1rem", opacity: p.is_active ? 1 : 0.5,
             }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.3rem" }}>
-                <div style={{ fontFamily: FONT.serif, fontSize: "0.95rem", fontWeight: 600, color, flex: 1 }}>
+                <div style={{ fontFamily: FONT.serif, fontSize: TYPE.base, fontWeight: 600, color, flex: 1 }}>
                   {p.name}
                 </div>
                 <span style={{
-                  fontFamily: FONT.mono, fontSize: "0.55rem", padding: "2px 6px", borderRadius: 3,
+                  fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "2px 6px", borderRadius: 3,
                   background: p.type === "major" ? "#e8f5e9" : p.type === "minor" ? "#e3f2fd" : "#f5f0e8",
                   color: p.type === "major" ? "#22863a" : p.type === "minor" ? "#1565c0" : "#7a4a1a",
                 }}>{p.type}</span>
                 {!p.is_active && (
-                  <span style={{ fontFamily: FONT.mono, fontSize: "0.55rem", padding: "2px 6px", borderRadius: 3, background: "#fde8e8", color: "#c43b2d" }}>inactive</span>
+                  <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "2px 6px", borderRadius: 3, background: "#fde8e8", color: "#c43b2d" }}>inactive</span>
                 )}
               </div>
-              <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#888", marginBottom: "0.5rem" }}>
+              <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#888", marginBottom: "0.5rem" }}>
                 {p.code} {p.department ? `· ${p.department}` : ""} · {p.category_count} categories · {p.student_count} student{p.student_count !== 1 ? "s" : ""}
               </div>
               <button onClick={() => openEditor(p.code)} style={btnStyle("#1a1a1a")}>Edit</button>
@@ -572,7 +572,7 @@ function ProgramsTab() {
       </div>
 
       {!loading && programs.length === 0 && (
-        <div style={{ fontFamily: FONT.mono, fontSize: "0.8rem", color: "#888", textAlign: "center", padding: "2rem" }}>
+        <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: "#888", textAlign: "center", padding: "2rem" }}>
           No programs yet. Create one to get started.
         </div>
       )}
@@ -603,7 +603,7 @@ function ProgramEditor({ code, onBack }) {
     }
   }, [code, isCreate]);
 
-  if (!form) return <div style={{ fontFamily: FONT.mono, fontSize: "0.8rem", color: "#888", padding: "2rem", textAlign: "center" }}>Loading...</div>;
+  if (!form) return <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: "#888", padding: "2rem", textAlign: "center" }}>Loading...</div>;
 
   const updateField = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
 
@@ -746,13 +746,13 @@ function ProgramEditor({ code, onBack }) {
   return (
     <div>
       <button onClick={onBack} style={{
-        fontFamily: FONT.mono, fontSize: "0.75rem", color: "#666", background: "none",
+        fontFamily: FONT.mono, fontSize: TYPE.sm, color: "#666", background: "none",
         border: "none", cursor: "pointer", padding: 0, marginBottom: "1rem",
       }}>
         &larr; Back to list
       </button>
 
-      <h2 style={{ fontFamily: FONT.serif, fontSize: "1.3rem", fontWeight: 700, marginBottom: "1rem" }}>
+      <h2 style={{ fontFamily: FONT.serif, fontSize: TYPE.xl, fontWeight: 700, marginBottom: "1rem" }}>
         {isCreate ? "New Program" : `Edit ${form.code}`}
       </h2>
 
@@ -766,7 +766,7 @@ function ProgramEditor({ code, onBack }) {
               <div style={{ display: "flex", gap: 4 }}>
                 <input value={form.code} onChange={e => updateField("code", e.target.value.toUpperCase())}
                   placeholder="e.g. PSYC-BA" style={{ ...inputStyle, flex: 1 }} />
-                <button onClick={suggestCode} style={{ ...btnStyle("#5a6a7a"), fontSize: "0.6rem", padding: "0.3rem 0.5rem" }}>auto</button>
+                <button onClick={suggestCode} style={{ ...btnStyle("#5a6a7a"), fontSize: TYPE.xs, padding: "0.3rem 0.5rem" }}>auto</button>
               </div>
             ) : (
               <div style={{ ...inputStyle, background: "#eee", color: "#666" }}>{form.code}</div>
@@ -835,7 +835,7 @@ function ProgramEditor({ code, onBack }) {
 
       {/* ── Advanced ───────────────────────────────────────────────── */}
       <button onClick={() => setShowAdvanced(!showAdvanced)} style={{
-        fontFamily: FONT.mono, fontSize: "0.75rem", color: "#666", background: "none",
+        fontFamily: FONT.mono, fontSize: TYPE.sm, color: "#666", background: "none",
         border: "none", cursor: "pointer", padding: "0.5rem 0", marginBottom: "0.5rem",
       }}>
         {showAdvanced ? "\u25BC" : "\u25B6"} Advanced (core waivers, overlap rules)
@@ -850,7 +850,7 @@ function ProgramEditor({ code, onBack }) {
                 const checked = form.coreWaivers.includes(area);
                 return (
                   <button key={area} onClick={() => toggleCoreWaiver(area)} style={{
-                    fontFamily: FONT.mono, fontSize: "0.6rem", padding: "4px 8px",
+                    fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "4px 8px",
                     borderRadius: 4, cursor: "pointer",
                     border: `1px solid ${checked ? "#22863a" : BORDER}`,
                     background: checked ? "#e8f5e9" : "#fff",
@@ -874,7 +874,7 @@ function ProgramEditor({ code, onBack }) {
                 <button onClick={() => removeOverlapRule(idx)} style={{ ...btnStyle("#c43b2d"), padding: "0.3rem 0.5rem" }}>x</button>
               </div>
             ))}
-            <button onClick={addOverlapRule} style={{ ...btnStyle("#5a6a7a"), fontSize: "0.6rem" }}>+ Add Rule</button>
+            <button onClick={addOverlapRule} style={{ ...btnStyle("#5a6a7a"), fontSize: TYPE.xs }}>+ Add Rule</button>
           </div>
         </>
       )}
@@ -921,13 +921,13 @@ function CategoryCard({ cat, idx, total, onChange, onRemove, onMove, onAddCourse
         background: "#fafaf8", borderBottom: collapsed ? "none" : `1px solid ${BORDER}`,
         cursor: "pointer",
       }} onClick={() => setCollapsed(!collapsed)}>
-        <span style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#888" }}>
+        <span style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: "#888" }}>
           {collapsed ? "\u25B6" : "\u25BC"}
         </span>
-        <span style={{ fontFamily: FONT.mono, fontSize: "0.8rem", fontWeight: 600, flex: 1 }}>
+        <span style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, fontWeight: 600, flex: 1 }}>
           {cat.name || `Category ${idx + 1}`}
         </span>
-        <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#888" }}>
+        <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#888" }}>
           {cat.slots} slot{cat.slots !== 1 ? "s" : ""} · {cat.eligibleCourses.length} courses
         </span>
         <div style={{ display: "flex", gap: 2 }} onClick={e => e.stopPropagation()}>
@@ -967,7 +967,7 @@ function CategoryCard({ cat, idx, total, onChange, onRemove, onMove, onAddCourse
           <div style={{ display: "flex", gap: "0.3rem", marginBottom: "0.5rem" }}>
             {["list", "wildcard", "fixed"].map(mode => (
               <button key={mode} onClick={() => onChange("_mode", mode)} style={{
-                fontFamily: FONT.mono, fontSize: "0.6rem", padding: "3px 8px",
+                fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "3px 8px",
                 borderRadius: 3, cursor: "pointer",
                 border: `1px solid ${cat._mode === mode ? "#1a1a1a" : BORDER}`,
                 background: cat._mode === mode ? "#1a1a1a" : "#fff",
@@ -981,7 +981,7 @@ function CategoryCard({ cat, idx, total, onChange, onRemove, onMove, onAddCourse
               <label style={labelStyle}>Wildcard Pattern</label>
               <input value={cat.wildcard || ""} onChange={e => onChange("wildcard", e.target.value)}
                 style={inputStyle} placeholder="e.g. ANY_PSYC_200_PLUS, ANY_GLST_TAGGED" />
-              <div style={{ fontFamily: FONT.mono, fontSize: "0.55rem", color: "#aaa", marginTop: 4 }}>
+              <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#aaa", marginTop: 4 }}>
                 Patterns: ANY_DEPT_200_PLUS, ANY_DEPT_ELECTIVE, ANY_GLST_TAGGED
               </div>
             </div>
@@ -993,7 +993,7 @@ function CategoryCard({ cat, idx, total, onChange, onRemove, onMove, onAddCourse
               <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem", marginBottom: "0.5rem" }}>
                 {cat.eligibleCourses.map(ec => (
                   <span key={ec.courseCode} style={{
-                    fontFamily: FONT.mono, fontSize: "0.6rem", padding: "3px 6px",
+                    fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "3px 6px",
                     borderRadius: 4, display: "inline-flex", alignItems: "center", gap: 4,
                     background: ec.isRequired ? "#e8f5e9" : "#f5f0e8",
                     border: `1px solid ${ec.isRequired ? "#22863a" : BORDER}`,
@@ -1008,12 +1008,12 @@ function CategoryCard({ cat, idx, total, onChange, onRemove, onMove, onAddCourse
                     {ec.courseCode}
                     <button onClick={() => onRemoveCourse(ec.courseCode)} style={{
                       background: "none", border: "none", cursor: "pointer", color: "#c43b2d",
-                      fontSize: "0.7rem", padding: 0, lineHeight: 1,
+                      fontSize: TYPE.sm, padding: 0, lineHeight: 1,
                     }}>x</button>
                   </span>
                 ))}
                 {cat.eligibleCourses.length === 0 && (
-                  <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#aaa" }}>No courses added yet</span>
+                  <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#aaa" }}>No courses added yet</span>
                 )}
               </div>
 
@@ -1052,7 +1052,7 @@ function CourseSearchAdd({ onAdd }) {
         onFocus={() => results.length > 0 && setShowDropdown(true)}
         onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
         placeholder="Search courses to add..."
-        style={{ ...inputStyle, width: "100%", boxSizing: "border-box", fontSize: "0.7rem" }}
+        style={{ ...inputStyle, width: "100%", boxSizing: "border-box", fontSize: TYPE.sm }}
       />
       {showDropdown && results.length > 0 && (
         <div style={{
@@ -1063,7 +1063,7 @@ function CourseSearchAdd({ onAdd }) {
           {results.map(c => (
             <button key={c.code} onClick={() => { onAdd(c.code); setQuery(""); setShowDropdown(false); }} style={{
               display: "block", width: "100%", textAlign: "left", padding: "6px 10px",
-              fontFamily: FONT.mono, fontSize: "0.65rem", border: "none",
+              fontFamily: FONT.mono, fontSize: TYPE.xs, border: "none",
               borderBottom: `1px solid ${BORDER}`, background: "#fff", cursor: "pointer",
             }}>
               <span style={{ fontWeight: 600 }}>{c.code}</span>
@@ -1101,21 +1101,21 @@ function BulkAddByRule({ onAdd, existing }) {
 
   return (
     <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: "0.4rem", marginTop: "0.3rem" }}>
-      <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#888", marginBottom: "0.3rem" }}>Bulk add by rule</div>
+      <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#888", marginBottom: "0.3rem" }}>Bulk add by rule</div>
       <div style={{ display: "flex", gap: "0.3rem", alignItems: "center" }}>
         <input value={dept} onChange={e => setDept(e.target.value.toUpperCase())}
-          placeholder="DEPT" style={{ ...inputStyle, width: 60, fontSize: "0.65rem" }} />
+          placeholder="DEPT" style={{ ...inputStyle, width: 60, fontSize: TYPE.xs }} />
         <input type="number" value={minNumber} onChange={e => setMinNumber(e.target.value)}
-          placeholder="min #" style={{ ...inputStyle, width: 55, fontSize: "0.65rem" }} />
-        <button onClick={loadPreview} style={{ ...btnStyle("#5a6a7a"), fontSize: "0.6rem", padding: "0.3rem 0.5rem" }}>Preview</button>
+          placeholder="min #" style={{ ...inputStyle, width: 55, fontSize: TYPE.xs }} />
+        <button onClick={loadPreview} style={{ ...btnStyle("#5a6a7a"), fontSize: TYPE.xs, padding: "0.3rem 0.5rem" }}>Preview</button>
         {preview && (
-          <button onClick={addAll} style={{ ...btnStyle("#22863a"), fontSize: "0.6rem", padding: "0.3rem 0.5rem" }}>
+          <button onClick={addAll} style={{ ...btnStyle("#22863a"), fontSize: TYPE.xs, padding: "0.3rem 0.5rem" }}>
             Add {preview.length} &rarr;
           </button>
         )}
       </div>
       {preview && preview.length === 0 && (
-        <div style={{ fontFamily: FONT.mono, fontSize: "0.55rem", color: "#aaa", marginTop: 4 }}>No new courses match</div>
+        <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#aaa", marginTop: 4 }}>No new courses match</div>
       )}
     </div>
   );
@@ -1123,13 +1123,13 @@ function BulkAddByRule({ onAdd, existing }) {
 
 // ── Shared styles ────────────────────────────────────────────────────────────
 const inputStyle = {
-  fontFamily: FONT.mono, fontSize: "0.75rem", padding: "0.4rem 0.6rem",
+  fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.4rem 0.6rem",
   border: `1px solid ${BORDER}`, borderRadius: 4, background: "#fafaf8", outline: "none",
   width: "100%", boxSizing: "border-box",
 };
 
 const labelStyle = {
-  fontFamily: FONT.mono, fontSize: "0.6rem", fontWeight: 600, color: "#888",
+  fontFamily: FONT.mono, fontSize: TYPE.xs, fontWeight: 600, color: "#888",
   display: "block", marginBottom: 2,
 };
 
@@ -1197,16 +1197,16 @@ function ToolsTab() {
     <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
       {/* Catalog Refresh */}
       <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 8, padding: "1rem" }}>
-        <div style={{ fontFamily: FONT.serif, fontSize: "1rem", fontWeight: 600, marginBottom: "0.5rem" }}>
+        <div style={{ fontFamily: FONT.serif, fontSize: TYPE.md, fontWeight: 600, marginBottom: "0.5rem" }}>
           Course Catalog
         </div>
-        <p style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#666", marginBottom: "0.75rem", lineHeight: 1.5 }}>
+        <p style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: "#666", marginBottom: "0.75rem", lineHeight: 1.5 }}>
           Re-scrapes the full LUC course catalog from catalog.luc.edu and reloads into the database.
           Takes about 1 minute. Run once per academic year when the new catalog is published.
         </p>
 
         {catalogStatus?.stats && (
-          <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#888", marginBottom: "0.75rem" }}>
+          <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#888", marginBottom: "0.75rem" }}>
             {catalogStatus.stats.courses} courses across {catalogStatus.stats.departments} departments
             {catalogStatus.finishedAt && (
               <span style={{ marginLeft: 8 }}>
@@ -1217,7 +1217,7 @@ function ToolsTab() {
         )}
 
         <button onClick={startCatalogRefresh} disabled={catalogRunning} style={{
-          fontFamily: FONT.mono, fontSize: "0.75rem", padding: "0.5rem 1rem",
+          fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.5rem 1rem",
           background: catalogRunning ? "#ccc" : "#7a4a1a", color: "#fff",
           border: "none", borderRadius: 4, cursor: catalogRunning ? "not-allowed" : "pointer",
         }}>
@@ -1225,24 +1225,24 @@ function ToolsTab() {
         </button>
 
         {catalogRunning && (
-          <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#888", marginTop: "0.5rem" }}>
+          <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#888", marginTop: "0.5rem" }}>
             {catalogStatus?.phase === "scraping" ? "Scraping catalog.luc.edu..." : "Seeding courses into database..."} This page will update automatically.
           </div>
         )}
 
         {catalogStatus?.status === "error" && (
-          <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#c43b2d", marginTop: "0.5rem" }}>
+          <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#c43b2d", marginTop: "0.5rem" }}>
             Error: {catalogStatus.error}
           </div>
         )}
 
         {catalogStatus?.log && catalogStatus.status !== "idle" && (
           <details style={{ marginTop: "0.75rem" }}>
-            <summary style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#888", cursor: "pointer" }}>
+            <summary style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#888", cursor: "pointer" }}>
               Refresh log
             </summary>
             <pre style={{
-              fontFamily: FONT.mono, fontSize: "0.55rem", background: "#1a1a1a", color: "#ccc",
+              fontFamily: FONT.mono, fontSize: TYPE.xs, background: "#1a1a1a", color: "#ccc",
               padding: "0.5rem", borderRadius: 4, marginTop: "0.3rem", maxHeight: 300,
               overflow: "auto", whiteSpace: "pre-wrap", wordBreak: "break-all",
             }}>
@@ -1254,17 +1254,17 @@ function ToolsTab() {
 
       {/* LOCUS Offerings */}
       <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 8, padding: "1rem" }}>
-        <div style={{ fontFamily: FONT.serif, fontSize: "1rem", fontWeight: 600, marginBottom: "0.5rem" }}>
+        <div style={{ fontFamily: FONT.serif, fontSize: TYPE.md, fontWeight: 600, marginBottom: "0.5rem" }}>
           LOCUS Course Offerings
         </div>
-        <p style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#666", marginBottom: "0.75rem", lineHeight: 1.5 }}>
+        <p style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: "#666", marginBottom: "0.75rem", lineHeight: 1.5 }}>
           Scrapes class schedules from Loyola's public search (molo.luc.edu).
           Updates which courses are offered each term, with sections, instructors, and times.
           Takes about 3 minutes. Run weekly during registration.
         </p>
 
         {scrapeStatus?.stats && (
-          <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#888", marginBottom: "0.75rem" }}>
+          <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#888", marginBottom: "0.75rem" }}>
             {scrapeStatus.stats.offerings} sections, {scrapeStatus.stats.courseTerms} course-terms
             {scrapeStatus.stats.terms?.map(t => (
               <span key={t.term} style={{ marginLeft: 8, background: "#e8f5e9", padding: "1px 5px", borderRadius: 3, color: "#2e7d32" }}>
@@ -1280,7 +1280,7 @@ function ToolsTab() {
         )}
 
         <button onClick={startScrape} disabled={isRunning} style={{
-          fontFamily: FONT.mono, fontSize: "0.75rem", padding: "0.5rem 1rem",
+          fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.5rem 1rem",
           background: isRunning ? "#ccc" : "#1a7a5a", color: "#fff",
           border: "none", borderRadius: 4, cursor: isRunning ? "not-allowed" : "pointer",
         }}>
@@ -1288,24 +1288,24 @@ function ToolsTab() {
         </button>
 
         {isRunning && (
-          <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#888", marginTop: "0.5rem" }}>
+          <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#888", marginTop: "0.5rem" }}>
             Running — this page will update automatically.
           </div>
         )}
 
         {scrapeStatus?.status === "error" && (
-          <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#c43b2d", marginTop: "0.5rem" }}>
+          <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#c43b2d", marginTop: "0.5rem" }}>
             Error: {scrapeStatus.error}
           </div>
         )}
 
         {scrapeStatus?.log && scrapeStatus.status !== "idle" && (
           <details style={{ marginTop: "0.75rem" }}>
-            <summary style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#888", cursor: "pointer" }}>
+            <summary style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#888", cursor: "pointer" }}>
               Scrape log
             </summary>
             <pre style={{
-              fontFamily: FONT.mono, fontSize: "0.55rem", background: "#1a1a1a", color: "#ccc",
+              fontFamily: FONT.mono, fontSize: TYPE.xs, background: "#1a1a1a", color: "#ccc",
               padding: "0.5rem", borderRadius: 4, marginTop: "0.3rem", maxHeight: 300,
               overflow: "auto", whiteSpace: "pre-wrap", wordBreak: "break-all",
             }}>
@@ -1353,16 +1353,16 @@ function RmpToolCard() {
 
   return (
     <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 8, padding: "1rem" }}>
-      <div style={{ fontFamily: FONT.serif, fontSize: "1rem", fontWeight: 600, marginBottom: "0.5rem" }}>
+      <div style={{ fontFamily: FONT.serif, fontSize: TYPE.md, fontWeight: 600, marginBottom: "0.5rem" }}>
         RateMyProfessor Ratings
       </div>
-      <p style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#666", marginBottom: "0.75rem", lineHeight: 1.5 }}>
+      <p style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: "#666", marginBottom: "0.75rem", lineHeight: 1.5 }}>
         Fetches professor ratings from RMP for all instructors in LOCUS data.
         Takes about 6 minutes for a full run, seconds for incremental updates.
       </p>
 
       {rmpStatus?.stats && (
-        <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#888", marginBottom: "0.75rem" }}>
+        <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#888", marginBottom: "0.75rem" }}>
           {rmpStatus.stats.professors} professors, {rmpStatus.stats.matched} matched, {rmpStatus.stats.unmatched} unmatched
           {rmpStatus.stats.avgRating && <span style={{ marginLeft: 8 }}>avg: {"\u2605"}{rmpStatus.stats.avgRating}</span>}
           {rmpStatus.finishedAt && (
@@ -1374,7 +1374,7 @@ function RmpToolCard() {
       )}
 
       <button onClick={startRmpScrape} disabled={isRunning} style={{
-        fontFamily: FONT.mono, fontSize: "0.75rem", padding: "0.5rem 1rem",
+        fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.5rem 1rem",
         background: isRunning ? "#ccc" : "#6f42c1", color: "#fff",
         border: "none", borderRadius: 4, cursor: isRunning ? "not-allowed" : "pointer",
       }}>
@@ -1382,24 +1382,24 @@ function RmpToolCard() {
       </button>
 
       {isRunning && (
-        <div style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#888", marginTop: "0.5rem" }}>
+        <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#888", marginTop: "0.5rem" }}>
           Running — this takes several minutes. Page updates automatically.
         </div>
       )}
 
       {rmpStatus?.status === "error" && (
-        <div style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#c43b2d", marginTop: "0.5rem" }}>
+        <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#c43b2d", marginTop: "0.5rem" }}>
           Error: {rmpStatus.error}
         </div>
       )}
 
       {rmpStatus?.log && rmpStatus.status !== "idle" && (
         <details style={{ marginTop: "0.75rem" }}>
-          <summary style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#888", cursor: "pointer" }}>
+          <summary style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#888", cursor: "pointer" }}>
             Scrape log
           </summary>
           <pre style={{
-            fontFamily: FONT.mono, fontSize: "0.55rem", background: "#1a1a1a", color: "#ccc",
+            fontFamily: FONT.mono, fontSize: TYPE.xs, background: "#1a1a1a", color: "#ccc",
             padding: "0.5rem", borderRadius: 4, marginTop: "0.3rem", maxHeight: 300,
             overflow: "auto", whiteSpace: "pre-wrap", wordBreak: "break-all",
           }}>
@@ -1412,11 +1412,11 @@ function RmpToolCard() {
 }
 
 const sectionLabel = {
-  fontFamily: FONT.serif, fontSize: "1rem", fontWeight: 700, marginBottom: "0.8rem",
+  fontFamily: FONT.serif, fontSize: TYPE.md, fontWeight: 700, marginBottom: "0.8rem",
 };
 
 const tinyBtnStyle = {
-  fontFamily: FONT.mono, fontSize: "0.6rem", padding: "2px 6px",
+  fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "2px 6px",
   background: "#f5f0e8", color: "#666", border: `1px solid ${BORDER}`,
   borderRadius: 3, cursor: "pointer",
 };
@@ -1488,7 +1488,7 @@ function FeedbackTab({ onCountChange }) {
       {/* Filters */}
       <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem", flexWrap: "wrap" }}>
         <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1); }} style={{
-          fontFamily: FONT.mono, fontSize: "0.75rem", padding: "0.4rem 0.6rem",
+          fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.4rem 0.6rem",
           borderRadius: 4, border: `1px solid ${BORDER}`, background: "#fff",
         }}>
           <option value="">All statuses</option>
@@ -1497,7 +1497,7 @@ function FeedbackTab({ onCountChange }) {
           ))}
         </select>
         <select value={categoryFilter} onChange={e => { setCategoryFilter(e.target.value); setPage(1); }} style={{
-          fontFamily: FONT.mono, fontSize: "0.75rem", padding: "0.4rem 0.6rem",
+          fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.4rem 0.6rem",
           borderRadius: 4, border: `1px solid ${BORDER}`, background: "#fff",
         }}>
           <option value="">All categories</option>
@@ -1505,14 +1505,14 @@ function FeedbackTab({ onCountChange }) {
             <option key={c} value={c}>{c}</option>
           ))}
         </select>
-        <span style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#999", alignSelf: "center" }}>
+        <span style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: "#999", alignSelf: "center" }}>
           {total} total
         </span>
       </div>
 
       {/* List */}
       {items.length === 0 && (
-        <div style={{ fontFamily: FONT.mono, fontSize: "0.8rem", color: "#999", padding: "2rem 0", textAlign: "center" }}>
+        <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: "#999", padding: "2rem 0", textAlign: "center" }}>
           No feedback yet
         </div>
       )}
@@ -1527,28 +1527,28 @@ function FeedbackTab({ onCountChange }) {
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.4rem", flexWrap: "wrap" }}>
               <span style={{
-                fontFamily: FONT.mono, fontSize: "0.6rem", padding: "2px 6px",
+                fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "2px 6px",
                 borderRadius: 3, color: "#fff", background: statusColors[item.status] || "#999",
                 textTransform: "uppercase",
               }}>{item.status}</span>
               {item.category && (
                 <span style={{
-                  fontFamily: FONT.mono, fontSize: "0.6rem", padding: "2px 6px",
+                  fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "2px 6px",
                   borderRadius: 3, background: "#f5f0e8", color: "#666",
                 }}>{categoryLabels[item.category] || item.category}</span>
               )}
-              <span style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#999" }}>
+              <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#999" }}>
                 {item.user_name}
               </span>
-              <span style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#bbb", marginLeft: "auto" }}>
+              <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#bbb", marginLeft: "auto" }}>
                 {timeAgo(item.created_at)}
               </span>
               {ctx.view && (
-                <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: "#bbb" }}>{ctx.view}</span>
+                <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#bbb" }}>{ctx.view}</span>
               )}
             </div>
             <div style={{
-              fontFamily: FONT.mono, fontSize: "0.8rem", color: "#333",
+              fontFamily: FONT.mono, fontSize: TYPE.sm, color: "#333",
               overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
             }}>"{item.message?.substring(0, 100)}{item.message?.length > 100 ? "..." : ""}"</div>
           </div>
@@ -1559,15 +1559,15 @@ function FeedbackTab({ onCountChange }) {
       {total > 20 && (
         <div style={{ display: "flex", justifyContent: "center", gap: "1rem", marginTop: "1rem" }}>
           <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} style={{
-            fontFamily: FONT.mono, fontSize: "0.75rem", padding: "0.4rem 0.8rem",
+            fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.4rem 0.8rem",
             background: page <= 1 ? "#eee" : "#f5f0e8", border: `1px solid ${BORDER}`,
             borderRadius: 4, cursor: page <= 1 ? "default" : "pointer",
           }}>Prev</button>
-          <span style={{ fontFamily: FONT.mono, fontSize: "0.75rem", color: "#999", alignSelf: "center" }}>
+          <span style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: "#999", alignSelf: "center" }}>
             {page} / {Math.ceil(total / 20)}
           </span>
           <button disabled={page >= Math.ceil(total / 20)} onClick={() => setPage(p => p + 1)} style={{
-            fontFamily: FONT.mono, fontSize: "0.75rem", padding: "0.4rem 0.8rem",
+            fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.4rem 0.8rem",
             background: page >= Math.ceil(total / 20) ? "#eee" : "#f5f0e8", border: `1px solid ${BORDER}`,
             borderRadius: 4, cursor: page >= Math.ceil(total / 20) ? "default" : "pointer",
           }}>Next</button>
@@ -1577,20 +1577,20 @@ function FeedbackTab({ onCountChange }) {
       {/* Detail sheet */}
       {viewing && detail && (
         <BottomSheet onClose={() => { setViewing(null); setDetail(null); }} maxWidth={680}>
-          <div style={{ fontFamily: FONT.serif, fontSize: "1.1rem", marginBottom: "0.3rem" }}>
+          <div style={{ fontFamily: FONT.serif, fontSize: TYPE.md, marginBottom: "0.3rem" }}>
             {detail.user_name}
           </div>
           <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginBottom: "1rem", flexWrap: "wrap" }}>
             {detail.category && (
               <span style={{
-                fontFamily: FONT.mono, fontSize: "0.65rem", padding: "2px 6px",
+                fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "2px 6px",
                 borderRadius: 3, background: "#f5f0e8", color: "#666",
               }}>{categoryLabels[detail.category] || detail.category}</span>
             )}
-            <span style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#999" }}>
+            <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#999" }}>
               {detail.user_email}
             </span>
-            <span style={{ fontFamily: FONT.mono, fontSize: "0.65rem", color: "#bbb" }}>
+            <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#bbb" }}>
               {detail.created_at?.replace("T", " ").substring(0, 16)}
             </span>
           </div>
@@ -1598,7 +1598,7 @@ function FeedbackTab({ onCountChange }) {
           {/* Message */}
           <div style={{
             background: "#faf8f4", border: `1px solid ${BORDER}`, borderRadius: 8,
-            padding: "1rem", fontFamily: FONT.mono, fontSize: "0.85rem", color: "#333",
+            padding: "1rem", fontFamily: FONT.mono, fontSize: TYPE.base, color: "#333",
             marginBottom: "1rem", whiteSpace: "pre-wrap",
           }}>{detail.message}</div>
 
@@ -1616,12 +1616,12 @@ function FeedbackTab({ onCountChange }) {
           {/* Errors */}
           {detail.errors && detail.errors.length > 0 && (
             <details style={{ marginBottom: "1rem" }}>
-              <summary style={{ fontFamily: FONT.mono, fontSize: "0.75rem", color: "#666", cursor: "pointer" }}>
+              <summary style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: "#666", cursor: "pointer" }}>
                 Errors ({detail.errors.length})
               </summary>
               <div style={{
                 background: "#1a1a1a", color: "#e8e4df", borderRadius: 8, padding: "0.8rem",
-                fontFamily: FONT.mono, fontSize: "0.7rem", marginTop: "0.5rem",
+                fontFamily: FONT.mono, fontSize: TYPE.sm, marginTop: "0.5rem",
                 maxHeight: 200, overflow: "auto",
               }}>
                 {detail.errors.map((err, i) => (
@@ -1638,12 +1638,12 @@ function FeedbackTab({ onCountChange }) {
           {/* Context */}
           {detail.context && (
             <details style={{ marginBottom: "1rem" }}>
-              <summary style={{ fontFamily: FONT.mono, fontSize: "0.75rem", color: "#666", cursor: "pointer" }}>
+              <summary style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: "#666", cursor: "pointer" }}>
                 Context
               </summary>
               <div style={{
                 background: "#faf8f4", borderRadius: 8, padding: "0.8rem",
-                fontFamily: FONT.mono, fontSize: "0.7rem", color: "#666", marginTop: "0.5rem",
+                fontFamily: FONT.mono, fontSize: TYPE.sm, color: "#666", marginTop: "0.5rem",
               }}>
                 {Object.entries(detail.context).map(([k, v]) => (
                   <div key={k}><strong>{k}:</strong> {typeof v === "object" ? JSON.stringify(v) : String(v)}</div>
@@ -1654,12 +1654,12 @@ function FeedbackTab({ onCountChange }) {
 
           {/* Status + Notes */}
           <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginBottom: "0.8rem" }}>
-            <span style={{ fontFamily: FONT.mono, fontSize: "0.75rem", color: "#666" }}>Status:</span>
+            <span style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: "#666" }}>Status:</span>
             <select
               value={detail.status}
               onChange={e => setDetail({ ...detail, status: e.target.value })}
               style={{
-                fontFamily: FONT.mono, fontSize: "0.75rem", padding: "0.3rem 0.5rem",
+                fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.3rem 0.5rem",
                 borderRadius: 4, border: `1px solid ${BORDER}`, background: "#fff",
               }}
             >
@@ -1670,7 +1670,7 @@ function FeedbackTab({ onCountChange }) {
           </div>
 
           <div style={{ marginBottom: "0.8rem" }}>
-            <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#999", marginBottom: "0.3rem" }}>
+            <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: "#999", marginBottom: "0.3rem" }}>
               Admin notes
             </div>
             <textarea
@@ -1679,14 +1679,14 @@ function FeedbackTab({ onCountChange }) {
               placeholder="Triage notes..."
               style={{
                 width: "100%", minHeight: 60, padding: "0.5rem", borderRadius: 6,
-                border: `1px solid ${BORDER}`, fontFamily: FONT.mono, fontSize: "0.8rem",
+                border: `1px solid ${BORDER}`, fontFamily: FONT.mono, fontSize: TYPE.sm,
                 resize: "vertical", background: "#fff", boxSizing: "border-box",
               }}
             />
           </div>
 
           <div style={{ marginBottom: "1rem" }}>
-            <div style={{ fontFamily: FONT.mono, fontSize: "0.7rem", color: "#999", marginBottom: "0.3rem" }}>
+            <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: "#999", marginBottom: "0.3rem" }}>
               GitHub Issue URL
             </div>
             <input
@@ -1695,7 +1695,7 @@ function FeedbackTab({ onCountChange }) {
               placeholder="https://github.com/..."
               style={{
                 width: "100%", padding: "0.5rem", borderRadius: 6,
-                border: `1px solid ${BORDER}`, fontFamily: FONT.mono, fontSize: "0.8rem",
+                border: `1px solid ${BORDER}`, fontFamily: FONT.mono, fontSize: TYPE.sm,
                 background: "#fff", boxSizing: "border-box",
               }}
             />
@@ -1703,7 +1703,7 @@ function FeedbackTab({ onCountChange }) {
 
           <button onClick={saveDetail} disabled={saving} style={{
             width: "100%", padding: "0.7rem", borderRadius: 8, border: "none",
-            background: "#1a1a1a", color: "#fff", fontFamily: FONT.mono, fontSize: "0.85rem",
+            background: "#1a1a1a", color: "#fff", fontFamily: FONT.mono, fontSize: TYPE.base,
             cursor: "pointer",
           }}>{saving ? "Saving..." : "Save"}</button>
         </BottomSheet>

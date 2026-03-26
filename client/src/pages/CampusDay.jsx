@@ -165,7 +165,7 @@ function BuildingMarkers({ classes, transitions, activeClass, nextClass, current
                 weight: 1.5,
               }}>
               <Tooltip direction="top" offset={[0, -8]}>
-                <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "11px" }}>
+                <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs }}>
                   {c.building.name} · {c.courseCode} · {formatTime12(c.startTime)}
                 </span>
               </Tooltip>
@@ -222,7 +222,7 @@ function BuildingMarkers({ classes, transitions, activeClass, nextClass, current
         <Polyline positions={RED_LINE_PATH}
           pathOptions={{ color: "#c43b2d", weight: 3, opacity: 0.4, dashArray: "8,6" }}>
           <Tooltip sticky>
-            <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "11px" }}>CTA Red Line · ~25 min</span>
+            <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs }}>CTA Red Line · ~25 min</span>
           </Tooltip>
         </Polyline>
       )}
@@ -244,7 +244,7 @@ function BuildingMarkers({ classes, transitions, activeClass, nextClass, current
         return (
           <Marker key={`friend-${f.id}`} position={[f.location.lat, f.location.lng]} icon={icon}>
             <Tooltip direction="bottom" offset={[0, 14]}>
-              <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "11px" }}>
+              <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs }}>
                 {f.name} · {f.location.name}
                 {f.status === "free" && f.freeUntil ? ` · free til ${Math.floor(f.freeUntil / 60) > 12 ? Math.floor(f.freeUntil / 60) - 12 : Math.floor(f.freeUntil / 60)}:${String(f.freeUntil % 60).padStart(2, "0")}` : ""}
                 {f.status === "in_class" ? " · in class" : ""}
@@ -427,7 +427,7 @@ export default function CampusDay({ weeklyTerm, planTerms, isMobile }) {
               background: `${color}40`, borderLeft: `2px solid ${color}`, borderRadius: 2,
               display: "flex", alignItems: "center", paddingLeft: 4, overflow: "hidden",
             }}>
-              <span style={{ fontFamily: FONT.mono, fontSize: "0.45rem", fontWeight: 700, color, whiteSpace: "nowrap" }}>{c.courseCode}</span>
+              <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, fontWeight: 700, color, whiteSpace: "nowrap" }}>{c.courseCode}</span>
             </div>
           );
         })}
@@ -439,8 +439,8 @@ export default function CampusDay({ weeklyTerm, planTerms, isMobile }) {
         })()}
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: 2 }}>
-        <span style={{ fontFamily: FONT.mono, fontSize: "0.45rem", color: TEXT.muted }}>{formatMinutes(scrubStart)}</span>
-        <span style={{ fontFamily: FONT.mono, fontSize: "0.45rem", color: TEXT.muted }}>{formatMinutes(scrubEnd)}</span>
+        <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted }}>{formatMinutes(scrubStart)}</span>
+        <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted }}>{formatMinutes(scrubEnd)}</span>
       </div>
     </div>
   ) : null;
@@ -487,7 +487,7 @@ export default function CampusDay({ weeklyTerm, planTerms, isMobile }) {
                       <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted }}>
                         {formatTime12(c.startTime)} – {formatTime12(c.endTime)}
                       </span>
-                      {isNext && <span style={{ fontFamily: FONT.mono, fontSize: "0.45rem", color, fontWeight: 700 }}>{"←"} next</span>}
+                      {isNext && <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color, fontWeight: 700 }}>{"←"} next</span>}
                     </div>
                     <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, fontWeight: 700 }}>
                       {c.courseCode} <span style={{ fontWeight: 400, color: TEXT.muted }}>{"§"}{c.section}</span>
@@ -501,7 +501,7 @@ export default function CampusDay({ weeklyTerm, planTerms, isMobile }) {
                   {i < transitions.length && (
                     <div style={{
                       padding: "0.2rem 0.6rem", margin: "0.1rem 0",
-                      fontFamily: FONT.mono, fontSize: "0.5rem",
+                      fontFamily: FONT.mono, fontSize: TYPE.xs,
                       color: URGENCY_COLORS[transitions[i].urgency],
                       opacity: isPast ? 0.4 : 1,
                     }}>
@@ -546,7 +546,7 @@ export default function CampusDay({ weeklyTerm, planTerms, isMobile }) {
               <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, fontWeight: 700 }}>
                 You and {o.friend.name}
               </div>
-              <div style={{ fontFamily: FONT.mono, fontSize: "0.5rem", color: TEXT.muted }}>
+              <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted }}>
                 {formatMinutes(o.startMin)}–{formatMinutes(o.endMin)} · {o.durationMin} min
                 {o.walkMinutes != null && o.walkMinutes > 0 && ` · ${o.walkMinutes} min apart`}
               </div>
@@ -574,7 +574,7 @@ export default function CampusDay({ weeklyTerm, planTerms, isMobile }) {
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, fontWeight: 700 }}>{f.name}</div>
-                <div style={{ fontFamily: FONT.mono, fontSize: "0.5rem", color: TEXT.muted }}>
+                <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted }}>
                   {f.location?.name || "on campus"}
                   {f.status === "in_class" && f.inClassUntil && ` · in class til ${formatMinutes(f.inClassUntil)}`}
                   {f.status === "free" && f.freeUntil && ` · free til ${formatMinutes(f.freeUntil)}`}
