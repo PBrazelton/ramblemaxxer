@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { COLORS, programColor, STATUS_COLOR, FONT, TYPE, BG, BORDER, SURFACE, TEXT, BTN, SHADOW, api, ProgressRing, BottomSheet, StickyHeader, sharedStyles, Input, Btn, SectionTitle, ErrMsg, cardStyle, badgeStyle, sectionHeader, mutedText, EmptyState } from "./lib/ui.jsx";
+import { COLORS, programColor, STATUS_COLOR, FONT, TYPE, BG, BORDER, SURFACE, TEXT, BTN, SHADOW, SPACING, api, ProgressRing, BottomSheet, StickyHeader, sharedStyles, Input, Btn, SectionTitle, ErrMsg, cardStyle, secondaryCardStyle, badgeStyle, sectionHeader, mutedText, EmptyState } from "./lib/ui.jsx";
 import { getErrors } from "./lib/error-buffer.js";
 import AdminPanel from "./pages/AdminPanel.jsx";
 import Planner from "./pages/Planner.jsx";
@@ -404,7 +404,7 @@ function AuthShell({ title, sub, children }) {
   return (
     <div style={styles.centered}>
       <div style={styles.card}>
-        <h1 style={styles.logo}><span>ramble</span><span style={{ color: TEXT.danger }}>maxxer</span></h1>
+        <h1 style={styles.logo}><span>ramble</span><span style={{ color: TEXT.brand }}>maxxer</span></h1>
         <p style={styles.tagline}>{sub || "stop guessing, start maxxing"}</p>
         {title && <div style={{ fontFamily: FONT.serif, fontSize: TYPE.xl, fontWeight: 600, marginBottom: 12 }}>{title}</div>}
         {children}
@@ -626,7 +626,7 @@ function SettingsResetSection({ onClose, onReimport }) {
 }
 
 // ── SettingsSheet ───────────────────────────────────────────────────────────
-function SettingsSheet({ user, onClose, onUpdate, onReimport }) {
+function SettingsSheet({ user, onClose, onUpdate, onReimport, onLogout }) {
   const [name, setName] = useState(user.name);
   const [gradYear, setGradYear] = useState(user.grad_year || "");
   const [privacy, setPrivacy] = useState(user.privacy || "private");
@@ -739,12 +739,22 @@ function SettingsSheet({ user, onClose, onUpdate, onReimport }) {
           marginTop: 8 }}>{msg}</div>}
         {err && <ErrMsg>{err}</ErrMsg>}
 
-        <button onClick={onClose}
-          style={{ marginTop: 16, width: "100%", padding: 12, borderRadius: 10,
-            border: "none", background: "#e8e4df", cursor: "pointer",
-            fontFamily: FONT.mono, fontSize: 13, color: TEXT.secondary }}>
-          close
-        </button>
+        <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
+          <button onClick={onClose}
+            style={{ flex: 1, padding: 12, borderRadius: 10,
+              border: "none", background: "#e8e4df", cursor: "pointer",
+              fontFamily: FONT.mono, fontSize: 13, color: TEXT.secondary }}>
+            close
+          </button>
+          {onLogout && (
+            <button onClick={onLogout}
+              style={{ padding: "12px 16px", borderRadius: 10,
+                border: "none", background: "transparent", cursor: "pointer",
+                fontFamily: FONT.mono, fontSize: 13, color: TEXT.muted }}>
+              log out
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -757,7 +767,7 @@ function CreditMeter({ credits, hasUnmappedTransfer, onTransferWarningTap }) {
   const pctC = (complete / max) * 100, pctE = (enrolled / max) * 100, pctP = (planned / max) * 100;
 
   return (
-    <div style={{ background: SURFACE.card, border: `1px solid ${BORDER}`, borderRadius: 8, padding: "1.2rem", marginBottom: "1rem" }}>
+    <div style={{ padding: "0.8rem 0 1rem 0", borderBottom: `1px solid ${BORDER}` }}>
       <div style={{ display: "flex", alignItems: "center", gap: "1.2rem" }}>
         <div style={{ position: "relative", flexShrink: 0 }}>
           <ProgressRing value={total} max={max} size={80} color={total >= max ? "#22863a" : "#b08800"} />
@@ -767,7 +777,7 @@ function CreditMeter({ credits, hasUnmappedTransfer, onTransferWarningTap }) {
           </div>
         </div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontFamily: FONT.serif, fontSize: TYPE.lg, fontWeight: 600, marginBottom: "0.5rem" }}>Credit Hours</div>
+          <div style={{ fontFamily: FONT.serif, fontSize: TYPE.lg, fontWeight: 700, marginBottom: "0.5rem" }}>Credit Hours</div>
           <div style={{ height: 12, borderRadius: 6, background: "#eee", overflow: "hidden", display: "flex" }}>
             <div style={{ width: `${pctC}%`, background: STATUS_COLOR.complete }} />
             <div style={{ width: `${pctE}%`, background: STATUS_COLOR.enrolled }} />
@@ -865,37 +875,44 @@ function NextStepsSection({ data, onAddCourses, onMapTransfer, onSuggestionTap }
 
   if (cards.length === 0) return null;
 
+  const ctaCardStyle = {
+    background: SURFACE.hover, border: `1px solid ${BORDER}`, borderRadius: 8,
+    padding: "0.7rem 1rem", display: "flex", alignItems: "center", gap: "0.7rem",
+    boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+  };
+
   return (
-    <div style={{ marginBottom: "1rem" }}>
+    <div>
       <div style={{ fontFamily: FONT.serif, fontSize: TYPE.lg, fontWeight: 600, marginBottom: "0.5rem" }}>Next Steps</div>
       <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-        {cards.slice(0, 3).map(card => (
-          card.action ? (
+        {cards.slice(0, 3).map((card, idx) => {
+          const isTop = idx === 0;
+          const cardPadding = isTop ? "0.9rem 1rem" : "0.7rem 1rem";
+          const iconSize = isTop ? "1.5rem" : TYPE.xl;
+          const titleSize = isTop ? TYPE.md : TYPE.base;
+
+          return card.action ? (
             <button type="button" key={card.key} onClick={card.action} style={{
-              background: SURFACE.card, border: `1px solid ${BORDER}`, borderRadius: 8, padding: "0.7rem 1rem",
-              display: "flex", alignItems: "center", gap: "0.7rem",
+              ...ctaCardStyle, padding: cardPadding,
               cursor: "pointer", textAlign: "left", width: "100%",
             }}>
-              <span style={{ fontSize: TYPE.xl, flexShrink: 0 }} dangerouslySetInnerHTML={{ __html: card.icon }} />
+              <span style={{ fontSize: iconSize, flexShrink: 0, width: 28, textAlign: "center" }} dangerouslySetInnerHTML={{ __html: card.icon }} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontFamily: FONT.mono, fontSize: TYPE.base, fontWeight: 700 }}>{card.title}</div>
+                <div style={{ fontFamily: FONT.mono, fontSize: titleSize, fontWeight: 700 }}>{card.title}</div>
                 <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted }}>{card.subtitle}</div>
               </div>
-              <span style={{ fontFamily: FONT.mono, fontSize: TYPE.lg, color: "#c0b8b0" }}>&rsaquo;</span>
+              <span style={{ fontSize: "1.2rem", color: TEXT.secondary, fontWeight: 300 }}>&rsaquo;</span>
             </button>
           ) : (
-            <div key={card.key} style={{
-              background: SURFACE.card, border: `1px solid ${BORDER}`, borderRadius: 8, padding: "0.7rem 1rem",
-              display: "flex", alignItems: "center", gap: "0.7rem",
-            }}>
-              <span style={{ fontSize: TYPE.xl, flexShrink: 0 }} dangerouslySetInnerHTML={{ __html: card.icon }} />
+            <div key={card.key} style={{ ...ctaCardStyle, padding: cardPadding }}>
+              <span style={{ fontSize: iconSize, flexShrink: 0, width: 28, textAlign: "center" }} dangerouslySetInnerHTML={{ __html: card.icon }} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontFamily: FONT.mono, fontSize: TYPE.base, fontWeight: 700 }}>{card.title}</div>
+                <div style={{ fontFamily: FONT.mono, fontSize: titleSize, fontWeight: 700 }}>{card.title}</div>
                 <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted }}>{card.subtitle}</div>
               </div>
             </div>
-          )
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -913,12 +930,12 @@ function PlanPreview() {
   if (!planSummary) return null;
 
   return (
-    <div style={{ background: SURFACE.card, border: `1px solid ${BORDER}`, borderRadius: 8, padding: "0.8rem 1rem", marginBottom: "0.75rem" }}>
+    <div style={{ background: SURFACE.hover, border: `1px solid ${BORDER}`, borderRadius: 8, padding: "0.8rem 1rem", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.2rem" }}>
         <span style={{ fontFamily: FONT.serif, fontSize: TYPE.lg, fontWeight: 600 }}>Your plan</span>
-        <a href="#/planner" style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: "#6f42c1", textDecoration: "none" }}>Open planner &rsaquo;</a>
+        <a href="#/planner" style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.link, textDecoration: "none" }}>Open planner &rsaquo;</a>
       </div>
-      <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: "#555" }}>
+      <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.secondary }}>
         {planSummary.course_count} course{planSummary.course_count !== 1 ? "s" : ""} &middot; {planSummary.total_credits}cr planned
       </div>
     </div>
@@ -933,7 +950,7 @@ function ProgramCard({ prog, conflicts, onPipClick, onSlotTap, defaultOpen = fal
   const totalSlots = prog.categories.reduce((s, c) => s + c.slotsNeeded, 0);
 
   return (
-    <div style={{ background: SURFACE.card, border: `1px solid ${BORDER}`, borderRadius: 8, marginBottom: "0.75rem", overflow: "hidden" }}>
+    <div style={{ ...cardStyle, overflow: "hidden" }}>
       <button type="button" aria-expanded={open} onClick={() => setOpen(!open)} style={{ display: "flex", alignItems: "center", gap: "0.8rem", padding: "0.8rem 1rem", cursor: "pointer", background: "none", border: "none", borderLeft: `4px solid ${color}`, textAlign: "left", width: "100%" }}>
         <div style={{ position: "relative", flexShrink: 0 }}>
           <ProgressRing value={filledSlots} max={totalSlots} size={48} stroke={4} color={color} />
@@ -1102,7 +1119,7 @@ function OverlapBudget({ overlaps, programs, conflicts, onPipClick }) {
   const sharedCodes = Object.keys(conflicts);
 
   return (
-    <div style={{ background: SURFACE.card, border: `1px solid ${BORDER}`, borderRadius: 8, padding: "1rem", marginBottom: "0.75rem" }}>
+    <div style={{ ...secondaryCardStyle, padding: "1rem" }}>
       <div style={{ fontFamily: FONT.serif, fontSize: TYPE.lg, fontWeight: 600, marginBottom: "0.6rem" }}>Overlap Budget</div>
 
       {ruledPairs.map(([key, pair]) => {
@@ -1197,7 +1214,7 @@ function CASCard({ casGrad, spanLang }) {
   const filled = allCats.reduce((s, c) => s + (c.isSatisfied ? 1 : 0), 0);
 
   return (
-    <div style={{ background: SURFACE.card, border: `1px solid ${BORDER}`, borderRadius: 8, marginBottom: "0.75rem", overflow: "hidden" }}>
+    <div style={{ ...secondaryCardStyle, overflow: "hidden" }}>
       <button type="button" aria-expanded={open} onClick={() => setOpen(!open)} style={{ display: "flex", alignItems: "center", gap: "0.8rem", padding: "0.8rem 1rem", cursor: "pointer", background: "none", border: "none", borderLeft: `4px solid ${programColor("CAS-GRAD")}`, textAlign: "left", width: "100%" }}>
         <div style={{ flex: 1 }}>
           <div style={{ fontFamily: FONT.serif, fontSize: TYPE.lg, fontWeight: 600, color: programColor("CAS-GRAD") }}>{casGrad?.name || "Graduation Requirements"}</div>
@@ -1255,7 +1272,7 @@ function CASCard({ casGrad, spanLang }) {
 function RemainingCard({ remaining, onSlotTap }) {
   if (!remaining || remaining.length === 0) return null;
   return (
-    <div style={{ background: SURFACE.card, border: `1px solid ${BORDER}`, borderRadius: 8, padding: "1rem", marginBottom: "0.75rem" }}>
+    <div style={{ ...secondaryCardStyle, padding: "1rem" }}>
       <div style={{ fontFamily: FONT.serif, fontSize: TYPE.lg, fontWeight: 600, marginBottom: "0.5rem" }}>Remaining</div>
       {remaining.map((r, i) => (
         onSlotTap ? (
@@ -1300,7 +1317,7 @@ function SuggestionsCard({ suggestions, remaining, scrapedTerms }) {
   const top = filtered.slice(0, 8);
 
   return (
-    <div style={{ background: SURFACE.card, border: `1px solid ${BORDER}`, borderRadius: 8, padding: "1rem", marginBottom: "0.75rem" }}>
+    <div style={{ ...secondaryCardStyle, padding: "1rem" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.5rem" }}>
         <div style={{ fontFamily: FONT.serif, fontSize: TYPE.lg, fontWeight: 600 }}>High-Efficiency Suggestions</div>
         {scrapedTerms && scrapedTerms.length > 0 && (
@@ -1325,7 +1342,7 @@ function SuggestionsCard({ suggestions, remaining, scrapedTerms }) {
           <span style={{
             fontFamily: FONT.mono, fontSize: TYPE.xs, fontWeight: 700, width: 22, height: 22, borderRadius: "50%",
             display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-            background: s.boxCount >= 3 ? "linear-gradient(135deg, #c43b2d, #1a7a5a)" : "#e8e4df",
+            background: s.boxCount >= 3 ? `linear-gradient(135deg, ${programColor("PLSC-BA")}, ${programColor("GLST-BA")})` : "#e8e4df",
             color: s.boxCount >= 3 ? "#fff" : "#444",
           }}>{s.boxCount}</span>
           <div style={{ flex: 1 }}>
@@ -2356,7 +2373,7 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
         {step === 1 && (
           <div>
             <h2 style={{ fontFamily: FONT.serif, fontSize: "1.5rem", fontWeight: 700, marginBottom: 4 }}>
-              welcome to <span>ramble</span><span style={{ color: TEXT.danger }}>maxxer</span>
+              welcome to <span>ramble</span><span style={{ color: TEXT.brand }}>maxxer</span>
             </h2>
             <p style={{ fontFamily: FONT.mono, fontSize: TYPE.base, color: TEXT.muted, marginBottom: 24 }}>
               let's set up your degree tracking
@@ -3134,68 +3151,75 @@ function Dashboard({ user, setUser, onLogout, setOnboardingActive }) {
 
       {/* Content */}
       <div style={{ maxWidth: 680, margin: "0 auto", padding: "1rem" }}>
-        <CreditMeter credits={data.credits} hasUnmappedTransfer={hasUnmappedTransfer}
-          onTransferWarningTap={() => nextStepsRef.current?.scrollIntoView({ behavior: "smooth" })} />
 
-        {/* Declared programs */}
-        {allPrograms.length > 0 && (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", marginBottom: "0.75rem" }}>
-            {declaredMajors.map(p => (
-              <span key={p.code} style={{
-                fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "0.2rem 0.5rem", borderRadius: 4,
-                background: `${programColor(p.code)}15`, color: programColor(p.code),
-                border: `1px solid ${programColor(p.code)}30`,
-              }}>
-                {p.name}
-              </span>
-            ))}
-            {declaredMinors.map(p => (
-              <span key={p.code} style={{
-                fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "0.2rem 0.5rem", borderRadius: 4,
-                background: `${programColor(p.code)}10`, color: programColor(p.code),
-                border: `1px solid ${programColor(p.code)}20`,
-              }}>
-                {p.name} <span style={{ opacity: 0.6 }}>minor</span>
-              </span>
-            ))}
-          </div>
-        )}
-
-        <div ref={nextStepsRef}>
-          <NextStepsSection data={data}
-            onAddCourses={(term) => setAddCoursesSheet({ term })}
-            onMapTransfer={() => setTransferSheet(true)}
-            onSuggestionTap={() => remainingRef.current?.scrollIntoView({ behavior: "smooth" })}
-          />
-        </div>
-
-        <PlanPreview />
-
-        {Object.entries(data.overlaps?.pairs || {}).filter(([, p]) => p.max != null && p.count > p.max).map(([key, pair]) => {
-          const [a, b] = key.split("|");
-          const nameA = data.programs[a]?.name || a;
-          const nameB = data.programs[b]?.name || b;
-          return (
-            <div key={key} style={{ background: "#fde8e8", border: "1px solid #f5c6cb", borderRadius: 8, padding: "0.7rem 1rem", marginBottom: "0.75rem", fontFamily: FONT.mono, fontSize: TYPE.base, color: "#721c24" }}>
-              Over budget: {pair.count} {nameA}/{nameB} overlaps (max {pair.max}). Pin courses to fix.
+        {/* Zone 1: Status overview */}
+        <div style={{ display: "flex", flexDirection: "column", gap: SPACING.tight, marginBottom: SPACING.zone }}>
+          <CreditMeter credits={data.credits} hasUnmappedTransfer={hasUnmappedTransfer}
+            onTransferWarningTap={() => nextStepsRef.current?.scrollIntoView({ behavior: "smooth" })} />
+          {allPrograms.length > 0 && (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>
+              {declaredMajors.map(p => (
+                <span key={p.code} style={{
+                  fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "0.2rem 0.5rem", borderRadius: 4,
+                  background: `${programColor(p.code)}15`, color: programColor(p.code),
+                  border: `1px solid ${programColor(p.code)}30`,
+                }}>
+                  {p.name}
+                </span>
+              ))}
+              {declaredMinors.map(p => (
+                <span key={p.code} style={{
+                  fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "0.2rem 0.5rem", borderRadius: 4,
+                  background: `${programColor(p.code)}10`, color: programColor(p.code),
+                  border: `1px solid ${programColor(p.code)}20`,
+                }}>
+                  {p.name} <span style={{ opacity: 0.6 }}>minor</span>
+                </span>
+              ))}
             </div>
-          );
-        })}
-
-        {majors.map(prog => (
-          <ProgramCard key={prog.code} prog={prog} conflicts={conflicts} onPipClick={handlePipClick} onSlotTap={handleSlotTap}
-            defaultOpen={prog.type === "major"} />
-        ))}
-
-        <OverlapBudget overlaps={data.overlaps} programs={data.programs} conflicts={conflicts} onPipClick={handlePipClick} />
-
-        <CASCard casGrad={data.programs["CAS-GRAD"]} spanLang={data.programs["SPAN-LANG"]} />
-
-        <div ref={remainingRef}>
-          <RemainingCard remaining={data.remaining} onSlotTap={handleSlotTap} />
+          )}
         </div>
 
-        <SuggestionsCard suggestions={data.suggestions} remaining={data.remaining} scrapedTerms={data.scrapedTerms} />
+        {/* Zone 2: Actions */}
+        <div style={{ display: "flex", flexDirection: "column", gap: SPACING.tight, marginBottom: SPACING.zone }}>
+          <div ref={nextStepsRef}>
+            <NextStepsSection data={data}
+              onAddCourses={(term) => setAddCoursesSheet({ term })}
+              onMapTransfer={() => setTransferSheet(true)}
+              onSuggestionTap={() => remainingRef.current?.scrollIntoView({ behavior: "smooth" })}
+            />
+          </div>
+          <PlanPreview />
+          {Object.entries(data.overlaps?.pairs || {}).filter(([, p]) => p.max != null && p.count > p.max).map(([key, pair]) => {
+            const [a, b] = key.split("|");
+            const nameA = data.programs[a]?.name || a;
+            const nameB = data.programs[b]?.name || b;
+            return (
+              <div key={key} style={{ background: "#fde8e8", border: "1px solid #f5c6cb", borderRadius: 8, padding: "0.7rem 1rem", fontFamily: FONT.mono, fontSize: TYPE.base, color: "#721c24" }}>
+                Over budget: {pair.count} {nameA}/{nameB} overlaps (max {pair.max}). Pin courses to fix.
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Zone 3: Program detail */}
+        <div style={{ display: "flex", flexDirection: "column", gap: SPACING.normal, marginBottom: SPACING.zone }}>
+          {majors.map(prog => (
+            <ProgramCard key={prog.code} prog={prog} conflicts={conflicts} onPipClick={handlePipClick} onSlotTap={handleSlotTap}
+              defaultOpen={prog.type === "major"} />
+          ))}
+          <OverlapBudget overlaps={data.overlaps} programs={data.programs} conflicts={conflicts} onPipClick={handlePipClick} />
+          <CASCard casGrad={data.programs["CAS-GRAD"]} spanLang={data.programs["SPAN-LANG"]} />
+        </div>
+
+        {/* Zone 4: What's left */}
+        <div style={{ display: "flex", flexDirection: "column", gap: SPACING.tight }}>
+          <div ref={remainingRef}>
+            <RemainingCard remaining={data.remaining} onSlotTap={handleSlotTap} />
+          </div>
+          <SuggestionsCard suggestions={data.suggestions} remaining={data.remaining} scrapedTerms={data.scrapedTerms} />
+        </div>
+
       </div>
 
       {pinModal && (
@@ -3225,7 +3249,8 @@ function Dashboard({ user, setUser, onLogout, setOnboardingActive }) {
       {showSettings && (
         <SettingsSheet user={user} onClose={() => setShowSettings(false)}
           onUpdate={(updated) => setUser(updated)}
-          onReimport={() => setShowOnboarding(true)} />
+          onReimport={() => setShowOnboarding(true)}
+          onLogout={onLogout} />
       )}
 
       {showOnboarding && (

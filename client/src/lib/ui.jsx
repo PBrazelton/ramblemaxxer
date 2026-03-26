@@ -8,7 +8,7 @@ import { useEffect, useRef } from "react";
 
 // Program identity colors
 export const COLORS = {
-  "PLSC-BA": "#c43b2d", "GLST-BA": "#1a7a5a", "CORE": "#7a4a1a",
+  "PLSC-BA": "#8b4a3a", "GLST-BA": "#1a7a5a", "CORE": "#7a4a1a",
   "CAS-GRAD": "#5a6a7a", "SPAN-LANG": "#6f42c1",
   // Modeled programs
   "PHIL-BA": "#7a4a8a", "HIST-BA": "#8a6a2a", "ENGL-BA": "#2a6a8a",
@@ -66,6 +66,7 @@ export const TEXT = {
   success: "#22863a",
   warning: "#8a6d00",  // was #b08800 (3.9:1) — now 4.5:1 on #fff
   link: "#6f42c1",
+  brand: "#800000",   // Loyola maroon — logo accent
 };
 
 // Button colors
@@ -118,8 +119,18 @@ export const sharedStyles = {
 
 // ── Reusable style objects (common patterns used 5+ times) ──────────────────
 
+// Spacing rhythm — 3 tiers for zone-based layout
+export const SPACING = {
+  tight: "0.5rem",    // within a zone group
+  normal: "0.75rem",  // between substantial cards (ProgramCards)
+  zone: "1.75rem",    // between zone groups
+};
+
 // Card container — white card with border, used for dashboard cards, planner buckets, admin rows
 export const cardStyle = { background: SURFACE.card, border: `1px solid ${BORDER}`, borderRadius: 8 };
+
+// Secondary card — lighter weight for informational/reference sections (parchment shows through)
+export const secondaryCardStyle = { ...cardStyle, background: "transparent" };
 
 // Badge — small inline label with background
 export const badgeStyle = (bg, color) => ({
@@ -148,20 +159,25 @@ export function StickyHeader({ user, badge, onLogout, onSettings, nav }) {
   return (
     <div style={{ position: "sticky", top: 0, zIndex: 50, background: BG, borderBottom: `1px solid ${BORDER}`, padding: "0.6rem 1rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
       <h1 style={{ fontFamily: FONT.serif, fontSize: "1.3rem", fontWeight: 700, margin: 0, letterSpacing: "-0.02em" }}>
-        <span>ramble</span><span style={{ color: "#c43b2d" }}>maxxer</span>
+        <span>ramble</span><span style={{ color: TEXT.brand }}>maxxer</span>
         {badge && <span style={{ marginLeft: 8, fontSize: "0.6rem", fontFamily: FONT.mono, background: "#1a1a1a", color: "#fff", padding: "2px 8px", borderRadius: 3, verticalAlign: "middle" }}>{badge}</span>}
       </h1>
-      <div style={{ display: "flex", gap: "0.6rem", alignItems: "center" }}>
+      <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
         {nav}
-        <span style={{ fontFamily: FONT.mono, fontSize: TYPE.base, color: TEXT.secondary }}>{user.name}</span>
-        {onSettings && (
-          <button onClick={onSettings} style={{ fontFamily: FONT.mono, fontSize: TYPE.lg, padding: "0.4rem", background: "transparent", border: "none", cursor: "pointer", color: TEXT.secondary, minWidth: 44, minHeight: 44, display: "flex", alignItems: "center", justifyContent: "center" }} title="Settings" aria-label="Open settings">
-            &#9881;
+        {onSettings ? (
+          <button onClick={onSettings} style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.3rem 0.6rem", background: "transparent", border: `1px solid ${BORDER}`, borderRadius: 4, cursor: "pointer", color: TEXT.secondary, minHeight: 44, display: "flex", alignItems: "center", gap: "0.3rem" }} title="Settings" aria-label="Open settings">
+            <span style={{ fontSize: TYPE.base }}>&#9881;</span> {user.name}
           </button>
+        ) : (
+          <>
+            <span style={{ fontFamily: FONT.mono, fontSize: TYPE.base, color: TEXT.secondary }}>{user.name}</span>
+            {onLogout && (
+              <button onClick={onLogout} style={{ fontFamily: FONT.mono, fontSize: "0.7rem", padding: "0.3rem 0.7rem", background: BTN.primary, color: TEXT.inverse, border: "none", borderRadius: 4, cursor: "pointer" }}>
+                log out
+              </button>
+            )}
+          </>
         )}
-        <button onClick={onLogout} style={{ fontFamily: FONT.mono, fontSize: "0.7rem", padding: "0.3rem 0.7rem", background: BTN.primary, color: TEXT.inverse, border: "none", borderRadius: 4, cursor: "pointer" }}>
-          log out
-        </button>
       </div>
     </div>
   );

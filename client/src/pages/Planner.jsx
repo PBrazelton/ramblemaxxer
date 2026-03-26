@@ -454,7 +454,7 @@ export default function Planner({ user, onLogout }) {
           <div style={{ display: "flex", alignItems: "center", gap: "0.8rem" }}>
             <h1 style={{ fontFamily: FONT.serif, fontSize: TYPE.xxl, fontWeight: 700, margin: 0, letterSpacing: "-0.02em" }}>
               <a href="#/" style={{ textDecoration: "none", color: "inherit" }}>
-                <span>ramble</span><span style={{ color: TEXT.danger }}>maxxer</span>
+                <span>ramble</span><span style={{ color: TEXT.brand }}>maxxer</span>
               </a>
             </h1>
             <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, background: "#6f42c1", color: TEXT.inverse, padding: "2px 8px", borderRadius: 3 }}>planner</span>
