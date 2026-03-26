@@ -246,14 +246,14 @@ function FeedbackWidget({ user, hidden }) {
         <BottomSheet onClose={() => { if (!sending) { setOpen(false); setSent(false); setMessage(""); setCategory(null); } }} maxWidth={440}>
           {sent ? (
             <div style={{ textAlign: "center", padding: "2rem 0" }}>
-              <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>
+              <div style={{ fontSize: TYPE.display, marginBottom: "0.5rem" }}>
                 <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="14" stroke="#22863a" strokeWidth="2"/><path d="M10 16l4 4 8-8" stroke="#22863a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </div>
               <div style={{ fontFamily: FONT.serif, fontSize: TYPE.xl, color: "#333" }}>Thanks! We got it.</div>
             </div>
           ) : (
             <>
-              <div style={{ fontFamily: FONT.serif, fontSize: "1.2rem", color: "#1a1a1a", marginBottom: "1rem" }}>
+              <div style={{ fontFamily: FONT.serif, fontSize: TYPE.xl, color: "#1a1a1a", marginBottom: "1rem" }}>
                 What's on your mind?
               </div>
               <textarea
@@ -362,7 +362,7 @@ function PersonaPicker({ onLogin, setDevPersona }) {
     <div style={{ marginTop: 24, borderTop: `1px solid ${BORDER}`, paddingTop: 16 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
         <div style={{ flex: 1, height: 1, background: BORDER }} />
-        <span style={{ fontSize: 11, color: "#b0a090", fontFamily: FONT.mono, whiteSpace: "nowrap" }}>development mode</span>
+        <span style={{ fontSize: TYPE.xs, color: "#b0a090", fontFamily: FONT.mono, whiteSpace: "nowrap" }}>development mode</span>
         <div style={{ flex: 1, height: 1, background: BORDER }} />
       </div>
       <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.muted, marginBottom: 12, textAlign: "center" }}>
@@ -504,7 +504,7 @@ function RegisterPage({ onRegister }) {
       </a>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
         <div style={{ flex: 1, height: 1, background: BORDER }} />
-        <span style={{ fontSize: 11, color: "#b0a090", fontFamily: FONT.mono }}>or</span>
+        <span style={{ fontSize: TYPE.xs, color: "#b0a090", fontFamily: FONT.mono }}>or</span>
         <div style={{ flex: 1, height: 1, background: BORDER }} />
       </div>
       <form onSubmit={submit} style={styles.form}>
@@ -537,7 +537,7 @@ function ForgotPasswordPage() {
     <AuthShell title="reset password" sub="we'll send you a link">
       {sent ? (
         <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 14, color: TEXT.secondary, marginBottom: 16 }}>
+          <div style={{ fontSize: TYPE.sm, color: TEXT.secondary, marginBottom: 16 }}>
             If that email is in our system, a reset link is on its way.
           </div>
           <Btn onClick={onBack} full>back to login</Btn>
@@ -550,7 +550,7 @@ function ForgotPasswordPage() {
           <Btn type="submit" full>send reset link</Btn>
           <button type="button" onClick={onBack}
             style={{ background: "none", border: "none", color: TEXT.disabled,
-              fontSize: 12, fontFamily: FONT.mono, cursor: "pointer" }}>
+              fontSize: TYPE.xs, fontFamily: FONT.mono, cursor: "pointer" }}>
             back to login
           </button>
         </form>
@@ -578,7 +578,7 @@ function ResetPasswordPage() {
     <AuthShell title="new password" sub="make it a good one">
       {done ? (
         <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 14, color: TEXT.success, marginBottom: 16 }}>
+          <div style={{ fontSize: TYPE.sm, color: TEXT.success, marginBottom: 16 }}>
             Password updated! You can now log in.
           </div>
           <Btn onClick={() => { window.location.hash = "/login"; }} full>go to login</Btn>
@@ -605,7 +605,7 @@ function SettingsResetSection({ onClose, onReimport }) {
   return (
     <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: 16, marginBottom: 16 }}>
       <SectionTitle>Reset</SectionTitle>
-      <p style={{ fontSize: 11, color: TEXT.danger, fontFamily: FONT.mono, marginBottom: 8 }}>
+      <p style={{ fontSize: TYPE.xs, color: TEXT.danger, fontFamily: FONT.mono, marginBottom: 8 }}>
         Delete all course data and start over. Programs and account info are kept.
       </p>
       <Input placeholder='Type "RESET" to confirm' aria-label="Type RESET to confirm" value={resetConfirm}
@@ -679,7 +679,7 @@ function SettingsSheet({ user, onClose, onUpdate, onReimport, onLogout }) {
           <Input placeholder="graduation year" aria-label="Graduation year" value={gradYear}
             onChange={e => setGradYear(e.target.value)} />
           <div>
-            <div style={{ fontSize: 12, color: "#8a8580", marginBottom: 6,
+            <div style={{ fontSize: TYPE.xs, color: "#8a8580", marginBottom: 6,
               fontFamily: FONT.mono }}>course visibility</div>
             <div style={{ display: "flex", gap: 8 }}>
               {["private", "friends"].map(v => (
@@ -687,13 +687,13 @@ function SettingsSheet({ user, onClose, onUpdate, onReimport, onLogout }) {
                   style={{ flex: 1, padding: "10px 0", borderRadius: 8,
                     border: `2px solid ${privacy === v ? "#1a1a1a" : BORDER}`,
                     background: privacy === v ? "#1a1a1a" : "transparent",
-                    cursor: "pointer", fontFamily: FONT.mono, fontSize: 13,
+                    cursor: "pointer", fontFamily: FONT.mono, fontSize: TYPE.sm,
                     color: privacy === v ? "#fff" : "#5a5550" }}>
                   {v === "private" ? "private" : "friends"}
                 </button>
               ))}
             </div>
-            <div style={{ fontSize: 11, color: TEXT.disabled, marginTop: 6 }}>
+            <div style={{ fontSize: TYPE.xs, color: TEXT.disabled, marginTop: 6 }}>
               {privacy === "friends"
                 ? "People in your invite network can see your course list"
                 : "Only you can see your course list"}
@@ -716,7 +716,7 @@ function SettingsSheet({ user, onClose, onUpdate, onReimport, onLogout }) {
         )}
 
         {user.provider === "google" && (
-          <div style={{ fontSize: 12, color: TEXT.disabled, fontFamily: FONT.mono,
+          <div style={{ fontSize: TYPE.xs, color: TEXT.disabled, fontFamily: FONT.mono,
             padding: "12px 0", borderTop: `1px solid ${BORDER}` }}>
             Signed in with Google — password change not available
           </div>
@@ -728,14 +728,14 @@ function SettingsSheet({ user, onClose, onUpdate, onReimport, onLogout }) {
             style={{ background: "transparent", border: `2px solid ${BORDER}`, color: TEXT.secondary }}>
             re-import transcript
           </Btn>
-          <div style={{ fontSize: 11, color: TEXT.disabled, marginTop: 6, fontFamily: FONT.mono }}>
+          <div style={{ fontSize: TYPE.xs, color: TEXT.disabled, marginTop: 6, fontFamily: FONT.mono }}>
             Opens the transcript upload wizard — existing courses are kept
           </div>
         </div>
 
         <SettingsResetSection onClose={onClose} onReimport={onReimport} />
 
-        {msg && <div style={{ color: TEXT.success, fontSize: 13, fontFamily: FONT.mono,
+        {msg && <div style={{ color: TEXT.success, fontSize: TYPE.sm, fontFamily: FONT.mono,
           marginTop: 8 }}>{msg}</div>}
         {err && <ErrMsg>{err}</ErrMsg>}
 
@@ -743,14 +743,14 @@ function SettingsSheet({ user, onClose, onUpdate, onReimport, onLogout }) {
           <button onClick={onClose}
             style={{ flex: 1, padding: 12, borderRadius: 10,
               border: "none", background: "#e8e4df", cursor: "pointer",
-              fontFamily: FONT.mono, fontSize: 13, color: TEXT.secondary }}>
+              fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.secondary }}>
             close
           </button>
           {onLogout && (
             <button onClick={onLogout}
               style={{ padding: "12px 16px", borderRadius: 10,
                 border: "none", background: "transparent", cursor: "pointer",
-                fontFamily: FONT.mono, fontSize: 13, color: TEXT.muted }}>
+                fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.muted }}>
               log out
             </button>
           )}
@@ -901,7 +901,7 @@ function NextStepsSection({ data, onAddCourses, onMapTransfer, onSuggestionTap }
                 <div style={{ fontFamily: FONT.mono, fontSize: titleSize, fontWeight: 700 }}>{card.title}</div>
                 <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted }}>{card.subtitle}</div>
               </div>
-              <span style={{ fontSize: "1.2rem", color: TEXT.secondary, fontWeight: 300 }}>&rsaquo;</span>
+              <span style={{ fontSize: TYPE.xl, color: TEXT.secondary, fontWeight: 300 }}>&rsaquo;</span>
             </button>
           ) : (
             <div key={card.key} style={{ ...ctaCardStyle, padding: cardPadding }}>
@@ -1048,7 +1048,7 @@ function CategoryRow({ cat, color, conflicts, onPipClick, onSlotTap }) {
           <span style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: cat.isSatisfied ? "#22863a" : "#b08800", fontWeight: 600 }}>
             {cat.filledCount || 0}/{cat.slotsNeeded}
           </span>
-          {onSlotTap && <span style={{ color: "#c0b8b0", fontSize: 14 }}>&rsaquo;</span>}
+          {onSlotTap && <span style={{ color: "#c0b8b0", fontSize: TYPE.sm }}>&rsaquo;</span>}
         </div>
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem" }}>{pips}</div>
@@ -1067,7 +1067,7 @@ function FilledPip({ slot, color, isConflict, onClick, label }) {
     }}>
       <span style={{ width: 6, height: 6, borderRadius: "50%", background: STATUS_COLOR[slot.status] || "#888", flexShrink: 0 }} />
       {slot.code}
-      {label && <span style={{ fontSize: "0.5rem", opacity: 0.6 }}>{label}</span>}
+      {label && <span style={{ fontSize: TYPE.xs, opacity: 0.6 }}>{label}</span>}
       {isConflict && <span style={{ fontSize: TYPE.xs }}>&#x27F7;</span>}
     </button>
   );
@@ -1281,7 +1281,7 @@ function RemainingCard({ remaining, onSlotTap }) {
             <span style={{ width: 8, height: 8, borderRadius: "50%", background: COLORS[r.program] || "#888", flexShrink: 0 }} />
             <span style={{ color: TEXT.primary }}>{r.category}</span>
             <span style={{ color: TEXT.muted, marginLeft: "auto", fontSize: TYPE.xs }}>{r.programName} · {r.needed} needed</span>
-            <span style={{ color: "#c0b8b0", fontSize: 14 }}>&rsaquo;</span>
+            <span style={{ color: "#c0b8b0", fontSize: TYPE.sm }}>&rsaquo;</span>
           </button>
         ) : (
           <div key={i}
@@ -1557,7 +1557,7 @@ function SlotModal({ programCode, categoryName, onClose }) {
                 </div>
               )}
             </div>
-            <span style={{ color: "#c0b8b0", fontSize: 16, marginLeft: "0.5rem" }}>&rsaquo;</span>
+            <span style={{ color: "#c0b8b0", fontSize: TYPE.md, marginLeft: "0.5rem" }}>&rsaquo;</span>
           </div>
         </button>
       ))}
@@ -1887,7 +1887,7 @@ function AddCoursesSheet({ initialTerm, onClose, onSaved }) {
               border: `1.5px solid ${isSelected(c.code) ? "#22863a" : "#ccc"}`,
               background: isSelected(c.code) ? "#22863a" : "transparent",
               display: "flex", alignItems: "center", justifyContent: "center",
-              color: TEXT.inverse, fontSize: 11,
+              color: TEXT.inverse, fontSize: TYPE.xs,
             }}>
               {isSelected(c.code) && "\u2713"}
             </span>
@@ -2048,7 +2048,7 @@ function ProgramPickerList({ label, items, selected, onToggle, search, onSearch,
                 border: `2px solid ${isSelected ? color : "#ccc"}`,
                 background: isSelected ? color : "transparent",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                color: TEXT.inverse, fontSize: 11,
+                color: TEXT.inverse, fontSize: TYPE.xs,
               }}>
                 {isSelected && "\u2713"}
               </div>
@@ -2063,9 +2063,9 @@ function ProgramPickerList({ label, items, selected, onToggle, search, onSearch,
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
                   <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.disabled }}>{p.code}</span>
                   {p.modeled ? (
-                    <span style={{ fontFamily: FONT.mono, fontSize: "0.5rem", padding: "1px 5px", borderRadius: 3, background: "#e8f5e9", color: TEXT.success }}>full tracking</span>
+                    <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "1px 5px", borderRadius: 3, background: "#e8f5e9", color: TEXT.success }}>full tracking</span>
                   ) : (
-                    <span style={{ fontFamily: FONT.mono, fontSize: "0.5rem", padding: "1px 5px", borderRadius: 3, background: "#f0f0f0", color: TEXT.disabled }}>credit tracking only</span>
+                    <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "1px 5px", borderRadius: 3, background: "#f0f0f0", color: TEXT.disabled }}>credit tracking only</span>
                   )}
                 </div>
               </div>
@@ -2398,7 +2398,7 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
         {/* ── Step 1: Welcome + Programs ────────────────────────────────── */}
         {step === 1 && (
           <div>
-            <h2 style={{ fontFamily: FONT.serif, fontSize: "1.5rem", fontWeight: 700, marginBottom: 4 }}>
+            <h2 style={{ fontFamily: FONT.serif, fontSize: TYPE.xxl, fontWeight: 700, marginBottom: 4 }}>
               welcome to <span>ramble</span><span style={{ color: TEXT.brand }}>maxxer</span>
             </h2>
             <p style={{ fontFamily: FONT.mono, fontSize: TYPE.base, color: TEXT.muted, marginBottom: 24 }}>
@@ -2584,7 +2584,7 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
                       }} style={{
                         width: 22, height: 22, borderRadius: 4, border: `1px solid ${BORDER}`,
                         background: c.included ? "#1a1a1a" : "transparent", color: TEXT.inverse,
-                        cursor: "pointer", fontSize: 11, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, minWidth: 44, minHeight: 44, padding: 0,
+                        cursor: "pointer", fontSize: TYPE.xs, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, minWidth: 44, minHeight: 44, padding: 0,
                       }}>
                         {c.included && "\u2713"}
                       </button>
@@ -2633,7 +2633,7 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
                         }} style={{
                           width: 22, height: 22, borderRadius: 4, border: `1px solid ${BORDER}`,
                           background: c.included ? "#1a1a1a" : "transparent", color: TEXT.inverse,
-                          cursor: "pointer", fontSize: 11, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, minWidth: 44, minHeight: 44, padding: 0,
+                          cursor: "pointer", fontSize: TYPE.xs, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, minWidth: 44, minHeight: 44, padding: 0,
                         }}>
                           {c.included && "\u2713"}
                         </button>
@@ -2919,7 +2919,7 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
                     </div>
                     {(row.satisfies || []).length === 0 && (
                       <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#22863a", marginTop: 4, display: "flex", alignItems: "center", gap: 4 }}>
-                        <span style={{ fontSize: "0.7rem" }}>ℹ</span> General credit — counts toward your 120 total
+                        <span style={{ fontSize: TYPE.sm }}>ℹ</span> General credit — counts toward your 120 total
                       </div>
                     )}
                   </div>
@@ -3022,7 +3022,7 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
 
           return (
             <div>
-              <h2 style={{ fontFamily: FONT.serif, fontSize: "1.5rem", fontWeight: 700, marginBottom: 4, textAlign: "center" }}>
+              <h2 style={{ fontFamily: FONT.serif, fontSize: TYPE.xxl, fontWeight: 700, marginBottom: 4, textAlign: "center" }}>
                 you're all set
               </h2>
               <p style={{ fontFamily: FONT.mono, fontSize: TYPE.base, color: TEXT.muted, marginBottom: 24, textAlign: "center" }}>
