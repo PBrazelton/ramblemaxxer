@@ -236,7 +236,7 @@ function FeedbackWidget({ user, hidden }) {
           background: showCheck ? "#22863a" : "#1a1a1a", border: "none",
           cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
           boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-          animation: showPulse && !open ? "feedbackPulse 2s ease-in-out infinite" : "none",
+          animation: showPulse && !open ? "feedbackPulse 2s ease-in-out 3" : "none",
           transition: "background 0.2s",
         }}>{buttonIcon}</button>
       </div>
