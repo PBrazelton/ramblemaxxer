@@ -768,7 +768,7 @@ function CreditMeter({ credits, hasUnmappedTransfer, onTransferWarningTap }) {
 
   return (
     <div style={{ padding: "0.8rem 0 1rem 0", borderBottom: `1px solid ${BORDER}` }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "1.2rem" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "1.2rem", flexWrap: "wrap" }}>
         <div style={{ position: "relative", flexShrink: 0 }}>
           <ProgressRing value={total} max={max} size={80} color={total >= max ? "#22863a" : "#b08800"} />
           <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
@@ -992,7 +992,7 @@ function CompletedCategoriesGroup({ categories, color, conflicts, onPipClick }) 
     <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: "0.5rem" }}>
       <button type="button" aria-expanded={expanded} onClick={() => setExpanded(!expanded)} style={{
         display: "flex", alignItems: "center", gap: "0.4rem", cursor: "pointer", padding: "0.3rem 0",
-        background: "none", border: "none", textAlign: "left", width: "100%",
+        background: "none", border: "none", textAlign: "left", width: "100%", minHeight: 44,
       }}>
         <span style={{ color: TEXT.success, fontSize: TYPE.sm }}>&#10003;</span>
         <span style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, fontWeight: 600, color: TEXT.success }}>

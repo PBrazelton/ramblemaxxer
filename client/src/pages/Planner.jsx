@@ -1547,7 +1547,7 @@ function WeeklyScheduleView({ plan, coursesByTerm, actualByTerm = {}, planTerms,
           {blocks.scheduled.length > 0 ? (
             <div style={{ ...cardStyle, padding: "0.5rem", overflow: "hidden", marginBottom: "0.5rem" }}>
               <div style={{ overflowX: "auto" }}>
-                <TimeGrid blocks={blocks.scheduled} conflictCodes={conflictCodes} gridStart={gridStart} gridEnd={gridEnd} />
+                <TimeGrid blocks={blocks.scheduled} conflictCodes={conflictCodes} gridStart={gridStart} gridEnd={gridEnd} isMobile={true} />
               </div>
             </div>
           ) : (
@@ -1678,16 +1678,17 @@ function SectionList({ sections, selectedSection, courseCode, onSectionSelect })
 
 // ── Time Grid ────────────────────────────────────────────────────────────────
 
-function TimeGrid({ blocks, conflictCodes, gridStart, gridEnd }) {
+function TimeGrid({ blocks, conflictCodes, gridStart, gridEnd, isMobile }) {
   const PX_PER_HOUR = 50;
   const ROW_HEIGHT = PX_PER_HOUR / 60; // ~0.833 px per minute
-  const LABEL_WIDTH = 50;
+  const LABEL_WIDTH = isMobile ? 36 : 50;
+  const COL_WIDTH = isMobile ? 60 : 80;
   const totalHeight = (gridEnd - gridStart) * ROW_HEIGHT;
   const rows = [];
   for (let t = gridStart; t < gridEnd; t += 60) rows.push(t);
 
   return (
-    <div style={{ position: "relative", display: "flex", width: "100%", minWidth: LABEL_WIDTH + 80 * 5 }}>
+    <div style={{ position: "relative", display: "flex", width: "100%", minWidth: LABEL_WIDTH + COL_WIDTH * 5 }}>
       {/* Time labels */}
       <div style={{ width: LABEL_WIDTH, flexShrink: 0, position: "relative", height: totalHeight }}>
         {rows.map(t => (
@@ -1702,7 +1703,7 @@ function TimeGrid({ blocks, conflictCodes, gridStart, gridEnd }) {
 
       {/* Day columns */}
       {DAY_COLS.map((day, dayIdx) => (
-        <div key={day} style={{ flex: 1, minWidth: 80, position: "relative", height: totalHeight, borderLeft: `1px solid ${BORDER}` }}>
+        <div key={day} style={{ flex: 1, minWidth: COL_WIDTH, position: "relative", height: totalHeight, borderLeft: `1px solid ${BORDER}` }}>
           {/* Day header */}
           <div style={{
             position: "sticky", top: 0, zIndex: 2,
