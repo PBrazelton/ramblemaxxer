@@ -165,8 +165,9 @@ export function StickyHeader({ user, badge, onLogout, onSettings, nav }) {
       <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
         {nav}
         {onSettings ? (
-          <button onClick={onSettings} style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.3rem 0.6rem", background: "transparent", border: `1px solid ${BORDER}`, borderRadius: 4, cursor: "pointer", color: TEXT.secondary, minHeight: 44, display: "flex", alignItems: "center", gap: "0.3rem" }} title="Settings" aria-label="Open settings">
-            <span style={{ fontSize: TYPE.base }}>&#9881;</span> {user.name}
+          <button onClick={onSettings} style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.3rem 0.6rem", background: "transparent", border: `1px solid ${BORDER}`, borderRadius: 4, cursor: "pointer", color: TEXT.secondary, minHeight: 44, display: "flex", alignItems: "center", gap: "0.3rem", maxWidth: 180, overflow: "hidden" }} title="Settings" aria-label="Open settings">
+            <span style={{ fontSize: TYPE.base, flexShrink: 0 }}>&#9881;</span>
+            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.name}</span>
           </button>
         ) : (
           <>
