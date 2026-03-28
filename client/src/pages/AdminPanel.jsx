@@ -1317,6 +1317,173 @@ function ToolsTab() {
 
       {/* RateMyProfessor Ratings */}
       <RmpToolCard />
+
+      {/* RMP Match Review */}
+      <RmpMatchReview />
+    </div>
+  );
+}
+
+function RmpMatchReview() {
+  const [matches, setMatches] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [quality, setQuality] = useState("auto");
+  const [search, setSearch] = useState("");
+  const [offset, setOffset] = useState(0);
+  const [searchingFor, setSearchingFor] = useState(null); // { id, instructorName }
+  const [rmpResults, setRmpResults] = useState([]);
+  const [rmpSearchQuery, setRmpSearchQuery] = useState("");
+  const [rmpSearching, setRmpSearching] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
+  const limit = 50;
+
+  const loadMatches = useCallback(async () => {
+    const params = new URLSearchParams({ quality, limit, offset });
+    if (search) params.set("q", search);
+    const data = await api.get(`/api/admin/rmp-matches?${params}`);
+    setMatches(data.matches || []);
+    setTotal(data.total || 0);
+  }, [quality, search, offset]);
+
+  useEffect(() => { loadMatches(); }, [loadMatches]);
+
+  const updateMatch = async (id, rmpId, matchQuality) => {
+    await api.put(`/api/admin/rmp-matches/${id}`, { rmpId, matchQuality });
+    loadMatches();
+  };
+
+  const doRmpSearch = async () => {
+    if (!rmpSearchQuery.trim()) return;
+    setRmpSearching(true);
+    const results = await api.get(`/api/admin/rmp-search?name=${encodeURIComponent(rmpSearchQuery)}`);
+    setRmpResults(Array.isArray(results) ? results : []);
+    setRmpSearching(false);
+    setHasSearched(true);
+  };
+
+  const linkProfessor = async (matchId, prof) => {
+    await api.put(`/api/admin/rmp-matches/${matchId}`, { rmpId: prof.rmpId, matchQuality: "manual", professorData: prof });
+    setSearchingFor(null);
+    setRmpResults([]);
+    loadMatches();
+  };
+
+  const qualityBadge = (q) => {
+    const colors = { auto: ["#fff3cd", "#856404"], manual: ["#e8f5e9", "#22863a"], none: ["#f0f0f0", "#888"] };
+    const [bg, color] = colors[q] || colors.none;
+    return { fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "2px 6px", borderRadius: 3, background: bg, color };
+  };
+
+  const btnStyle = (bg) => ({
+    fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "3px 8px", borderRadius: 3,
+    background: bg, color: "#fff", border: "none", cursor: "pointer",
+  });
+
+  return (
+    <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 8, padding: "1rem", marginTop: "0.75rem" }}>
+      <div style={{ fontFamily: FONT.serif, fontSize: TYPE.md, fontWeight: 600, marginBottom: "0.5rem" }}>
+        Review RMP Matches
+      </div>
+      <p style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: "#666", marginBottom: "0.75rem", lineHeight: 1.5 }}>
+        Review auto-matched professors. Confirm correct matches, break wrong ones, or search RMP to link manually.
+      </p>
+
+      {/* Filters */}
+      <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.75rem", flexWrap: "wrap" }}>
+        <select value={quality} onChange={e => { setQuality(e.target.value); setOffset(0); }}
+          style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.3rem 0.5rem", border: `1px solid ${BORDER}`, borderRadius: 4, background: "#fafaf8" }}>
+          <option value="all">All</option>
+          <option value="auto">Auto-matched</option>
+          <option value="manual">Manually linked</option>
+          <option value="none">Unmatched</option>
+        </select>
+        <input type="text" placeholder="Search instructor..." value={search}
+          onChange={e => { setSearch(e.target.value); setOffset(0); }}
+          style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.3rem 0.5rem", border: `1px solid ${BORDER}`, borderRadius: 4, background: "#fafaf8", flex: 1, minWidth: 150 }} />
+        <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#888", alignSelf: "center" }}>
+          {total} matches
+        </span>
+      </div>
+
+      {/* Match list */}
+      <div style={{ maxHeight: 400, overflow: "auto" }}>
+        {matches.map(m => (
+          <div key={m.id} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.4rem 0", borderBottom: `1px solid ${BORDER}`, flexWrap: "wrap" }}>
+            <div style={{ flex: 1, minWidth: 140 }}>
+              <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, fontWeight: 600 }}>{m.instructor_name}</div>
+              {m.rmp_id && (
+                <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#666" }}>
+                  → {m.rmp_first_name} {m.rmp_last_name} {m.rmp_department && `(${m.rmp_department})`} {m.rmp_rating != null && `★${m.rmp_rating}`} {m.rmp_num_ratings != null && `(${m.rmp_num_ratings})`}
+                </div>
+              )}
+              {!m.rmp_id && <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#bbb" }}>No match</div>}
+            </div>
+            <span style={qualityBadge(m.match_quality)}>{m.match_quality}</span>
+            <div style={{ display: "flex", gap: "0.3rem" }}>
+              {m.match_quality === "auto" && (
+                <>
+                  <button onClick={() => updateMatch(m.id, m.rmp_id, "manual")} style={btnStyle("#22863a")}>Confirm</button>
+                  <button onClick={() => updateMatch(m.id, null, "none")} style={btnStyle("#c43b2d")}>Break</button>
+                </>
+              )}
+              {m.match_quality === "manual" && (
+                <button onClick={() => updateMatch(m.id, null, "none")} style={btnStyle("#c43b2d")}>Break</button>
+              )}
+              {(m.match_quality === "none" || !m.rmp_id) && (
+                <button onClick={() => { setSearchingFor({ id: m.id, instructorName: m.instructor_name }); setRmpSearchQuery(m.instructor_name); setRmpResults([]); setHasSearched(false); }} style={btnStyle("#6f42c1")}>Search & Link</button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Pagination */}
+      {total > limit && (
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.5rem" }}>
+          <button disabled={offset === 0} onClick={() => setOffset(Math.max(0, offset - limit))}
+            style={{ ...btnStyle("#5a6a7a"), opacity: offset === 0 ? 0.4 : 1 }}>← Prev</button>
+          <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#888" }}>
+            {offset + 1}–{Math.min(offset + limit, total)} of {total}
+          </span>
+          <button disabled={offset + limit >= total} onClick={() => setOffset(offset + limit)}
+            style={{ ...btnStyle("#5a6a7a"), opacity: offset + limit >= total ? 0.4 : 1 }}>Next →</button>
+        </div>
+      )}
+
+      {/* RMP Search panel */}
+      {searchingFor && (
+        <div style={{ background: "#f8f6f2", border: `1px solid ${BORDER}`, borderRadius: 8, padding: "0.75rem", marginTop: "0.75rem" }}>
+          <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, fontWeight: 600, marginBottom: "0.4rem" }}>
+            Search RMP for: {searchingFor.instructorName}
+          </div>
+          <div style={{ display: "flex", gap: "0.3rem", marginBottom: "0.5rem" }}>
+            <input type="text" value={rmpSearchQuery} onChange={e => setRmpSearchQuery(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && doRmpSearch()}
+              style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.3rem 0.5rem", border: `1px solid ${BORDER}`, borderRadius: 4, background: "#fff", flex: 1 }} />
+            <button onClick={doRmpSearch} disabled={rmpSearching} style={btnStyle("#6f42c1")}>
+              {rmpSearching ? "..." : "Search"}
+            </button>
+            <button onClick={() => { setSearchingFor(null); setRmpResults([]); }} style={btnStyle("#888")}>Cancel</button>
+          </div>
+          {rmpResults.length > 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+              {rmpResults.map(r => (
+                <div key={r.rmpId} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.3rem 0.5rem", background: "#fff", borderRadius: 4, border: `1px solid ${BORDER}` }}>
+                  <div style={{ flex: 1 }}>
+                    <span style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, fontWeight: 600 }}>{r.firstName} {r.lastName}</span>
+                    <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#888", marginLeft: "0.5rem" }}>{r.department || ""}</span>
+                    <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#888", marginLeft: "0.5rem" }}>★{r.rating} ({r.numRatings})</span>
+                  </div>
+                  <button onClick={() => linkProfessor(searchingFor.id, r)} style={btnStyle("#22863a")}>Link</button>
+                </div>
+              ))}
+            </div>
+          )}
+          {rmpResults.length === 0 && hasSearched && !rmpSearching && (
+            <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#888" }}>No results — try a different name</div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -330,4 +330,82 @@ router.get("/rmp-scrape/status", (req, res) => {
   res.json({ ...rmpJob, stats });
 });
 
+// ── RMP Match Review ────────────────────────────────────────────────────────
+
+// GET /api/admin/rmp-matches — list all instructor matches with professor data
+router.get("/rmp-matches", (req, res) => {
+  const quality = req.query.quality || "all";
+  const search = req.query.q || "";
+  const limit = Math.min(parseInt(req.query.limit) || 100, 500);
+  const offset = parseInt(req.query.offset) || 0;
+
+  let where = "1=1";
+  const params = [];
+  if (quality !== "all") {
+    if (quality === "none") {
+      where += " AND (irm.match_quality = 'none' OR irm.rmp_id IS NULL)";
+    } else {
+      where += " AND irm.match_quality = ?";
+      params.push(quality);
+    }
+  }
+  if (search) {
+    where += " AND irm.instructor_name LIKE ?";
+    params.push(`%${search}%`);
+  }
+
+  const rows = db.prepare(`
+    SELECT irm.id, irm.instructor_name, irm.rmp_id, irm.match_quality,
+           pr.first_name AS rmp_first_name, pr.last_name AS rmp_last_name,
+           pr.department AS rmp_department, pr.overall_rating AS rmp_rating,
+           pr.num_ratings AS rmp_num_ratings, pr.rmp_url
+    FROM instructor_rmp_matches irm
+    LEFT JOIN professor_ratings pr ON pr.rmp_id = irm.rmp_id
+    WHERE ${where}
+    ORDER BY CASE irm.match_quality WHEN 'auto' THEN 0 WHEN 'manual' THEN 1 ELSE 2 END, irm.instructor_name
+    LIMIT ? OFFSET ?
+  `).all(...params, limit, offset);
+
+  const total = db.prepare(`SELECT COUNT(*) as c FROM instructor_rmp_matches irm WHERE ${where}`).get(...params).c;
+
+  res.json({ matches: rows, total, limit, offset });
+});
+
+// PUT /api/admin/rmp-matches/:id — correct a match
+router.put("/rmp-matches/:id", (req, res) => {
+  const { rmpId, matchQuality, professorData } = req.body;
+  if (!matchQuality || !["manual", "none"].includes(matchQuality)) {
+    return res.status(400).json({ error: "matchQuality must be 'manual' or 'none'" });
+  }
+
+  // If linking to a professor, ensure their rating data exists in professor_ratings
+  if (rmpId && matchQuality === "manual" && professorData) {
+    const { upsertProfessorRating } = require("../lib/rmp");
+    upsertProfessorRating(db, professorData);
+  }
+
+  const result = db.prepare(`
+    UPDATE instructor_rmp_matches SET rmp_id = ?, match_quality = ? WHERE id = ?
+  `).run(rmpId || null, matchQuality, req.params.id);
+
+  if (result.changes === 0) {
+    return res.status(404).json({ error: "Match not found" });
+  }
+  res.json({ ok: true });
+});
+
+// GET /api/admin/rmp-search — search RMP for a professor
+router.get("/rmp-search", async (req, res) => {
+  const name = req.query.name;
+  if (!name) return res.status(400).json({ error: "name query param required" });
+
+  try {
+    const { searchRmpProfessors } = require("../lib/rmp");
+    const results = await searchRmpProfessors(name);
+    res.json(results);
+  } catch (e) {
+    res.status(502).json({ error: "RMP search failed: " + e.message });
+  }
+});
+
 module.exports = router;
