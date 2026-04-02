@@ -79,10 +79,11 @@ router.get("/:code/:term", (req, res) => {
              COALESCE(pr.would_take_again, pr2.would_take_again) AS rmp_would_take_again,
              COALESCE(pr.rmp_url, pr2.rmp_url) AS rmp_url
       FROM course_offerings co
-      LEFT JOIN instructor_rmp_matches irm ON irm.instructor_name = co.instructor
+      LEFT JOIN instructor_rmp_matches irm ON irm.instructor_name = co.instructor AND irm.match_quality != 'none'
       LEFT JOIN professor_ratings pr ON pr.rmp_id = irm.rmp_id
       LEFT JOIN instructor_rmp_matches irm2 ON co.instructor LIKE '%,%'
         AND irm2.instructor_name = TRIM(SUBSTR(co.instructor, 1, INSTR(co.instructor, ',') - 1))
+        AND irm2.match_quality != 'none'
       LEFT JOIN professor_ratings pr2 ON pr2.rmp_id = irm2.rmp_id
       WHERE co.course_code IN (${placeholders}) AND co.term = ?
       ORDER BY co.section
