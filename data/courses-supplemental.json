@@ -8,8 +8,8 @@
     "knowledge_area": "College Writing Seminar",
     "interdisciplinary_options": [],
     "engaged_learning": false,
-    "writing_intensive": true,
-    "description": "Required first-year writing course."
+    "writing_intensive": false,
+    "description": "Required first-year writing course. Prerequisite for Writing Intensive courses."
   },
   {
     "code": "UCLR 100",

@@ -125,7 +125,8 @@ function solve(studentCourses, declaredPrograms, courseMap, programMap, degreeRe
         if (catResult.slots.length >= category.slots) break;
         if (course.status !== "transfer" || assignedInProgram.has(code)) continue;
         if (course.satisfies?.some(s => s.program === progCode && s.category === category.name)) {
-          catResult.slots.push({ code, title: course.title || code, status: "transfer" });
+          const isTwoTier = category.tier_structure === "foundation_plus_tier2";
+          catResult.slots.push({ code, title: course.title || code, status: "transfer", coversBothTiers: isTwoTier || undefined });
           assignedInProgram.add(code);
           _addSlotAssignment(result.slotAssignments, code, progCode, category.name);
         }

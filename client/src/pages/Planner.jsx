@@ -225,6 +225,12 @@ export default function Planner({ user, onLogout }) {
     if (!plan) return;
     // Check if already placed
     if (plan.courses.some(c => c.course_code === courseCode)) return;
+    // Term gating: reject if course has offering data and isn't offered this term
+    if (courseData?.terms?.length > 0 && !courseData.terms.includes(term)) {
+      setError(`${courseCode} is not offered in ${term}`);
+      setTimeout(() => setError(null), 3000);
+      return;
+    }
     const newCourse = {
       course_code: courseCode,
       term,
@@ -951,9 +957,15 @@ function SemesterBucket({ term, courses, actualCourses: rawActual = [], selected
   const isPast = termOrder(term) < termOrder(getCurrentAcademicTerm());
   const [collapsed, setCollapsed] = useState(isPast && totalCourseCount > 0);
 
+  // Term gating: check if the active course (selected for tap-to-place) can go in this term
+  const activeCourse = selectedCourse;
+  const termBlocked = activeCourse?.terms?.length > 0 && !activeCourse.terms.includes(term);
+  const noTermData = activeCourse && (!activeCourse.terms || activeCourse.terms.length === 0);
+
   const handleDrop = (e) => {
     e.preventDefault();
     setDragOver(false);
+    if (termBlocked) return;
     try {
       const course = JSON.parse(e.dataTransfer.getData("application/json"));
       placeCourse(course.code, term, course);
@@ -961,7 +973,7 @@ function SemesterBucket({ term, courses, actualCourses: rawActual = [], selected
   };
 
   const handleTapPlace = () => {
-    if (selectedCourse) {
+    if (selectedCourse && !termBlocked) {
       placeCourse(selectedCourse.code, term, selectedCourse);
     }
   };
@@ -976,12 +988,13 @@ function SemesterBucket({ term, courses, actualCourses: rawActual = [], selected
       aria-label={selectedCourse ? `Place ${selectedCourse.code} in ${term}` : undefined}
       onKeyDown={selectedCourse ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleTapPlace(); } } : undefined}
       style={{
-        background: dragOver ? "#e8f5e9" : "#fff",
-        border: `1px ${totalCourseCount === 0 ? "dashed" : "solid"} ${dragOver ? "#22863a" : selectedCourse ? "#6f42c1" : BORDER}`,
+        background: termBlocked ? "#f5f0eb" : dragOver ? "#e8f5e9" : "#fff",
+        border: `1px ${totalCourseCount === 0 ? "dashed" : "solid"} ${termBlocked ? "#e0d9cf" : dragOver ? "#22863a" : selectedCourse ? "#6f42c1" : BORDER}`,
         borderRadius: 8, padding: "0.6rem 0.7rem", marginBottom: "0.5rem",
         flex: "1 0 auto", minHeight: totalCourseCount === 0 ? 80 : undefined,
-        cursor: selectedCourse ? "pointer" : "default",
-        transition: "background 0.15s, border-color 0.15s",
+        cursor: termBlocked ? "not-allowed" : selectedCourse ? "pointer" : "default",
+        opacity: termBlocked ? 0.5 : 1,
+        transition: "background 0.15s, border-color 0.15s, opacity 0.15s",
       }}
     >
       {totalCourseCount > 0 ? (
@@ -1012,7 +1025,13 @@ function SemesterBucket({ term, courses, actualCourses: rawActual = [], selected
                 </span>
               );
             })()}
-            {!hasData && (
+            {termBlocked && (
+              <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted }}>not offered</span>
+            )}
+            {noTermData && (
+              <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#b08800" }}>no offering data</span>
+            )}
+            {!hasData && !termBlocked && !noTermData && (
               <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#b08800" }}>no schedule data</span>
             )}
           </div>
@@ -1028,7 +1047,13 @@ function SemesterBucket({ term, courses, actualCourses: rawActual = [], selected
             </span>
           </div>
           <div style={{ display: "flex", gap: "0.3rem", alignItems: "center" }}>
-            {!hasData && (
+            {termBlocked && (
+              <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted }}>not offered</span>
+            )}
+            {noTermData && (
+              <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#b08800" }}>no offering data</span>
+            )}
+            {!hasData && !termBlocked && !noTermData && (
               <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#b08800" }}>no schedule data</span>
             )}
           </div>
