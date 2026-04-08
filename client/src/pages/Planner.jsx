@@ -1458,7 +1458,7 @@ function WeeklyScheduleView({ plan, coursesByTerm, actualByTerm = {}, planTerms,
           // Summary line for right side
           let rightContent;
           if (c.noData) {
-            rightContent = <span style={{ color: TEXT.muted, fontSize: TYPE.xs }}>no section data</span>;
+            rightContent = <span style={{ color: TEXT.muted, fontSize: TYPE.xs }}>not in LOCUS</span>;
           } else if (c.isTBA) {
             rightContent = <span style={{ color: TEXT.muted, fontSize: TYPE.xs }}>{"\u00A7"}{c.section} {"\u00B7"} TBA</span>;
           } else if (c.chosen) {
