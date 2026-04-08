@@ -212,6 +212,28 @@ router.get("/scrape-locus/status", (req, res) => {
   res.json({ ...scrapeJob, stats });
 });
 
+// ── GET /api/admin/section-coverage ──────────────────────────────────────────
+router.get("/section-coverage", (req, res) => {
+  const term = req.query.term;
+  try {
+    const terms = db.prepare("SELECT DISTINCT term FROM course_offerings ORDER BY term").all().map(r => r.term);
+    const targetTerm = term || terms[terms.length - 1]; // default to most recent
+    if (!targetTerm) return res.json({ terms: [], departments: [], term: null });
+
+    const depts = db.prepare(`
+      SELECT SUBSTR(course_code, 1, 4) AS dept, COUNT(*) AS sections
+      FROM course_offerings WHERE term = ?
+      GROUP BY dept ORDER BY sections DESC
+    `).all(targetTerm);
+
+    const totalSections = depts.reduce((s, d) => s + d.sections, 0);
+
+    res.json({ term: targetTerm, terms, totalSections, departments: depts });
+  } catch (e) {
+    res.json({ term: null, terms: [], totalSections: 0, departments: [], error: e.message });
+  }
+});
+
 // ── POST /api/admin/scrape-catalog ───────────────────────────────────────────
 router.post("/scrape-catalog", (req, res) => {
   if (catalogJob.status === "running") {

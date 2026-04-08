@@ -450,17 +450,39 @@ async function main() {
   console.log(`Subject errors: ${totalErrors}`);
   console.log(`Database: ${DB_PATH}`);
 
-  // Verify
+  // Verify + coverage report
   const verifyDb = new Database(DB_PATH);
   const offeringCount = verifyDb.prepare("SELECT COUNT(*) as c FROM course_offerings").get().c;
   const termCount = verifyDb.prepare("SELECT COUNT(*) as c FROM course_terms").get().c;
   const termList = verifyDb.prepare("SELECT term, COUNT(*) as c FROM course_offerings GROUP BY term").all();
-  verifyDb.close();
 
   console.log(`\nDB state: ${offeringCount} offerings, ${termCount} course-terms`);
   for (const t of termList) {
     console.log(`  ${t.term}: ${t.c} sections`);
   }
+
+  // Per-department coverage for scraped terms
+  for (const term of termsToScrape) {
+    const depts = verifyDb.prepare(`
+      SELECT SUBSTR(course_code, 1, 4) AS dept, COUNT(*) AS sections
+      FROM course_offerings WHERE term = ?
+      GROUP BY dept ORDER BY sections DESC
+    `).all(term.name);
+    const catalogDepts = verifyDb.prepare(`
+      SELECT DISTINCT SUBSTR(code, 1, 4) AS dept FROM courses
+    `).all().map(r => r.dept.trim());
+    const scrapedDepts = new Set(depts.map(d => d.dept.trim()));
+    const missing = catalogDepts.filter(d => !scrapedDepts.has(d));
+    const small = depts.filter(d => d.sections < 5);
+
+    console.log(`\n--- Coverage: ${term.name} ---`);
+    console.log(`  Departments with sections: ${depts.length}`);
+    console.log(`  Total sections: ${depts.reduce((s, d) => s + d.sections, 0)}`);
+    if (missing.length > 0) console.log(`  Missing departments (in catalog, no sections): ${missing.join(", ")}`);
+    if (small.length > 0) console.log(`  Small departments (<5 sections): ${small.map(d => `${d.dept.trim()}(${d.sections})`).join(", ")}`);
+  }
+
+  verifyDb.close();
 }
 
 main().catch((err) => {
