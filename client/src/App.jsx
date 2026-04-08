@@ -807,7 +807,7 @@ function CreditMeter({ credits, hasUnmappedTransfer, onTransferWarningTap }) {
 }
 
 // ── NextStepsSection ────────────────────────────────────────────────────────
-function NextStepsSection({ data, onAddCourses, onMapTransfer, onSuggestionTap }) {
+function NextStepsSection({ data, onAddCourses, onMapTransfer, onSuggestionTap, planSummary }) {
   const cards = [];
 
   // 1. Current enrollment check
@@ -846,13 +846,16 @@ function NextStepsSection({ data, onAddCourses, onMapTransfer, onSuggestionTap }
     });
   }
 
-  // 4. Plan your next semester
+  // 4. Plan your next semester (with plan summary if available)
   if (data.remaining?.length > 0) {
+    const planInfo = planSummary
+      ? `${planSummary.course_count} course${planSummary.course_count !== 1 ? "s" : ""} · ${planSummary.total_credits}cr planned`
+      : `${data.remaining.length} requirements remaining`;
     cards.push({
       key: "planner",
       icon: "&#128197;",
-      title: "Plan your next semester",
-      subtitle: `${data.remaining.length} requirements remaining`,
+      title: planSummary ? "Your plan" : "Plan your next semester",
+      subtitle: planInfo,
       action: () => { window.location.hash = "/planner"; },
     });
   }
@@ -918,32 +921,9 @@ function NextStepsSection({ data, onAddCourses, onMapTransfer, onSuggestionTap }
   );
 }
 
-// ── PlanPreview ─────────────────────────────────────────────────────────────
-function PlanPreview() {
-  const [planSummary, setPlanSummary] = useState(null);
-  useEffect(() => {
-    api.get("/api/students/me/plans").then(plans => {
-      if (plans.length > 0 && plans[0].course_count > 0) setPlanSummary(plans[0]);
-    }).catch(() => {});
-  }, []);
-
-  if (!planSummary) return null;
-
-  return (
-    <div style={{ background: SURFACE.hover, border: `1px solid ${BORDER}`, borderRadius: 8, padding: "0.8rem 1rem", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.2rem" }}>
-        <span style={{ fontFamily: FONT.serif, fontSize: TYPE.lg, fontWeight: 600 }}>Your plan</span>
-        <a href="#/planner" style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.link, textDecoration: "none" }}>Open planner &rsaquo;</a>
-      </div>
-      <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.secondary }}>
-        {planSummary.course_count} course{planSummary.course_count !== 1 ? "s" : ""} &middot; {planSummary.total_credits}cr planned
-      </div>
-    </div>
-  );
-}
 
 // ── ProgramCard ─────────────────────────────────────────────────────────────
-function ProgramCard({ prog, conflicts, onPipClick, onSlotTap, defaultOpen = false }) {
+function ProgramCard({ prog, conflicts, slotAssignments, onPipClick, onSlotTap, defaultOpen = false }) {
   const [open, setOpen] = useState(defaultOpen);
   const color = COLORS[prog.code] || "#444";
   const filledSlots = prog.categories.reduce((s, c) => s + (c.filledCount || 0), 0);
@@ -972,11 +952,11 @@ function ProgramCard({ prog, conflicts, onPipClick, onSlotTap, defaultOpen = fal
         return (
           <div style={{ padding: "0 1rem 0.8rem 1rem", animation: "expandIn 0.2s ease-out" }}>
             {incomplete.map((cat, i) => (
-              <CategoryRow key={`inc-${i}`} cat={cat} color={color} conflicts={conflicts} onPipClick={onPipClick}
+              <CategoryRow key={`inc-${i}`} cat={cat} color={color} conflicts={conflicts} slotAssignments={slotAssignments} onPipClick={onPipClick}
                 onSlotTap={onSlotTap ? () => onSlotTap(prog.code, cat.name) : null} />
             ))}
             {completed.length > 0 && (
-              <CompletedCategoriesGroup categories={completed} color={color} conflicts={conflicts} onPipClick={onPipClick} />
+              <CompletedCategoriesGroup categories={completed} color={color} conflicts={conflicts} slotAssignments={slotAssignments} onPipClick={onPipClick} />
             )}
           </div>
         );
@@ -986,7 +966,7 @@ function ProgramCard({ prog, conflicts, onPipClick, onSlotTap, defaultOpen = fal
 }
 
 // ── CompletedCategoriesGroup ────────────────────────────────────────────────
-function CompletedCategoriesGroup({ categories, color, conflicts, onPipClick }) {
+function CompletedCategoriesGroup({ categories, color, conflicts, slotAssignments, onPipClick }) {
   const [expanded, setExpanded] = useState(false);
   return (
     <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: "0.5rem" }}>
@@ -1001,14 +981,14 @@ function CompletedCategoriesGroup({ categories, color, conflicts, onPipClick }) 
         <span style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.disabled, transform: expanded ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>&#9660;</span>
       </button>
       {expanded && categories.map((cat, i) => (
-        <CategoryRow key={`comp-${i}`} cat={cat} color={color} conflicts={conflicts} onPipClick={onPipClick} />
+        <CategoryRow key={`comp-${i}`} cat={cat} color={color} conflicts={conflicts} slotAssignments={slotAssignments} onPipClick={onPipClick} />
       ))}
     </div>
   );
 }
 
 // ── CategoryRow ─────────────────────────────────────────────────────────────
-function CategoryRow({ cat, color, conflicts, onPipClick, onSlotTap }) {
+function CategoryRow({ cat, color, conflicts, slotAssignments, onPipClick, onSlotTap }) {
   const hasConflict = cat.slots.some(s => conflicts[s.code]);
 
   // Build pip list — coversBothTiers slots expand to fill both positions
@@ -1023,13 +1003,13 @@ function CategoryRow({ cat, color, conflicts, onPipClick, onSlotTap }) {
       const isConflict = conflicts[slot.code];
       const label = i === (pips.length) ? "T1" : "T2";
       pips.push(<FilledPip key={i} slot={slot} color={color} isConflict={!!isConflict} label={label}
-        onClick={() => onPipClick(slot.code, slot.title, isConflict || null)} />);
+        slotAssignments={slotAssignments} onClick={() => onPipClick(slot.code, slot.title, isConflict || null)} />);
       if (label === "T2") slotIdx++;
       continue;
     }
     const isConflict = conflicts[slot.code];
     pips.push(<FilledPip key={i} slot={slot} color={color} isConflict={!!isConflict}
-      onClick={() => onPipClick(slot.code, slot.title, isConflict || null)} />);
+      slotAssignments={slotAssignments} onClick={() => onPipClick(slot.code, slot.title, isConflict || null)} />);
     slotIdx++;
   }
 
@@ -1056,9 +1036,18 @@ function CategoryRow({ cat, color, conflicts, onPipClick, onSlotTap }) {
   );
 }
 
-function FilledPip({ slot, color, isConflict, onClick, label }) {
-  return (
-    <button type="button" onClick={onClick} style={{
+function FilledPip({ slot, color, isConflict, onClick, label, slotAssignments }) {
+  const asgns = slotAssignments?.[slot.code] || [];
+  const uniqueProgs = [...new Set(asgns.map(a => a.programCode))];
+  const isMultiProgram = uniqueProgs.length >= 2;
+  const isShared = !isConflict && isMultiProgram;
+
+  const titleText = isMultiProgram
+    ? "Fills " + asgns.map(a => `${a.programCode} (${a.categoryName})`).join(" + ")
+    : undefined;
+
+  const btn = (
+    <button type="button" onClick={onClick} title={titleText} style={{
       display: "inline-flex", alignItems: "center", gap: 4,
       padding: "4px 8px", borderRadius: 4, fontSize: TYPE.sm, fontFamily: FONT.mono,
       background: `${color}12`, border: `1px solid ${isConflict ? "#ffc107" : color + "40"}`,
@@ -1070,6 +1059,20 @@ function FilledPip({ slot, color, isConflict, onClick, label }) {
       {label && <span style={{ fontSize: TYPE.xs, opacity: 0.6 }}>{label}</span>}
       {isConflict && <span style={{ fontSize: TYPE.xs }}>&#x27F7;</span>}
     </button>
+  );
+
+  if (!isShared) return btn;
+
+  const colors = uniqueProgs.map(p => programColor(p));
+  const light = colors.map(c => c + "40").join(", ");
+  const accent = colors.join(", ");
+  return (
+    <span className="pip-shared" style={{
+      "--grad": `conic-gradient(${light}, ${accent}, ${light})`,
+      display: "inline-flex",
+    }}>
+      {btn}
+    </span>
   );
 }
 
@@ -3086,11 +3089,16 @@ function Dashboard({ user, setUser, onLogout, setOnboardingActive }) {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [addCoursesSheet, setAddCoursesSheet] = useState(null); // null or { term }
   const [transferSheet, setTransferSheet] = useState(false);
+  const [planSummary, setPlanSummary] = useState(null);
   const remainingRef = useRef(null);
   const nextStepsRef = useRef(null);
 
   const refresh = useCallback(() => {
     api.get("/api/students/me/solve").then(setData);
+    api.get("/api/students/me/plans").then(plans => {
+      if (plans.length > 0 && plans[0].course_count > 0) setPlanSummary(plans[0]);
+      else setPlanSummary(null);
+    }).catch(() => {});
   }, []);
   useEffect(() => { refresh(); }, [refresh]);
 
@@ -3210,12 +3218,12 @@ function Dashboard({ user, setUser, onLogout, setOnboardingActive }) {
         <div style={{ display: "flex", flexDirection: "column", gap: SPACING.tight, marginBottom: SPACING.zone }}>
           <div ref={nextStepsRef}>
             <NextStepsSection data={data}
+              planSummary={planSummary}
               onAddCourses={(term) => setAddCoursesSheet({ term })}
               onMapTransfer={() => setTransferSheet(true)}
               onSuggestionTap={() => remainingRef.current?.scrollIntoView({ behavior: "smooth" })}
             />
           </div>
-          <PlanPreview />
           {Object.entries(data.overlaps?.pairs || {}).filter(([, p]) => p.max != null && p.count > p.max).map(([key, pair]) => {
             const [a, b] = key.split("|");
             const nameA = data.programs[a]?.name || a;
@@ -3231,7 +3239,7 @@ function Dashboard({ user, setUser, onLogout, setOnboardingActive }) {
         {/* Zone 3: Program detail */}
         <div style={{ display: "flex", flexDirection: "column", gap: SPACING.normal, marginBottom: SPACING.zone }}>
           {majors.map(prog => (
-            <ProgramCard key={prog.code} prog={prog} conflicts={conflicts} onPipClick={handlePipClick} onSlotTap={handleSlotTap}
+            <ProgramCard key={prog.code} prog={prog} conflicts={conflicts} slotAssignments={data.slotAssignments} onPipClick={handlePipClick} onSlotTap={handleSlotTap}
               defaultOpen={prog.type === "major"} />
           ))}
           <OverlapBudget overlaps={data.overlaps} programs={data.programs} conflicts={conflicts} onPipClick={handlePipClick} />

@@ -55,6 +55,32 @@
         100% { transform: scale(1); }
       }
 
+      /* Shared course animated gradient border */
+      @keyframes gradient-spin { to { transform: rotate(360deg); } }
+      .pip-shared {
+        position: relative;
+        border-radius: 6px;
+        padding: 1.5px;
+        overflow: hidden;
+      }
+      .pip-shared::before {
+        content: '';
+        position: absolute;
+        top: 50%; left: 50%;
+        width: 200%; height: 200%;
+        transform-origin: center;
+        margin-top: -100%; margin-left: -100%;
+        background: var(--grad);
+        opacity: 0.7;
+        animation: gradient-spin 8s linear infinite;
+      }
+      .pip-shared > button {
+        position: relative;
+        border-color: transparent !important;
+        border-radius: 4px;
+        background: #fffbf0 !important;
+      }
+
       /* Reduced motion: respect user preference */
       @media (prefers-reduced-motion: reduce) {
         *, *::before, *::after {

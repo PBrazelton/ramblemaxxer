@@ -233,7 +233,22 @@ router.get("/me/solve", (req, res) => {
 
   const declaredPrograms = programRows.map((r) => r.program_id);
 
-  const result = solve(courseRows, declaredPrograms, courseMap, programMap, degreeRequirements);
+  // Merge active plan courses as "planned" so credits/slots reflect the plan
+  const activePlanCourses = db.prepare(`
+    SELECT pc.course_code as code, pc.term as semester
+    FROM plan_courses pc
+    JOIN student_plans sp ON pc.plan_id = sp.id
+    WHERE sp.user_id = ? AND sp.is_active = 1
+  `).all(req.session.userId);
+
+  const merged = [
+    ...courseRows,
+    ...activePlanCourses
+      .filter(pc => !courseRows.some(cr => cr.code === pc.code && cr.semester === pc.semester))
+      .map(pc => ({ code: pc.code, semester: pc.semester, status: "planned" })),
+  ];
+
+  const result = solve(merged, declaredPrograms, courseMap, programMap, degreeRequirements);
   const suggestions = getSuggestions(result, courseMap, programMap, declaredPrograms);
 
   // Augment suggestions with term offering data

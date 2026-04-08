@@ -1472,10 +1472,10 @@ function WeeklyScheduleView({ plan, coursesByTerm, actualByTerm = {}, planTerms,
                     border: `2px solid ${c.section ? c.color : "#ccc"}`,
                   }} />
                 )}
-                <span style={{ fontFamily: FONT.mono, fontSize: TYPE.base, fontWeight: 700, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                <span style={{ fontFamily: FONT.mono, fontSize: TYPE.base, fontWeight: 700, flexShrink: 0, whiteSpace: "nowrap" }}>
                   {c.course_code}
                 </span>
-                <span style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, flexShrink: 0 }}>{rightContent}</span>
+                <span style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right" }}>{rightContent}</span>
               </RowTag>
 
               {/* Expanded: section alternatives with professor filter */}
