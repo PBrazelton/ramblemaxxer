@@ -85,6 +85,12 @@ try {
   console.log("  Migrated: added class_number column to student_courses");
 } catch (e) { /* already exists */ }
 
+// Migration: add backup_for column to plan_courses for backup/alternate course stacking
+try {
+  db.prepare("ALTER TABLE plan_courses ADD COLUMN backup_for INTEGER REFERENCES plan_courses(id) ON DELETE CASCADE").run();
+  console.log("  Migrated: added backup_for column to plan_courses");
+} catch (e) { /* already exists */ }
+
 // Migration: add active column to users
 try {
   db.prepare("ALTER TABLE users ADD COLUMN active INTEGER NOT NULL DEFAULT 1").run();

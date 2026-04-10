@@ -234,11 +234,12 @@ router.get("/me/solve", (req, res) => {
   const declaredPrograms = programRows.map((r) => r.program_id);
 
   // Merge active plan courses as "planned" so credits/slots reflect the plan
+  // Exclude backup courses (backup_for IS NOT NULL) — only the primary counts
   const activePlanCourses = db.prepare(`
     SELECT pc.course_code as code, pc.term as semester
     FROM plan_courses pc
     JOIN student_plans sp ON pc.plan_id = sp.id
-    WHERE sp.user_id = ? AND sp.is_active = 1
+    WHERE sp.user_id = ? AND sp.is_active = 1 AND pc.backup_for IS NULL
   `).all(req.session.userId);
 
   const merged = [

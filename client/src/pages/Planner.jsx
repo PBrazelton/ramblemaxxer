@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo, useRef, lazy, Suspense } from "react";
-import { COLORS, STATUS_COLOR, programColor, FONT, TYPE, BG, BORDER, SURFACE, TEXT, BTN, SHADOW, api, ProgressRing, cardStyle, mutedText } from "../lib/ui.jsx";
+import { COLORS, STATUS_COLOR, programColor, FONT, TYPE, BG, BORDER, SURFACE, TEXT, BTN, SHADOW, api, ProgressRing, cardStyle, mutedText, BottomSheet } from "../lib/ui.jsx";
 const CampusDay = lazy(() => import("./CampusDay.jsx"));
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -195,6 +195,7 @@ export default function Planner({ user, onLogout }) {
       term: c.term,
       section: c.section || null,
       class_number: c.class_number || null,
+      backup_for_code: c.backup_for_code || null,
     }));
     saveTimerRef.current = setTimeout(async () => {
       setSaveStatus("saving");
@@ -244,10 +245,33 @@ export default function Planner({ user, onLogout }) {
     setSelectedCourse(null);
   }, [plan, updatePlanCourses]);
 
-  // Remove a course from the plan
+  // Remove a course from the plan. If the course has a backup, promote the backup.
   const removeCourse = useCallback((courseCode) => {
     if (!plan) return;
-    updatePlanCourses(plan.courses.filter(c => c.course_code !== courseCode));
+    const updated = plan.courses
+      .filter(c => c.course_code !== courseCode)
+      .map(c => c.backup_for_code === courseCode ? { ...c, backup_for_code: null } : c);
+    updatePlanCourses(updated);
+  }, [plan, updatePlanCourses]);
+
+  // Add a backup course for a primary
+  const addBackup = useCallback((primaryCode, backupCourseData, term) => {
+    if (!plan) return;
+    // Don't add if primary doesn't exist or already has a backup
+    if (!plan.courses.some(c => c.course_code === primaryCode)) return;
+    if (plan.courses.some(c => c.backup_for_code === primaryCode)) return;
+    if (plan.courses.some(c => c.course_code === backupCourseData.code)) return;
+    const newBackup = {
+      course_code: backupCourseData.code,
+      term,
+      section: null,
+      class_number: null,
+      title: backupCourseData.title || backupCourseData.code,
+      credits: backupCourseData.credits || 3,
+      department: backupCourseData.department || backupCourseData.code.split(" ")[0],
+      backup_for_code: primaryCode,
+    };
+    updatePlanCourses([...plan.courses, newBackup]);
   }, [plan, updatePlanCourses]);
 
   // Assign section to a course
@@ -347,6 +371,7 @@ export default function Planner({ user, onLogout }) {
       const fillPrefix = `${r.programName}: ${r.category}`;
       const phCode = makePlaceholderCode(r.program, r.category);
       const filling = (plan?.courses || []).filter(c => {
+        if (c.backup_for_code) return false; // backups don't fill requirements
         // Count placeholders for this exact requirement
         if (c.course_code === phCode) return true;
         // Count real courses that fill this requirement
@@ -360,10 +385,12 @@ export default function Planner({ user, onLogout }) {
     return { filled, total: items.length, items };
   }, [solverData, plan, browseCourses]);
 
-  // Credit calculation
+  // Credit calculation (excluding backups)
   const creditStats = useMemo(() => {
     const currentCredits = solverData?.credits?.total || 0;
-    const plannedCredits = (plan?.courses || []).reduce((sum, c) => sum + (c.credits || 3), 0);
+    const plannedCredits = (plan?.courses || [])
+      .filter(c => !c.backup_for_code)
+      .reduce((sum, c) => sum + (c.credits || 3), 0);
     return { current: currentCredits, planned: plannedCredits, total: currentCredits + plannedCredits, goal: 120 };
   }, [solverData, plan]);
 
@@ -520,7 +547,7 @@ export default function Planner({ user, onLogout }) {
           plan={plan} courseCatalog={browseCourses} filteredCourses={filteredCourses}
           placedCodes={placedCodes} coursesByTerm={coursesByTerm} actualByTerm={actualByTerm} planTerms={planTerms}
           selectedCourse={selectedCourse} setSelectedCourse={setSelectedCourse}
-          placeCourse={placeCourse} removeCourse={removeCourse}
+          placeCourse={placeCourse} removeCourse={removeCourse} addBackup={addBackup}
           searchQuery={searchQuery} setSearchQuery={setSearchQuery}
           programFilter={programFilter} setProgramFilter={setProgramFilter}
           termFilter={termFilter} setTermFilter={setTermFilter}
@@ -596,7 +623,7 @@ export default function Planner({ user, onLogout }) {
 
 function SemesterPlanView({
   plan, filteredCourses, placedCodes, coursesByTerm, actualByTerm = {}, planTerms,
-  selectedCourse, setSelectedCourse, placeCourse, removeCourse,
+  selectedCourse, setSelectedCourse, placeCourse, removeCourse, addBackup,
   searchQuery, setSearchQuery, programFilter, setProgramFilter,
   termFilter, setTermFilter, wiFilter, setWiFilter, elFilter, setElFilter,
   isSearchingCatalog, programNames, scrapedTerms,
@@ -605,8 +632,50 @@ function SemesterPlanView({
   requirementFilter, setRequirementFilter, placeholderCards,
   warnings, runValidation, onSwitchToWeekly, onConfirmTerm,
 }) {
+  const [backupPickerFor, setBackupPickerFor] = useState(null); // { primaryCode, term }
+  const handleAddBackup = (primaryCode, term) => setBackupPickerFor({ primaryCode, term });
+  const handleBackupPicked = (course) => {
+    if (backupPickerFor) {
+      addBackup(backupPickerFor.primaryCode, course, backupPickerFor.term);
+      setBackupPickerFor(null);
+    }
+  };
+
+  // Backup picker bottom sheet — courses available for the term, excluding placed
+  const backupPicker = backupPickerFor ? (
+    <BottomSheet onClose={() => setBackupPickerFor(null)}>
+      <div style={{ padding: "1rem" }}>
+        <div style={{ fontFamily: FONT.serif, fontSize: TYPE.lg, fontWeight: 700, marginBottom: "0.4rem" }}>
+          Pick a backup for {backupPickerFor.primaryCode}
+        </div>
+        <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, marginBottom: "0.8rem" }}>
+          If your primary fills up, this backup will take its place.
+        </div>
+        <div style={{ maxHeight: "60vh", overflow: "auto" }}>
+          {filteredCourses
+            .filter(c => c.code !== backupPickerFor.primaryCode)
+            .filter(c => !placedCodes.has(c.code))
+            .filter(c => !c.terms?.length || c.terms.includes(backupPickerFor.term))
+            .slice(0, 50)
+            .map(c => (
+              <button key={c.code} type="button" onClick={() => handleBackupPicked(c)} style={{
+                display: "block", width: "100%", textAlign: "left",
+                padding: "0.5rem 0.7rem", marginBottom: "0.3rem",
+                background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 6,
+                cursor: "pointer", fontFamily: FONT.mono, fontSize: TYPE.sm,
+              }}>
+                <div style={{ fontWeight: 700 }}>{c.code}</div>
+                <div style={{ fontSize: TYPE.xs, color: TEXT.muted }}>{c.title} · {c.credits || 3}cr</div>
+              </button>
+            ))}
+        </div>
+      </div>
+    </BottomSheet>
+  ) : null;
   if (isMobile) {
     return (
+      <>
+      {backupPicker}
       <div style={{ padding: "0.5rem" }}>
         {/* Collapsible course browser */}
         <div style={{ marginBottom: "0.75rem" }}>
@@ -649,6 +718,7 @@ function SemesterPlanView({
             removeCourse={removeCourse} scrapedTerms={scrapedTerms}
             onSwitchToWeekly={onSwitchToWeekly}
             onConfirmTerm={onConfirmTerm}
+            onAddBackup={handleAddBackup}
           />
         ))}
 
@@ -673,11 +743,14 @@ function SemesterPlanView({
           )}
         </div>
       </div>
+      </>
     );
   }
 
   // Desktop: three-panel layout
   return (
+    <>
+    {backupPicker}
     <div style={{ display: "flex", gap: "0.75rem", padding: "0.75rem", height: "100%", boxSizing: "border-box" }}>
       {/* Left: Course Browser */}
       <div style={{ width: 280, minWidth: 200, flexShrink: 1, display: "flex", flexDirection: "column" }}>
@@ -716,6 +789,7 @@ function SemesterPlanView({
             removeCourse={removeCourse} scrapedTerms={scrapedTerms}
             onSwitchToWeekly={onSwitchToWeekly}
             onConfirmTerm={onConfirmTerm}
+            onAddBackup={handleAddBackup}
           />
         ))}
         <ValidationSection warnings={warnings} onValidate={runValidation} />
@@ -737,6 +811,7 @@ function SemesterPlanView({
         </div>
       </div>
     </div>
+    </>
   );
 }
 
@@ -791,13 +866,13 @@ function CourseBrowserFilters({ searchQuery, setSearchQuery, programFilter, setP
             border: `1px solid ${wiFilter ? "#2a6a8a" : BORDER}`, borderRadius: 4,
             background: wiFilter ? "#2a6a8a15" : "transparent", color: wiFilter ? "#2a6a8a" : TEXT.muted,
             cursor: "pointer",
-          }}>WI</button>
+          }} title="Filter to Writing Intensive courses">Writing Int.</button>
           <button type="button" onClick={() => setElFilter(!elFilter)} style={{
             flex: 1, fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "0.2rem 0.3rem",
             border: `1px solid ${elFilter ? "#8a6a2a" : BORDER}`, borderRadius: 4,
             background: elFilter ? "#8a6a2a15" : "transparent", color: elFilter ? "#8a6a2a" : TEXT.muted,
             cursor: "pointer",
-          }}>EL</button>
+          }} title="Filter to Engaged Learning courses">Engaged</button>
         </div>
       </>)}
     </div>
@@ -944,15 +1019,18 @@ function CourseCard({ course, isPlaced, isSelected, onSelect }) {
 
 // ── Semester Bucket ──────────────────────────────────────────────────────────
 
-function SemesterBucket({ term, courses, actualCourses: rawActual = [], selectedCourse, placeCourse, removeCourse, scrapedTerms, onSwitchToWeekly, onConfirmTerm }) {
+function SemesterBucket({ term, courses, actualCourses: rawActual = [], selectedCourse, placeCourse, removeCourse, scrapedTerms, onSwitchToWeekly, onConfirmTerm, onAddBackup }) {
   const [dragOver, setDragOver] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  const [feasibility, setFeasibility] = useState(null); // { feasible } | null
+  // Primaries only — backups don't count toward credits, term load, or feasibility
+  const primariesOnly = courses.filter(c => !c.backup_for_code);
   // Filter out actual courses that also exist in plan (avoid duplicate keys)
-  const actualCourses = rawActual.filter(a => !courses.some(p => p.course_code === a.course_code));
+  const actualCourses = rawActual.filter(a => !primariesOnly.some(p => p.course_code === a.course_code));
   const actualCredits = actualCourses.reduce((sum, c) => sum + (c.credits || 3), 0);
-  const plannedCredits = courses.reduce((sum, c) => sum + (c.credits || 3), 0);
+  const plannedCredits = primariesOnly.reduce((sum, c) => sum + (c.credits || 3), 0);
   const termCredits = actualCredits + plannedCredits;
-  const totalCourseCount = courses.length + actualCourses.length;
+  const totalCourseCount = primariesOnly.length + actualCourses.length;
   const hasData = scrapedTerms.includes(term);
   const isPast = termOrder(term) < termOrder(getCurrentAcademicTerm());
   const [collapsed, setCollapsed] = useState(isPast && totalCourseCount > 0);
@@ -961,6 +1039,22 @@ function SemesterBucket({ term, courses, actualCourses: rawActual = [], selected
   const activeCourse = selectedCourse;
   const termBlocked = activeCourse?.terms?.length > 0 && !activeCourse.terms.includes(term);
   const noTermData = activeCourse && (!activeCourse.terms || activeCourse.terms.length === 0);
+
+  // Run feasibility check when courses change (debounced via effect, primaries only)
+  const courseCodesKey = primariesOnly.map(c => c.course_code).join(",");
+  useEffect(() => {
+    if (primariesOnly.length < 2 || isPast || !hasData) { setFeasibility(null); return; }
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      api.post("/api/students/me/check-feasibility", {
+        term,
+        courseCodes: primariesOnly.map(c => c.course_code),
+      }).then(data => {
+        if (!cancelled) setFeasibility(data);
+      }).catch(() => { if (!cancelled) setFeasibility(null); });
+    }, 300);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [courseCodesKey, term, isPast, hasData]);
 
   const handleDrop = (e) => {
     e.preventDefault();
@@ -1013,6 +1107,12 @@ function SemesterBucket({ term, courses, actualCourses: rawActual = [], selected
             </span>
           </div>
           <div style={{ display: "flex", gap: "0.3rem", alignItems: "center" }}>
+            {feasibility && feasibility.feasible === false && (
+              <span title="No combination of available sections avoids time conflicts. Try different courses or wait for more sections to be offered."
+                style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, background: "#fde8e8", color: TEXT.danger, padding: "1px 5px", borderRadius: 3 }}>
+                ⚠ no conflict-free combo
+              </span>
+            )}
             {(() => {
               const allCompleted = actualCourses.length > 0 && courses.length === 0 && actualCourses.every(c => c.status === "complete");
               if (allCompleted || termCredits <= 18) return null;
@@ -1101,13 +1201,24 @@ function SemesterBucket({ term, courses, actualCourses: rawActual = [], selected
           </div>
         )}
 
-        {courses.length > 0 && (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem" }}>
-            {courses.map(c => (
-              <PlacedCourseChip key={c.course_code} course={c} onRemove={() => removeCourse(c.course_code)} />
-            ))}
-          </div>
-        )}
+        {courses.length > 0 && (() => {
+          const primaries = courses.filter(c => !c.backup_for_code);
+          const backupsByPrimary = {};
+          for (const c of courses) {
+            if (c.backup_for_code) backupsByPrimary[c.backup_for_code] = c;
+          }
+          return (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem" }}>
+              {primaries.map(c => (
+                <PlacedCourseChip key={c.course_code} course={c}
+                  backup={backupsByPrimary[c.course_code]}
+                  onRemove={() => removeCourse(c.course_code)}
+                  onRemoveBackup={() => backupsByPrimary[c.course_code] && removeCourse(backupsByPrimary[c.course_code].course_code)}
+                  onAddBackup={onAddBackup ? () => onAddBackup(c.course_code, term) : null} />
+              ))}
+            </div>
+          );
+        })()}
         {/* Section picker nudge */}
         {hasData && onSwitchToWeekly && courses.some(c => !c.section) && (
           <button type="button" onClick={(e) => { e.stopPropagation(); onSwitchToWeekly(term); }} style={{
@@ -1137,10 +1248,12 @@ function SemesterBucket({ term, courses, actualCourses: rawActual = [], selected
 
 // ── Placed Course Chip ───────────────────────────────────────────────────────
 
-function PlacedCourseChip({ course, onRemove, onPlaceholderClick }) {
+function PlacedCourseChip({ course, onRemove, onPlaceholderClick, backup, onAddBackup, onRemoveBackup }) {
   const ph = parsePlaceholder(course.course_code);
   const dept = course.department || course.course_code.split(" ")[0];
   const color = ph ? programColor(ph.program) : COLORS[Object.keys(COLORS).find(k => k.startsWith(dept))] || "#5a6a7a";
+  const backupDept = backup?.department || backup?.course_code?.split(" ")[0];
+  const backupColor = backup ? (COLORS[Object.keys(COLORS).find(k => k.startsWith(backupDept))] || "#5a6a7a") : null;
 
   if (ph) {
     return (
@@ -1165,28 +1278,55 @@ function PlacedCourseChip({ course, onRemove, onPlaceholderClick }) {
   }
 
   return (
-    <div style={{
-      display: "inline-flex", alignItems: "center", gap: "0.3rem",
-      background: `${color}10`, border: `1px solid ${color}30`,
-      borderRadius: 6, padding: "0.3rem 0.5rem",
-    }}>
-      <div>
-        <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, fontWeight: 700, color }}>{course.course_code}</div>
-        <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.secondary, maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-          {course.title || ""}
+    <div style={{ position: "relative", display: "inline-block", marginBottom: backup ? "0.5rem" : 0 }}>
+      {/* Backup card peeking out behind the primary */}
+      {backup && (
+        <div style={{
+          position: "absolute", top: 6, left: 6, right: -6, bottom: -8,
+          display: "inline-flex", alignItems: "center", gap: "0.3rem",
+          background: `${backupColor}08`, border: `1px dashed ${backupColor}40`,
+          borderRadius: 6, padding: "0.3rem 0.5rem", zIndex: 0, opacity: 0.7,
+        }} title={`Backup: ${backup.course_code} ${backup.title || ""}`}>
+          <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: backupColor }}>↳</span>
+          <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, fontWeight: 700, color: backupColor }}>{backup.course_code}</span>
+          <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted }}>backup</span>
+          <button onClick={e => { e.stopPropagation(); onRemoveBackup(); }} style={{
+            background: "none", border: "none", cursor: "pointer", padding: "0 0 0 0.2rem",
+            fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, lineHeight: 1,
+          }}>×</button>
         </div>
-      </div>
-      <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted }}>{course.credits || 3}cr</span>
-      {course.section && (
-        <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, background: "#eee", padding: "1px 3px", borderRadius: 2 }}>
-          §{course.section}
-        </span>
       )}
-      <button onClick={e => { e.stopPropagation(); onRemove(); }} style={{
-        background: "none", border: "none", cursor: "pointer", padding: "0 0 0 0.2rem",
-        fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.danger, lineHeight: 1,
-        minWidth: 44, minHeight: 44, display: "flex", alignItems: "center", justifyContent: "center",
-      }}>×</button>
+      {/* Primary card */}
+      <div style={{
+        position: "relative", zIndex: 1,
+        display: "inline-flex", alignItems: "center", gap: "0.3rem",
+        background: `${color}10`, border: `1px solid ${color}30`,
+        borderRadius: 6, padding: "0.3rem 0.5rem",
+      }}>
+        <div>
+          <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, fontWeight: 700, color }}>{course.course_code}</div>
+          <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.secondary, maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {course.title || ""}
+          </div>
+        </div>
+        <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted }}>{course.credits || 3}cr</span>
+        {course.section && (
+          <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, background: "#eee", padding: "1px 3px", borderRadius: 2 }}>
+            §{course.section}
+          </span>
+        )}
+        {onAddBackup && !backup && (
+          <button onClick={e => { e.stopPropagation(); onAddBackup(); }} title="Add backup course" style={{
+            background: "none", border: `1px dashed ${TEXT.muted}40`, cursor: "pointer", padding: "1px 4px",
+            fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, lineHeight: 1.4, borderRadius: 3,
+          }}>+ backup</button>
+        )}
+        <button onClick={e => { e.stopPropagation(); onRemove(); }} style={{
+          background: "none", border: "none", cursor: "pointer", padding: "0 0 0 0.2rem",
+          fontFamily: FONT.mono, fontSize: TYPE.sm, color: TEXT.danger, lineHeight: 1,
+          minWidth: 44, minHeight: 44, display: "flex", alignItems: "center", justifyContent: "center",
+        }}>×</button>
+      </div>
     </div>
   );
 }

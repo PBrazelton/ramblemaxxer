@@ -91,7 +91,7 @@ router.get("/me/plans/:id", (req, res) => {
   if (!plan) return res.status(404).json({ error: "Plan not found" });
 
   const courses = db.prepare(`
-    SELECT pc.course_code, pc.term, pc.section, pc.class_number,
+    SELECT pc.id, pc.course_code, pc.term, pc.section, pc.class_number, pc.backup_for,
            c.title, c.credits, c.department, c.knowledge_area,
            c.engaged_learning, c.writing_intensive
     FROM plan_courses pc
@@ -102,6 +102,15 @@ router.get("/me/plans/:id", (req, res) => {
 
   // Sort by term order
   courses.sort((a, b) => termOrder(a.term) - termOrder(b.term) || a.course_code.localeCompare(b.course_code));
+
+  // Resolve backup_for IDs to course codes for API symmetry
+  const idToCode = {};
+  for (const c of courses) idToCode[c.id] = c.course_code;
+  for (const c of courses) {
+    c.backup_for_code = c.backup_for ? idToCode[c.backup_for] || null : null;
+    delete c.backup_for;
+    delete c.id;
+  }
 
   // Include actual student courses (enrolled/complete) as read-only layer
   const studentCourses = db.prepare(`
@@ -145,10 +154,22 @@ router.put("/me/plans/:id", (req, res) => {
     }
     db.prepare("DELETE FROM plan_courses WHERE plan_id = ?").run(plan.id);
     const insert = db.prepare(
-      "INSERT INTO plan_courses (plan_id, course_code, term, section, class_number) VALUES (?, ?, ?, ?, ?)"
+      "INSERT INTO plan_courses (plan_id, course_code, term, section, class_number, backup_for) VALUES (?, ?, ?, ?, ?, ?)"
     );
-    for (const c of valid) {
-      insert.run(plan.id, c.course_code, c.term, c.section || null, c.class_number || null);
+
+    // Two-pass insert so backup_for refs (by course_code) map to fresh IDs
+    const codeToId = {};
+    const primaries = valid.filter(c => !c.backup_for_code);
+    const backups = valid.filter(c => c.backup_for_code);
+
+    for (const c of primaries) {
+      const result = insert.run(plan.id, c.course_code, c.term, c.section || null, c.class_number || null, null);
+      codeToId[c.course_code] = result.lastInsertRowid;
+    }
+    for (const c of backups) {
+      const primaryId = codeToId[c.backup_for_code] || null;
+      // If the referenced primary doesn't exist, drop the backup_for and store as a regular course
+      insert.run(plan.id, c.course_code, c.term, c.section || null, c.class_number || null, primaryId);
     }
   })();
 
@@ -284,10 +305,10 @@ router.post("/me/plans/:id/validate", (req, res) => {
     FROM student_courses WHERE user_id = ?
   `).all(req.session.userId);
 
-  // Get plan courses
+  // Get plan courses (excluding backups — only primaries count toward requirements)
   const planCourses = db.prepare(`
     SELECT pc.course_code as code, pc.term as semester, pc.section, pc.class_number
-    FROM plan_courses pc WHERE pc.plan_id = ?
+    FROM plan_courses pc WHERE pc.plan_id = ? AND pc.backup_for IS NULL
   `).all(plan.id);
 
   // Merge: actual + plan courses (plan as "planned" status)
@@ -401,6 +422,70 @@ function parseTime(t) {
   return h * 60 + (m || 0);
 }
 
+// ── POST /me/check-feasibility ──────────────────────────────────────────
+// Check whether any conflict-free combination of sections exists for a list
+// of courses in a given term. Returns { feasible, coursesWithoutSections }.
+router.post("/me/check-feasibility", (req, res) => {
+  const { term, courseCodes } = req.body;
+  if (!term || !Array.isArray(courseCodes) || courseCodes.length < 2) {
+    return res.json({ feasible: true, coursesWithoutSections: [] });
+  }
+
+  try {
+    const placeholders = courseCodes.map(() => "?").join(",");
+    const offerings = db.prepare(
+      `SELECT course_code, section, days, start_time, end_time
+       FROM course_offerings
+       WHERE term = ? AND course_code IN (${placeholders})
+         AND days IS NOT NULL AND days != 'TBA'
+         AND start_time IS NOT NULL`
+    ).all(term, ...courseCodes);
+
+    // Group by course_code, capping sections per course to bound the search space
+    const SECTIONS_PER_COURSE_CAP = 12;
+    const byCourse = {};
+    for (const o of offerings) {
+      if (!byCourse[o.course_code]) byCourse[o.course_code] = [];
+      if (byCourse[o.course_code].length < SECTIONS_PER_COURSE_CAP) {
+        byCourse[o.course_code].push(o);
+      }
+    }
+
+    // Courses with no section data — skip from feasibility check
+    const coursesWithoutSections = courseCodes.filter(c => !byCourse[c] || byCourse[c].length === 0);
+    const courseList = Object.values(byCourse);
+
+    // Less than 2 courses with sections — can't conflict
+    if (courseList.length < 2) {
+      return res.json({ feasible: true, coursesWithoutSections });
+    }
+
+    // Brute force: try every combination of one section per course
+    const feasible = findConflictFreeCombo(courseList);
+    res.json({ feasible, coursesWithoutSections });
+  } catch (e) {
+    res.json({ feasible: true, coursesWithoutSections: [], error: e.message });
+  }
+});
+
+/** Recursively try section combinations until we find one with no conflicts */
+function findConflictFreeCombo(courseList, idx = 0, picked = []) {
+  if (idx === courseList.length) return true;
+  for (const section of courseList[idx]) {
+    // Check this section against all previously picked sections
+    let conflicts = false;
+    for (const p of picked) {
+      if (hasTimeConflict(section, p)) { conflicts = true; break; }
+    }
+    if (!conflicts) {
+      picked.push(section);
+      if (findConflictFreeCombo(courseList, idx + 1, picked)) return true;
+      picked.pop();
+    }
+  }
+  return false;
+}
+
 // ── POST /me/plans/:id/confirm-term ──────────────────────────────────────
 // Promote planned courses for a term to student_courses with status 'enrolled'
 router.post("/me/plans/:id/confirm-term", (req, res) => {
@@ -417,27 +502,27 @@ router.post("/me/plans/:id/confirm-term", (req, res) => {
     return res.status(400).json({ error: "Cannot confirm enrollment for a future term" });
   }
 
-  // Fetch plan courses for this term (include section data)
+  // Fetch plan courses for this term (excluding backups — only primaries get enrolled)
   const planCourses = db.prepare(
-    "SELECT course_code, term, section, class_number FROM plan_courses WHERE plan_id = ? AND term = ?"
+    "SELECT id, course_code, term, section, class_number FROM plan_courses WHERE plan_id = ? AND term = ? AND backup_for IS NULL"
   ).all(plan.id, term);
 
   if (planCourses.length === 0) {
     return res.status(400).json({ error: "No planned courses in this term" });
   }
 
-  // Promote to student_courses and remove from plan
+  // Promote to student_courses and remove from plan (CASCADE will drop their backups)
   const inserted = [];
   db.transaction(() => {
     const insert = db.prepare(
       "INSERT OR IGNORE INTO student_courses (user_id, course_code, semester, status, section, class_number) VALUES (?, ?, ?, 'enrolled', ?, ?)"
     );
     const del = db.prepare(
-      "DELETE FROM plan_courses WHERE plan_id = ? AND course_code = ? AND term = ?"
+      "DELETE FROM plan_courses WHERE id = ?"
     );
     for (const pc of planCourses) {
       insert.run(req.session.userId, pc.course_code, pc.term, pc.section || null, pc.class_number || null);
-      del.run(plan.id, pc.course_code, pc.term);
+      del.run(pc.id);
       inserted.push(pc.course_code);
     }
   })();
@@ -455,13 +540,20 @@ router.post("/me/plans/:id/confirm-term", (req, res) => {
   const declaredPrograms = programRows.map(r => r.program_id);
   const result = solve(courseRows, declaredPrograms, courseMap, programMap, degreeRequirements);
 
-  // Return updated plan + solver
+  // Return updated plan + solver — match GET /me/plans/:id shape (resolve backup_for to backup_for_code)
   const updatedCourses = db.prepare(`
-    SELECT pc.course_code, pc.term, pc.section, pc.class_number,
+    SELECT pc.id, pc.course_code, pc.term, pc.section, pc.class_number, pc.backup_for,
            c.title, c.credits, c.department
     FROM plan_courses pc LEFT JOIN courses c ON c.code = pc.course_code
     WHERE pc.plan_id = ? ORDER BY pc.term, pc.course_code
   `).all(plan.id);
+  const updatedIdToCode = {};
+  for (const c of updatedCourses) updatedIdToCode[c.id] = c.course_code;
+  for (const c of updatedCourses) {
+    c.backup_for_code = c.backup_for ? updatedIdToCode[c.backup_for] || null : null;
+    delete c.backup_for;
+    delete c.id;
+  }
   const studentCourses = db.prepare(`
     SELECT sc.course_code, sc.semester as term, sc.status,
            sc.section, sc.class_number,
