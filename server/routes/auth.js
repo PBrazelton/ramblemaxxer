@@ -24,7 +24,13 @@ router.get("/me", (req, res) => {
     "SELECT id, email, name, role, grad_year, privacy, provider, avatar_url, onboarding_step FROM users WHERE id = ?"
   ).get(req.session.userId);
   if (!user) return res.status(401).json({ error: "Session invalid" });
-  res.json(user);
+  // Include impersonation flag if admin is impersonating
+  if (req.session.adminUserId) {
+    const admin = db.prepare("SELECT name FROM users WHERE id = ?").get(req.session.adminUserId);
+    res.json({ ...user, impersonating: true, adminName: admin?.name });
+  } else {
+    res.json(user);
+  }
 });
 
 // ── POST /api/auth/login ───────────────────────────────────────────────────

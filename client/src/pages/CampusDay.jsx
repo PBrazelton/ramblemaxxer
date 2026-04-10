@@ -160,7 +160,7 @@ function BuildingMarkers({ classes, transitions, activeClass, nextClass, current
               radius={6}
               pathOptions={{
                 fillColor: isPast ? "#ccc" : color,
-                fillOpacity: isPast ? 0.5 : 0.9,
+                fillOpacity: isPast ? 0.7 : 0.9,
                 color: isPast ? "#aaa" : color,
                 weight: 1.5,
               }}>
@@ -183,7 +183,7 @@ function BuildingMarkers({ classes, transitions, activeClass, nextClass, current
               border-left:3px solid ${isPast ? "#ccc" : color};
               border-radius:4px;padding:2px 6px;white-space:nowrap;
               font-family:'DM Mono',monospace;
-              opacity:${isPast ? 0.5 : 1};
+              opacity:${isPast ? 0.7 : 1};
               box-shadow:0 1px 3px rgba(0,0,0,0.1);
               ${isNext ? `outline:2px solid ${color};outline-offset:1px;` : ""}
             ">
@@ -298,7 +298,9 @@ export default function CampusDay({ weeklyTerm, planTerms, isMobile }) {
 
   const classes = dayData?.classes || [];
   const transitions = dayData?.transitions || [];
-  const currentMin = scrubMin ?? getNowMinutes();
+  // Default to first class of the day (so all classes are visible), not current time
+  const firstClassMin = classes.length > 0 ? classes[0].startMin : null;
+  const currentMin = scrubMin ?? (firstClassMin != null ? firstClassMin : getNowMinutes());
 
   // Find current/next class
   const { activeClass, nextClass } = useMemo(() => {
@@ -481,7 +483,7 @@ export default function CampusDay({ weeklyTerm, planTerms, isMobile }) {
                     padding: "0.35rem 0.4rem", borderRadius: 4,
                     borderLeft: isActive || isNext ? `3px solid ${color}` : "3px solid transparent",
                     background: isActive ? `${color}10` : "transparent",
-                    opacity: isPast ? 0.5 : 1,
+                    opacity: isPast ? 0.7 : 1,
                   }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
                       <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted }}>
@@ -503,7 +505,7 @@ export default function CampusDay({ weeklyTerm, planTerms, isMobile }) {
                       padding: "0.2rem 0.6rem", margin: "0.1rem 0",
                       fontFamily: FONT.mono, fontSize: TYPE.xs,
                       color: URGENCY_COLORS[transitions[i].urgency],
-                      opacity: isPast ? 0.4 : 1,
+                      opacity: isPast ? 0.6 : 1,
                     }}>
                       {transitions[i].isSameBuilding ? (
                         <span>{transitions[i].gapMinutes} min gap · same building</span>

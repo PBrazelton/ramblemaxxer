@@ -27,8 +27,10 @@ const router = express.Router();
 
 // ── requireAdmin middleware ──────────────────────────────────────────────────
 function requireAdmin(req, res, next) {
-  if (!req.session.userId) return res.status(401).json({ error: "Not logged in" });
-  const user = db.prepare("SELECT role FROM users WHERE id = ?").get(req.session.userId);
+  // When impersonating, check the real admin's role, not the impersonated user
+  const adminId = req.session.adminUserId || req.session.userId;
+  if (!adminId) return res.status(401).json({ error: "Not logged in" });
+  const user = db.prepare("SELECT role FROM users WHERE id = ?").get(adminId);
   if (!user || user.role !== "admin") return res.status(403).json({ error: "Admin only" });
   next();
 }
@@ -134,6 +136,73 @@ router.put("/users/:id", (req, res) => {
   `).run(name ?? null, role ?? null, grad_year ?? null, active ?? null, userId);
 
   res.json({ ok: true });
+});
+
+// ── POST /api/admin/users ────────────────────────────────────────────────────
+router.post("/users", (req, res) => {
+  const { name, email, password, grad_year, programs } = req.body;
+  if (!name || !email || !password) {
+    return res.status(400).json({ error: "name, email, and password are required" });
+  }
+
+  const existing = db.prepare("SELECT id FROM users WHERE email = ?").get(email.toLowerCase().trim());
+  if (existing) return res.status(400).json({ error: "An account with that email already exists" });
+
+  const passwordHash = bcrypt.hashSync(password, 10);
+
+  const userId = db.transaction(() => {
+    const { lastInsertRowid } = db.prepare(`
+      INSERT INTO users (email, name, password_hash, role, grad_year, invited_by)
+      VALUES (?, ?, ?, 'student', ?, ?)
+    `).run(email.toLowerCase().trim(), name.trim(), passwordHash, grad_year || null, req.session.userId);
+
+    // Always add CORE
+    db.prepare("INSERT INTO student_programs (user_id, program_id) VALUES (?, 'CORE')").run(lastInsertRowid);
+
+    // Add declared programs
+    if (Array.isArray(programs)) {
+      const insert = db.prepare("INSERT OR IGNORE INTO student_programs (user_id, program_id) VALUES (?, ?)");
+      for (const p of programs) {
+        if (p && p !== "CORE") insert.run(lastInsertRowid, p);
+      }
+    }
+
+    return lastInsertRowid;
+  })();
+
+  res.status(201).json({ id: userId, name, email: email.toLowerCase().trim(), grad_year: grad_year || null });
+});
+
+// ── POST /api/admin/impersonate/:id ─────────────────────────────────────────
+router.post("/impersonate/:id", (req, res) => {
+  const targetId = parseInt(req.params.id);
+  const target = db.prepare("SELECT id, name, email, role FROM users WHERE id = ?").get(targetId);
+  if (!target) return res.status(404).json({ error: "User not found" });
+
+  // Save admin's real ID so we can switch back
+  req.session.adminUserId = req.session.adminUserId || req.session.userId;
+  req.session.userId = targetId;
+  res.json({ impersonating: target });
+});
+
+// ── POST /api/admin/stop-impersonating ──────────────────────────────────────
+router.post("/stop-impersonating", (req, res) => {
+  if (!req.session.adminUserId) {
+    return res.status(400).json({ error: "Not currently impersonating" });
+  }
+  req.session.userId = req.session.adminUserId;
+  delete req.session.adminUserId;
+  res.json({ ok: true });
+});
+
+// ── GET /api/admin/impersonate/status ───────────────────────────────────────
+router.get("/impersonate/status", (req, res) => {
+  if (req.session.adminUserId) {
+    const target = db.prepare("SELECT id, name, email FROM users WHERE id = ?").get(req.session.userId);
+    res.json({ impersonating: true, target });
+  } else {
+    res.json({ impersonating: false });
+  }
 });
 
 // ── POST /api/admin/users/:id/reset-password ─────────────────────────────────

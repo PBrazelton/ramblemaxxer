@@ -1278,27 +1278,9 @@ function PlacedCourseChip({ course, onRemove, onPlaceholderClick, backup, onAddB
   }
 
   return (
-    <div style={{ position: "relative", display: "inline-block", marginBottom: backup ? "0.5rem" : 0 }}>
-      {/* Backup card peeking out behind the primary */}
-      {backup && (
-        <div style={{
-          position: "absolute", top: 6, left: 6, right: -6, bottom: -8,
-          display: "inline-flex", alignItems: "center", gap: "0.3rem",
-          background: `${backupColor}08`, border: `1px dashed ${backupColor}40`,
-          borderRadius: 6, padding: "0.3rem 0.5rem", zIndex: 0, opacity: 0.7,
-        }} title={`Backup: ${backup.course_code} ${backup.title || ""}`}>
-          <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: backupColor }}>↳</span>
-          <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, fontWeight: 700, color: backupColor }}>{backup.course_code}</span>
-          <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted }}>backup</span>
-          <button onClick={e => { e.stopPropagation(); onRemoveBackup(); }} style={{
-            background: "none", border: "none", cursor: "pointer", padding: "0 0 0 0.2rem",
-            fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, lineHeight: 1,
-          }}>×</button>
-        </div>
-      )}
+    <div style={{ display: "inline-flex", flexDirection: "column", gap: 2 }}>
       {/* Primary card */}
       <div style={{
-        position: "relative", zIndex: 1,
         display: "inline-flex", alignItems: "center", gap: "0.3rem",
         background: `${color}10`, border: `1px solid ${color}30`,
         borderRadius: 6, padding: "0.3rem 0.5rem",
@@ -1327,6 +1309,23 @@ function PlacedCourseChip({ course, onRemove, onPlaceholderClick, backup, onAddB
           minWidth: 44, minHeight: 44, display: "flex", alignItems: "center", justifyContent: "center",
         }}>×</button>
       </div>
+      {/* Backup card — indented below */}
+      {backup && (
+        <div style={{
+          display: "inline-flex", alignItems: "center", gap: "0.25rem",
+          marginLeft: 12,
+          background: `${backupColor}06`, border: `1px dashed ${backupColor}30`,
+          borderRadius: 4, padding: "2px 6px", opacity: 0.75,
+        }} title={`Backup: ${backup.course_code} — ${backup.title || ""}`}>
+          <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: backupColor }}>↳</span>
+          <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, fontWeight: 600, color: backupColor }}>{backup.course_code}</span>
+          <span style={{ fontFamily: FONT.mono, fontSize: "0.6rem", color: TEXT.muted }}>backup</span>
+          <button onClick={e => { e.stopPropagation(); onRemoveBackup(); }} style={{
+            background: "none", border: "none", cursor: "pointer", padding: "0 2px",
+            fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, lineHeight: 1,
+          }}>×</button>
+        </div>
+      )}
     </div>
   );
 }

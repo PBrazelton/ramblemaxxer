@@ -3177,8 +3177,27 @@ function Dashboard({ user, setUser, onLogout, setOnboardingActive }) {
   const majors = [...declaredMajors, ...corePrograms];
   const remainingCount = data.remaining?.length || 0;
 
+  const stopImpersonating = async () => {
+    await api.post("/api/admin/stop-impersonating");
+    window.location.hash = "/admin";
+    window.location.reload();
+  };
+
   return (
     <div style={{ background: BG, minHeight: "100vh" }}>
+      {user.impersonating && (
+        <div style={{
+          background: "#6f42c1", color: "#fff", textAlign: "center",
+          fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.4rem",
+          display: "flex", justifyContent: "center", alignItems: "center", gap: "0.5rem",
+        }}>
+          Viewing as {user.name}
+          <button type="button" onClick={stopImpersonating} style={{
+            background: "#fff", color: "#6f42c1", border: "none", borderRadius: 4,
+            fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "2px 8px", cursor: "pointer",
+          }}>Stop</button>
+        </div>
+      )}
       <StickyHeader user={user} onLogout={onLogout} onSettings={() => setShowSettings(true)}
         nav={<a href="#/planner" style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.3rem 0.6rem", background: "#6f42c1", color: TEXT.inverse, borderRadius: 4, textDecoration: "none" }}>plan</a>}
       />

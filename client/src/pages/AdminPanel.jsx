@@ -106,6 +106,12 @@ export default function AdminPanel({ user, onLogout }) {
             onResetPassword={resetPassword}
             onResetUser={resetUser}
             onToggleActive={toggleActive}
+            onCreateUser={() => loadStudents()}
+            onImpersonate={async (id) => {
+              await api.post(`/api/admin/impersonate/${id}`);
+              window.location.hash = "/";
+              window.location.reload();
+            }}
           />
         )}
         {tab === "invites" && (
@@ -177,17 +183,79 @@ export default function AdminPanel({ user, onLogout }) {
 }
 
 // ── Students Tab ─────────────────────────────────────────────────────────────
-function StudentsTab({ students, currentUserId, onView, onResetPassword, onResetUser, onToggleActive }) {
-  if (students.length === 0) {
-    return (
-      <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: "#888", textAlign: "center", padding: "2rem" }}>
-        No students yet. Generate an invite to get started.
-      </div>
-    );
-  }
+function StudentsTab({ students, currentUserId, onView, onResetPassword, onResetUser, onToggleActive, onCreateUser, onImpersonate }) {
+  const [showCreate, setShowCreate] = useState(false);
+  const [createForm, setCreateForm] = useState({ name: "", email: "", password: "password", grad_year: "", programs: "" });
+  const [createError, setCreateError] = useState(null);
+
+  const handleCreate = async () => {
+    setCreateError(null);
+    try {
+      const programs = createForm.programs.split(",").map(p => p.trim()).filter(Boolean);
+      const res = await api.post("/api/admin/users", {
+        name: createForm.name,
+        email: createForm.email,
+        password: createForm.password,
+        grad_year: createForm.grad_year ? parseInt(createForm.grad_year) : null,
+        programs,
+      });
+      if (res.error) { setCreateError(res.error); return; }
+      setShowCreate(false);
+      setCreateForm({ name: "", email: "", password: "password", grad_year: "", programs: "" });
+      onCreateUser(); // just reload the list
+    } catch (e) {
+      setCreateError(e.message || "Failed to create user");
+    }
+  };
+
+  const inputStyle = {
+    fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.4rem 0.5rem",
+    border: `1px solid ${BORDER}`, borderRadius: 4, width: "100%", boxSizing: "border-box",
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+      {/* Create User */}
+      <button type="button" onClick={() => setShowCreate(!showCreate)} style={{
+        ...btnStyle("#1a1a1a"), alignSelf: "flex-start", marginBottom: "0.3rem",
+      }}>
+        {showCreate ? "Cancel" : "+ Create User"}
+      </button>
+      {showCreate && (
+        <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 8, padding: "1rem", marginBottom: "0.5rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem", marginBottom: "0.5rem" }}>
+            <div>
+              <label style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, display: "block", marginBottom: 2 }}>Name</label>
+              <input style={inputStyle} value={createForm.name} onChange={e => setCreateForm(f => ({ ...f, name: e.target.value }))} placeholder="Olivia Heinze" />
+            </div>
+            <div>
+              <label style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, display: "block", marginBottom: 2 }}>Email</label>
+              <input style={inputStyle} value={createForm.email} onChange={e => setCreateForm(f => ({ ...f, email: e.target.value }))} placeholder="oheinze@luc.edu" />
+            </div>
+            <div>
+              <label style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, display: "block", marginBottom: 2 }}>Password</label>
+              <input style={inputStyle} value={createForm.password} onChange={e => setCreateForm(f => ({ ...f, password: e.target.value }))} />
+            </div>
+            <div>
+              <label style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, display: "block", marginBottom: 2 }}>Grad Year</label>
+              <input style={inputStyle} type="number" value={createForm.grad_year} onChange={e => setCreateForm(f => ({ ...f, grad_year: e.target.value }))} placeholder="2028" />
+            </div>
+          </div>
+          <div style={{ marginBottom: "0.5rem" }}>
+            <label style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, display: "block", marginBottom: 2 }}>Programs (comma-separated codes)</label>
+            <input style={inputStyle} value={createForm.programs} onChange={e => setCreateForm(f => ({ ...f, programs: e.target.value }))} placeholder="ENGL-BA, CLST-BA" />
+          </div>
+          {createError && <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#c43b2d", marginBottom: "0.5rem" }}>{createError}</div>}
+          <button type="button" onClick={handleCreate} style={btnStyle("#1a7a5a")}>Create User</button>
+        </div>
+      )}
+
+      {students.length === 0 && !showCreate && (
+        <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, color: "#888", textAlign: "center", padding: "2rem" }}>
+          No students yet. Create one or generate an invite.
+        </div>
+      )}
+
       {students.map(s => (
         <div key={s.id} style={{
           background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 8,
@@ -214,10 +282,11 @@ function StudentsTab({ students, currentUserId, onView, onResetPassword, onReset
           <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: "#888", marginBottom: "0.5rem", paddingLeft: 38 }}>
             {s.course_count} courses {s.invited_by_name ? `· invited by ${s.invited_by_name}` : ""}
           </div>
-          <div style={{ display: "flex", gap: "0.4rem", paddingLeft: 38 }}>
-            <button onClick={() => onView(s.id)} style={btnStyle("#1a7a5a")}>View Dashboard</button>
+          <div style={{ display: "flex", gap: "0.4rem", paddingLeft: 38, flexWrap: "wrap" }}>
+            <button onClick={() => onView(s.id)} style={btnStyle("#1a7a5a")}>View</button>
             {s.id !== currentUserId && (
               <>
+                <button onClick={() => onImpersonate(s.id)} style={btnStyle("#6f42c1")}>Impersonate</button>
                 <button onClick={() => onResetPassword(s.id, s.name)} style={btnStyle("#5a6a7a")}>Reset PW</button>
                 <button onClick={() => onResetUser(s.id, s.name)} style={btnStyle("#c43b2d")}>Reset</button>
                 <button onClick={() => onToggleActive(s.id, s.name, s.active !== 0)} style={btnStyle(s.active === 0 ? "#22863a" : "#c43b2d")}>
