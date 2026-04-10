@@ -244,6 +244,26 @@
             "dept_cap_note": "The 3-per-dept cap counts ONLY electives. Required core courses (GLST 101, ANTH 100, PLSC 102) are excluded from this count."
           },
           "notes": "Must be from at least 2 world areas and 3 departments. A PLSC elective here does NOT consume a major-overlap slot unless it also counts toward the PLSC major."
+        },
+        {
+          "name": "Language Requirement",
+          "description": "Proficiency at the 104-level in a foreign language (does not count toward 33 program credits)",
+          "slots": 1,
+          "credits_per_slot": 0,
+          "eligible_courses": [
+            "SPAN 104",
+            "FREN 104",
+            "GERM 104",
+            "ITAL 104",
+            "CHIN 104",
+            "JAPN 104",
+            "ARAB 104",
+            "HEBR 104",
+            "HNDI 104",
+            "POLS 104",
+            "RUSS 104",
+            "ASL 104"
+          ]
         }
       ],
       "elective_pool_by_region": {

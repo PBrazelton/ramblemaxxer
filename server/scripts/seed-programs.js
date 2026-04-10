@@ -127,7 +127,7 @@ const seed = db.transaction(() => {
         name: cat.name,
         description: cat.description || null,
         slots: cat.slots,
-        credits_per_slot: cat.credits_per_slot || 3,
+        credits_per_slot: cat.credits_per_slot ?? 3,
         sort_order: i,
         tier_structure: cat.tier_structure || null,
         wildcard: isWildcard ? cat.eligible_courses : null,

@@ -105,7 +105,7 @@ function insertChildren(code, body) {
       name: cat.name,
       description: cat.description || null,
       slots: cat.slots,
-      credits_per_slot: cat.creditsPerSlot || 3,
+      credits_per_slot: cat.creditsPerSlot ?? 3,
       sort_order: i,
       tier_structure: cat.tierStructure || null,
       wildcard: isWildcard ? cat.wildcard : null,

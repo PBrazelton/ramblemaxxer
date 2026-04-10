@@ -1449,6 +1449,7 @@ function WeeklyScheduleView({ plan, coursesByTerm, actualByTerm = {}, planTerms,
     }}>
       <div style={{ padding: "0.5rem 0.6rem", borderBottom: `1px solid ${BORDER}` }}>
         <div style={{ fontFamily: FONT.serif, fontSize: TYPE.md, fontWeight: 700 }}>Sections</div>
+        <div style={{ fontSize: TYPE.xs, color: TEXT.muted, fontFamily: FONT.mono }}>from LOCUS</div>
       </div>
       <div style={{ flex: 1, overflow: "auto" }}>
         {pickerRows.map(c => {

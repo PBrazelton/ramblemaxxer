@@ -244,11 +244,13 @@ function solve(studentCourses, declaredPrograms, courseMap, programMap, degreeRe
       catResult.filledCount = catResult.slots.reduce((n, s) => n + (s.coversBothTiers ? 2 : 1), 0);
       catResult.isSatisfied = catResult.isWaived || catResult.filledCount >= category.slots;
 
-      // Accumulate credits for all filled slots
-      for (const slot of catResult.slots) {
-        if (slot.code !== "WAIVED") {
-          const c = taken.get(slot.code);
-          if (c) progResult.creditsApplied += c.credits;
+      // Accumulate credits for all filled slots (skip if credits_per_slot is 0, e.g. language requirement flags)
+      if (category.credits_per_slot !== 0) {
+        for (const slot of catResult.slots) {
+          if (slot.code !== "WAIVED") {
+            const c = taken.get(slot.code);
+            if (c) progResult.creditsApplied += c.credits;
+          }
         }
       }
 
@@ -274,10 +276,12 @@ function solve(studentCourses, declaredPrograms, courseMap, programMap, degreeRe
       }
       catResult.filledCount = catResult.slots.length;
       catResult.isSatisfied = catResult.filledCount >= category.slots;
-      for (const slot of catResult.slots) {
-        if (slot.code !== "WAIVED") {
-          const c = taken.get(slot.code);
-          if (c) progResult.creditsApplied += c.credits;
+      if (category.credits_per_slot !== 0) {
+        for (const slot of catResult.slots) {
+          if (slot.code !== "WAIVED") {
+            const c = taken.get(slot.code);
+            if (c) progResult.creditsApplied += c.credits;
+          }
         }
       }
     }
