@@ -170,14 +170,60 @@ export function gradeColor(letter) {
 
 // ── NavMenu (kebab dropdown for header) ─────────────────────────────────────
 // items: [{ label, href, color?, current? }]
+// A11y: ↑/↓ to move between items, Enter activates (native <a> behavior),
+// Escape closes and returns focus to the trigger. Outside-click also closes
+// but does not steal focus (mouse users may have already moved it elsewhere).
 export function NavMenu({ items }) {
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef(null);
+  const itemRefs = useRef([]);
+  // Stable ref to the latest items so effect listeners don't churn on each render
+  const itemsRef = useRef(items);
+  itemsRef.current = items;
 
-  // Close on outside click + Escape
+  // Compute focusable indexes lazily inside handlers using itemsRef.current
+  const getFocusableIdxs = () => {
+    const out = [];
+    itemsRef.current.forEach((item, i) => { if (!item.current) out.push(i); });
+    return out;
+  };
+
+  // Close on outside click + Escape; on Escape, also restore focus to trigger
   useEffect(() => {
     if (!open) return;
     const close = () => setOpen(false);
-    const onKey = (e) => { if (e.key === "Escape") close(); };
+    const onKey = (e) => {
+      const focusableIdxs = getFocusableIdxs();
+      if (e.key === "Escape") {
+        setOpen(false);
+        if (triggerRef.current) triggerRef.current.focus();
+      } else if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        if (focusableIdxs.length === 0) return;
+        const currentEl = document.activeElement;
+        const currentIdx = itemRefs.current.findIndex(el => el === currentEl);
+        let nextSeqPos;
+        if (currentIdx < 0) {
+          nextSeqPos = e.key === "ArrowDown" ? 0 : focusableIdxs.length - 1;
+        } else {
+          const seqPos = focusableIdxs.indexOf(currentIdx);
+          if (seqPos === -1) {
+            nextSeqPos = 0;
+          } else if (e.key === "ArrowDown") {
+            nextSeqPos = (seqPos + 1) % focusableIdxs.length;
+          } else {
+            nextSeqPos = (seqPos - 1 + focusableIdxs.length) % focusableIdxs.length;
+          }
+        }
+        itemRefs.current[focusableIdxs[nextSeqPos]]?.focus();
+      } else if (e.key === "Home") {
+        e.preventDefault();
+        if (focusableIdxs.length > 0) itemRefs.current[focusableIdxs[0]]?.focus();
+      } else if (e.key === "End") {
+        e.preventDefault();
+        if (focusableIdxs.length > 0) itemRefs.current[focusableIdxs[focusableIdxs.length - 1]]?.focus();
+      }
+    };
     document.addEventListener("click", close);
     document.addEventListener("keydown", onKey);
     return () => {
@@ -186,12 +232,30 @@ export function NavMenu({ items }) {
     };
   }, [open]);
 
+  // When menu opens, focus the first focusable item
+  useEffect(() => {
+    if (!open) return;
+    const focusableIdxs = getFocusableIdxs();
+    if (focusableIdxs.length === 0) return;
+    const firstIdx = focusableIdxs[0];
+    requestAnimationFrame(() => {
+      itemRefs.current[firstIdx]?.focus();
+    });
+  }, [open]);
+
+  const handleClose = () => {
+    setOpen(false);
+    if (triggerRef.current) triggerRef.current.focus();
+  };
+
   return (
     <div style={{ position: "relative" }} onClick={(e) => e.stopPropagation()}>
       <button
+        ref={triggerRef}
         type="button"
         aria-label="Open navigation menu"
         aria-expanded={open}
+        aria-haspopup="menu"
         onClick={() => setOpen(o => !o)}
         style={{
           fontFamily: FONT.mono, fontSize: TYPE.lg, padding: "0.3rem 0.7rem",
@@ -207,6 +271,7 @@ export function NavMenu({ items }) {
       {open && (
         <div
           role="menu"
+          aria-orientation="vertical"
           style={{
             position: "absolute", right: 0, top: "calc(100% + 4px)",
             background: SURFACE.card, border: `1px solid ${BORDER}`, borderRadius: 6,
@@ -216,9 +281,13 @@ export function NavMenu({ items }) {
           {items.map((item, i) => (
             <a
               key={i}
-              href={item.href}
+              ref={el => { itemRefs.current[i] = el; }}
+              href={item.current ? undefined : item.href}
               role="menuitem"
-              onClick={() => setOpen(false)}
+              aria-current={item.current ? "page" : undefined}
+              aria-disabled={item.current ? "true" : undefined}
+              tabIndex={item.current ? -1 : 0}
+              onClick={() => { if (!item.current) handleClose(); }}
               style={{
                 display: "block", padding: "0.5rem 0.7rem",
                 fontFamily: FONT.mono, fontSize: TYPE.sm, textDecoration: "none",
@@ -226,7 +295,7 @@ export function NavMenu({ items }) {
                 background: item.current ? SURFACE.hover : "transparent",
                 borderRadius: 4, minHeight: 40, lineHeight: "1.6",
                 cursor: item.current ? "default" : "pointer",
-                pointerEvents: item.current ? "none" : "auto",
+                outlineOffset: 2,
               }}
             >
               {item.color && (
