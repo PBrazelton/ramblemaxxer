@@ -324,6 +324,36 @@ function solve(studentCourses, declaredPrograms, courseMap, programMap, degreeRe
     }
   }
 
+  // Per-program unique credit summary (for overlap budget display)
+  result.overlap_summary = {};
+  for (const progCode of declaredPrograms) {
+    const prog = result.programs[progCode];
+    if (!prog || prog.type === "core" || prog.type === "college") continue;
+    // Collect all courses assigned to this program
+    const progCourses = new Set();
+    for (const cat of prog.categories) {
+      for (const slot of cat.slots) {
+        if (slot.code && slot.code !== "WAIVED") progCourses.add(slot.code);
+      }
+    }
+    // Count unique credits (courses assigned ONLY to this program, excluding core/college)
+    let uniqueCredits = 0;
+    for (const code of progCourses) {
+      const assignments = result.slotAssignments[code] || [];
+      const nonCoreProgs = [...new Set(assignments.map(a => a.programCode))]
+        .filter(p => result.programs[p]?.type !== "core" && result.programs[p]?.type !== "college");
+      if (nonCoreProgs.length === 1 && nonCoreProgs[0] === progCode) {
+        const course = taken.get(code);
+        uniqueCredits += course?.credits || 3;
+      }
+    }
+    result.overlap_summary[progCode] = {
+      uniqueCredits,
+      uniqueCreditsRequired: prog.uniqueCreditsRequired,
+      meetsMinimum: prog.uniqueCreditsRequired == null || uniqueCredits >= prog.uniqueCreditsRequired,
+    };
+  }
+
   // Remaining
   for (const [, prog] of Object.entries(result.programs)) {
     for (const cat of prog.categories) {

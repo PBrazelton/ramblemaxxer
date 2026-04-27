@@ -1111,12 +1111,15 @@ function WaivedPip() {
 }
 
 // ── OverlapBudget ───────────────────────────────────────────────────────────
-function OverlapBudget({ overlaps, programs, conflicts, onPipClick }) {
+function OverlapBudget({ overlaps, programs, conflicts, onPipClick, overlapSummary }) {
   const pairs = overlaps?.pairs || {};
   // Only show pairs that have an explicit max (i.e., a rule in overlap_rules)
   const ruledPairs = Object.entries(pairs).filter(([, p]) => p.max != null);
+  // Show unique credit warnings for programs near/below their floor
+  const uniqueCreditWarnings = Object.entries(overlapSummary || {})
+    .filter(([, s]) => s.uniqueCreditsRequired != null && s.uniqueCredits <= s.uniqueCreditsRequired + 6);
 
-  if (ruledPairs.length === 0) return null;
+  if (ruledPairs.length === 0 && uniqueCreditWarnings.length === 0) return null;
 
   // Build shared-course-code → pair-keys map for chip display
   const sharedCodes = Object.keys(conflicts);
@@ -1202,6 +1205,27 @@ function OverlapBudget({ overlaps, programs, conflicts, onPipClick }) {
               <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: count >= overlaps.glstElectiveDeptMax ? "#c43b2d" : "#888" }}>{count}</span>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Per-program unique credit status */}
+      {uniqueCreditWarnings.length > 0 && (
+        <div style={{ marginTop: "0.6rem" }}>
+          <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, fontWeight: 600, marginBottom: "0.3rem" }}>Unique Credits</div>
+          {uniqueCreditWarnings.map(([code, s]) => {
+            const color = s.meetsMinimum ? "#22863a" : "#c43b2d";
+            const progName = programs[code]?.name || code;
+            return (
+              <div key={code} style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.2rem" }}>
+                <span style={{ width: 8, height: 8, borderRadius: "50%", background: programColor(code), flexShrink: 0 }} />
+                <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs }}>{progName}</span>
+                <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color, fontWeight: 600 }}>
+                  {s.uniqueCredits}/{s.uniqueCreditsRequired} unique cr
+                </span>
+                {!s.meetsMinimum && <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, background: "#fde8e8", color: "#c43b2d", padding: "1px 4px", borderRadius: 3 }}>below minimum</span>}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
@@ -3265,7 +3289,7 @@ function Dashboard({ user, setUser, onLogout, setOnboardingActive }) {
             <ProgramCard key={prog.code} prog={prog} conflicts={conflicts} slotAssignments={data.slotAssignments} onPipClick={handlePipClick} onSlotTap={handleSlotTap}
               defaultOpen={false} />
           ))}
-          <OverlapBudget overlaps={data.overlaps} programs={data.programs} conflicts={conflicts} onPipClick={handlePipClick} />
+          <OverlapBudget overlaps={data.overlaps} programs={data.programs} conflicts={conflicts} onPipClick={handlePipClick} overlapSummary={data.overlap_summary} />
           <CASCard casGrad={data.programs["CAS-GRAD"]} spanLang={data.programs["SPAN-LANG"]} />
         </div>
 
