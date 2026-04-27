@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo, useRef, lazy, Suspense } from "react";
-import { COLORS, STATUS_COLOR, programColor, FONT, TYPE, BG, BORDER, SURFACE, TEXT, BTN, SHADOW, api, ProgressRing, cardStyle, mutedText, BottomSheet } from "../lib/ui.jsx";
+import { COLORS, STATUS_COLOR, programColor, FONT, TYPE, BG, BORDER, SURFACE, TEXT, BTN, SHADOW, api, ProgressRing, cardStyle, mutedText, BottomSheet, NavMenu } from "../lib/ui.jsx";
 const CampusDay = lazy(() => import("./CampusDay.jsx"));
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -496,9 +496,11 @@ export default function Planner({ user, onLogout }) {
             <span style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: saveStatus === "saved" ? "#22863a" : saveStatus === "saving" ? "#b08800" : "#888" }}>
               {saveStatus === "saved" ? "saved" : saveStatus === "saving" ? "saving..." : "unsaved"}
             </span>
-            <button onClick={() => window.location.hash = "/"} style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.3rem 0.7rem", background: "transparent", border: `1px solid ${BORDER}`, borderRadius: 4, cursor: "pointer" }}>
-              dashboard
-            </button>
+            <NavMenu items={[
+              { label: "dashboard", href: "#/", color: TEXT.brand },
+              { label: "planner", href: "#/planner", current: true, color: "#6f42c1" },
+              { label: "grades", href: "#/grades", color: "#22863a" },
+            ]} />
             <button onClick={onLogout} style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.3rem 0.7rem", background: BTN.primary, color: TEXT.inverse, border: "none", borderRadius: 4, cursor: "pointer" }}>
               log out
             </button>

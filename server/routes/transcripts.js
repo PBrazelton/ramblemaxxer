@@ -14,6 +14,13 @@ const db = require("../db/connection");
 const { solve, getSuggestions } = require("../../shared/solver");
 const { courseMap, programMap, degreeRequirements } = require("../lib/catalog");
 
+// Inline grade validation (mirrors shared/gpa.js ALL_GRADES)
+const VALID_GRADES = new Set([
+  "A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D+", "D", "D-", "F",
+  "P", "NP", "W", "WF", "I", "AU", "NR",
+]);
+function isValidGrade(g) { return g == null || g === "" || VALID_GRADES.has(g); }
+
 const router = express.Router();
 router.use(requireAuth);
 
@@ -130,23 +137,30 @@ router.post("/confirm", (req, res) => {
         }
       }
 
-      // 3. Replace all courses (delete existing, then insert fresh from transcript)
-      db.prepare("DELETE FROM student_courses WHERE user_id = ?").run(userId);
-      const insertCourse = db.prepare(`
-        INSERT OR IGNORE INTO student_courses (user_id, course_code, semester, status)
-        VALUES (?, ?, ?, ?)
+      // 3. UPSERT courses from transcript. On re-import we preserve manual
+      //    fields (grade_plan_json, note, pinned_program, satisfies_json,
+      //    section, class_number) and only refresh transcript-sourced fields
+      //    (status, grade). Pre-existing rows that aren't in the transcript
+      //    are left alone — student may have manually added them.
+      const upsertCourse = db.prepare(`
+        INSERT INTO student_courses (user_id, course_code, semester, status, grade)
+        VALUES (?, ?, ?, ?, ?)
+        ON CONFLICT(user_id, course_code, semester) DO UPDATE SET
+          status = excluded.status,
+          grade = COALESCE(excluded.grade, student_courses.grade)
       `);
 
       for (const c of courses) {
         const code = (c.matchedCode || c.code).toUpperCase();
-        insertCourse.run(userId, code, c.semester, c.status);
+        const grade = isValidGrade(c.grade) ? (c.grade || null) : null;
+        upsertCourse.run(userId, code, c.semester, c.status, grade);
       }
 
-      // 4. Insert transfer credit items
+      // 4. UPSERT transfer credit items
       if (transferCredits?.items) {
         for (const t of transferCredits.items) {
           const code = (t.matchedCode || t.code).toUpperCase();
-          insertCourse.run(userId, code, "Transfer", "transfer");
+          upsertCourse.run(userId, code, "Transfer", "transfer", null);
         }
       }
 

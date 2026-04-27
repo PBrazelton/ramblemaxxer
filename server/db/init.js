@@ -85,6 +85,16 @@ try {
   console.log("  Migrated: added class_number column to student_courses");
 } catch (e) { /* already exists */ }
 
+// Migration: add grade + grade_plan_json columns for GPA tracking
+try {
+  db.prepare("ALTER TABLE student_courses ADD COLUMN grade TEXT").run();
+  console.log("  Migrated: added grade column to student_courses");
+} catch (e) { /* already exists */ }
+try {
+  db.prepare("ALTER TABLE student_courses ADD COLUMN grade_plan_json TEXT").run();
+  console.log("  Migrated: added grade_plan_json column to student_courses");
+} catch (e) { /* already exists */ }
+
 // Migration: add backup_for column to plan_courses for backup/alternate course stacking
 try {
   db.prepare("ALTER TABLE plan_courses ADD COLUMN backup_for INTEGER REFERENCES plan_courses(id) ON DELETE CASCADE").run();

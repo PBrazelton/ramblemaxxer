@@ -18,6 +18,13 @@ const { requireAuth } = require("./auth");
 const { solve, getSuggestions } = require("../../shared/solver");
 const { courseMap, programMap, degreeRequirements } = require("../lib/catalog");
 
+// Inline grade validation (mirrors shared/gpa.js ALL_GRADES)
+const VALID_GRADES = new Set([
+  "A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D+", "D", "D-", "F",
+  "P", "NP", "W", "WF", "I", "AU", "NR",
+]);
+function isValidGrade(g) { return g == null || g === "" || VALID_GRADES.has(g); }
+
 const router = express.Router();
 router.use(requireAuth);
 
@@ -33,26 +40,42 @@ function termOrder(semester) {
 
 // ── GET /api/students/me/courses ──────────────────────────────────────────
 router.get("/me/courses", (req, res) => {
+  // LEFT JOIN to courses table for credits + title (for GPA + display)
   const rows = db.prepare(`
-    SELECT course_code as code, semester, status, credits_override, note, section, class_number
-    FROM student_courses WHERE user_id = ?
+    SELECT sc.course_code as code, sc.semester, sc.status,
+           sc.credits_override, sc.note, sc.section, sc.class_number,
+           sc.grade, sc.grade_plan_json as gradePlanJson,
+           c.credits as catalogCredits, c.title as catalogTitle
+    FROM student_courses sc
+    LEFT JOIN courses c ON c.code = sc.course_code
+    WHERE sc.user_id = ?
   `).all(req.session.userId);
+  // Surface a single `credits` field — override wins, then catalog, else null
+  for (const r of rows) {
+    r.credits = r.credits_override ?? r.catalogCredits ?? null;
+    r.title = r.catalogTitle || null;
+    delete r.catalogCredits;
+    delete r.catalogTitle;
+  }
   rows.sort((a, b) => termOrder(a.semester) - termOrder(b.semester) || a.code.localeCompare(b.code));
   res.json(rows);
 });
 
 // ── POST /api/students/me/courses ─────────────────────────────────────────
 router.post("/me/courses", (req, res) => {
-  const { code, semester, status, creditsOverride, note } = req.body;
+  const { code, semester, status, creditsOverride, note, grade } = req.body;
   if (!code || semester === undefined || !status) {
     return res.status(400).json({ error: "code, semester, and status are required" });
+  }
+  if (grade != null && grade !== "" && !isValidGrade(grade)) {
+    return res.status(400).json({ error: "Invalid grade value" });
   }
 
   try {
     db.prepare(`
-      INSERT INTO student_courses (user_id, course_code, semester, status, credits_override, note)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `).run(req.session.userId, code.toUpperCase(), semester, status, creditsOverride || null, note || null);
+      INSERT INTO student_courses (user_id, course_code, semester, status, credits_override, note, grade)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).run(req.session.userId, code.toUpperCase(), semester, status, creditsOverride || null, note || null, grade || null);
     res.status(201).json({ ok: true });
   } catch (e) {
     if (e.message.includes("UNIQUE")) {
@@ -65,9 +88,22 @@ router.post("/me/courses", (req, res) => {
 // ── PUT /api/students/me/courses/:code ────────────────────────────────────
 // Optional ?semester= query param to target a specific instance of a repeatable course
 router.put("/me/courses/:code", (req, res) => {
-  const { semester, status, creditsOverride, note, pinnedProgram, satisfiesJson, section, classNumber } = req.body;
+  const { semester, status, creditsOverride, note, pinnedProgram, satisfiesJson, section, classNumber, grade, gradePlanJson } = req.body;
   const code = req.params.code.toUpperCase().replace("-", " ");
   const targetSemester = req.query.semester; // optional: disambiguate repeatable courses
+
+  // Validate grade (allow empty string / null to clear; reject invalid letters)
+  if (grade !== undefined && grade !== null && grade !== "" && !isValidGrade(grade)) {
+    return res.status(400).json({ error: "Invalid grade value" });
+  }
+  // Validate gradePlanJson size (max 8KB) and that it's parseable JSON
+  if (gradePlanJson != null && gradePlanJson !== "") {
+    if (typeof gradePlanJson !== "string" || gradePlanJson.length > 8192) {
+      return res.status(400).json({ error: "gradePlanJson too large or not a string" });
+    }
+    try { JSON.parse(gradePlanJson); }
+    catch (e) { return res.status(400).json({ error: "gradePlanJson must be valid JSON" }); }
+  }
 
   const whereClause = targetSemester
     ? "user_id = ? AND course_code = ? AND semester = ?"
@@ -77,7 +113,7 @@ router.put("/me/courses/:code", (req, res) => {
     : [req.session.userId, code];
 
   const current = db.prepare(
-    `SELECT pinned_program, satisfies_json, section, class_number FROM student_courses WHERE ${whereClause}`
+    `SELECT pinned_program, satisfies_json, section, class_number, grade, grade_plan_json FROM student_courses WHERE ${whereClause}`
   ).get(...whereParams);
 
   db.prepare(`
@@ -89,7 +125,9 @@ router.put("/me/courses/:code", (req, res) => {
         pinned_program = ?,
         satisfies_json = ?,
         section = ?,
-        class_number = ?
+        class_number = ?,
+        grade = ?,
+        grade_plan_json = ?
     WHERE ${whereClause}
   `).run(
     semester ?? null, status ?? null, creditsOverride ?? null, note ?? null,
@@ -97,6 +135,8 @@ router.put("/me/courses/:code", (req, res) => {
     satisfiesJson !== undefined ? satisfiesJson : (current?.satisfies_json ?? null),
     section !== undefined ? section : (current?.section ?? null),
     classNumber !== undefined ? classNumber : (current?.class_number ?? null),
+    grade !== undefined ? (grade || null) : (current?.grade ?? null),
+    gradePlanJson !== undefined ? (gradePlanJson || null) : (current?.grade_plan_json ?? null),
     ...whereParams
   );
 

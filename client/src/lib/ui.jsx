@@ -2,7 +2,7 @@
  * client/src/lib/ui.jsx
  * Shared UI primitives and constants.
  */
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // ── Design Tokens ───────────────────────────────────────────────────────────
 
@@ -155,6 +155,94 @@ export const selectStyle = {
   fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.25rem 0.3rem",
   border: `1px solid ${BORDER}`, borderRadius: 4, background: SURFACE.input,
 };
+
+// ── Grade color ─────────────────────────────────────────────────────────────
+// Used for past-courses table and projected letter chips on syllabus cards.
+export function gradeColor(letter) {
+  if (!letter) return TEXT.muted;
+  if (letter === "A" || letter === "A-") return "#22863a";
+  if (letter === "B+" || letter === "B" || letter === "B-") return TEXT.secondary;
+  if (letter === "C+" || letter === "C" || letter === "C-") return "#8a6d00";
+  if (letter === "D+" || letter === "D" || letter === "D-" || letter === "F" || letter === "WF") return TEXT.danger;
+  // Non-GPA grades (P, NP, W, I, AU, NR, IP) — neutral
+  return TEXT.muted;
+}
+
+// ── NavMenu (kebab dropdown for header) ─────────────────────────────────────
+// items: [{ label, href, color?, current? }]
+export function NavMenu({ items }) {
+  const [open, setOpen] = useState(false);
+
+  // Close on outside click + Escape
+  useEffect(() => {
+    if (!open) return;
+    const close = () => setOpen(false);
+    const onKey = (e) => { if (e.key === "Escape") close(); };
+    document.addEventListener("click", close);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("click", close);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  return (
+    <div style={{ position: "relative" }} onClick={(e) => e.stopPropagation()}>
+      <button
+        type="button"
+        aria-label="Open navigation menu"
+        aria-expanded={open}
+        onClick={() => setOpen(o => !o)}
+        style={{
+          fontFamily: FONT.mono, fontSize: TYPE.lg, padding: "0.3rem 0.7rem",
+          background: open ? SURFACE.hover : "transparent",
+          border: `1px solid ${BORDER}`, borderRadius: 4, cursor: "pointer",
+          color: TEXT.primary, minHeight: 44, minWidth: 44,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          letterSpacing: "0.1em",
+        }}
+      >
+        &#x22EF;
+      </button>
+      {open && (
+        <div
+          role="menu"
+          style={{
+            position: "absolute", right: 0, top: "calc(100% + 4px)",
+            background: SURFACE.card, border: `1px solid ${BORDER}`, borderRadius: 6,
+            boxShadow: SHADOW.card, padding: "0.3rem", minWidth: 160, zIndex: 60,
+          }}
+        >
+          {items.map((item, i) => (
+            <a
+              key={i}
+              href={item.href}
+              role="menuitem"
+              onClick={() => setOpen(false)}
+              style={{
+                display: "block", padding: "0.5rem 0.7rem",
+                fontFamily: FONT.mono, fontSize: TYPE.sm, textDecoration: "none",
+                color: item.current ? TEXT.muted : TEXT.primary,
+                background: item.current ? SURFACE.hover : "transparent",
+                borderRadius: 4, minHeight: 40, lineHeight: "1.6",
+                cursor: item.current ? "default" : "pointer",
+                pointerEvents: item.current ? "none" : "auto",
+              }}
+            >
+              {item.color && (
+                <span style={{
+                  display: "inline-block", width: 8, height: 8, borderRadius: "50%",
+                  background: item.color, marginRight: 8, verticalAlign: "middle",
+                }} />
+              )}
+              {item.label}
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ── Logo header ─────────────────────────────────────────────────────────────
 export function StickyHeader({ user, badge, onLogout, onSettings, nav }) {

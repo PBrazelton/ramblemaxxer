@@ -5,6 +5,10 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5175,
+    fs: {
+      // Allow imports from sibling `shared/` dir (e.g. shared/gpa.js)
+      allow: ["..", "."],
+    },
     proxy: {
       // All /api requests forwarded to Express during dev
       "/api": {

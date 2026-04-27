@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { COLORS, programColor, STATUS_COLOR, FONT, TYPE, BG, BORDER, SURFACE, TEXT, BTN, SHADOW, SPACING, api, ProgressRing, BottomSheet, StickyHeader, sharedStyles, Input, Btn, SectionTitle, ErrMsg, cardStyle, secondaryCardStyle, badgeStyle, sectionHeader, mutedText, EmptyState } from "./lib/ui.jsx";
+import { COLORS, programColor, STATUS_COLOR, FONT, TYPE, BG, BORDER, SURFACE, TEXT, BTN, SHADOW, SPACING, api, ProgressRing, BottomSheet, StickyHeader, NavMenu, sharedStyles, Input, Btn, SectionTitle, ErrMsg, cardStyle, secondaryCardStyle, badgeStyle, sectionHeader, mutedText, EmptyState } from "./lib/ui.jsx";
 import { getErrors } from "./lib/error-buffer.js";
 import AdminPanel from "./pages/AdminPanel.jsx";
 import Planner from "./pages/Planner.jsx";
+import Grades from "./pages/Grades.jsx";
 
 // ── Helper functions ────────────────────────────────────────────────────────
 function getCurrentAcademicTerm() {
@@ -30,6 +31,7 @@ function getPage() {
   if (hash.startsWith("/reset-password")) return "reset-password";
   if (hash.startsWith("/forgot-password")) return "forgot-password";
   if (hash.startsWith("/planner")) return "planner";
+  if (hash.startsWith("/grades")) return "grades";
   return hash === "/login" ? "login" : "dashboard";
 }
 
@@ -84,6 +86,7 @@ export default function App() {
 
   if (user.role === "admin") return <>{banner}{widget}<AdminPanel user={user} onLogout={doLogout} /></>;
   if (page === "planner") return <>{banner}{widget}<Planner user={user} onLogout={doLogout} /></>;
+  if (page === "grades") return <>{banner}{widget}<Grades user={user} onLogout={doLogout} /></>;
   return <>{banner}{widget}<Dashboard user={user} setUser={setUser} onLogout={doLogout} setOnboardingActive={setOnboardingActive} /></>;
 }
 
@@ -2347,6 +2350,7 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
         matchedCode: c.matchedCode,
         semester: c.semester,
         status: c.status,
+        grade: c.grade || null,
       }));
 
     const transferToSend = reviewTransfer
@@ -2670,9 +2674,28 @@ function OnboardingWizard({ user, onComplete, initialStep }) {
                           background: icon.bg, color: icon.color, flexShrink: 0,
                         }}>{icon.symbol}</span>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, fontWeight: 600 }}>
-                            {c.matchedCode || c.code}
-                            {c.grade && <span style={{ fontWeight: 400, color: TEXT.muted, marginLeft: 6 }}>{c.grade}</span>}
+                          <div style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
+                            <span>{c.matchedCode || c.code}</span>
+                            {c.status === "complete" && (
+                              <select
+                                aria-label={`grade for ${c.matchedCode || c.code}`}
+                                value={c.grade || ""}
+                                onChange={(e) => {
+                                  const next = [...reviewCourses];
+                                  next[globalIdx] = { ...next[globalIdx], grade: e.target.value || null };
+                                  setReviewCourses(next);
+                                }}
+                                style={{
+                                  fontFamily: FONT.mono, fontSize: TYPE.xs, padding: "2px 4px",
+                                  border: `1px solid ${BORDER}`, borderRadius: 3,
+                                  background: "transparent", color: TEXT.muted, fontWeight: 400,
+                                }}>
+                                <option value="">—</option>
+                                {["A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D+", "D", "D-", "F", "P", "NP", "W", "WF", "I", "AU", "NR"].map(g => (
+                                  <option key={g} value={g}>{g}</option>
+                                ))}
+                              </select>
+                            )}
                           </div>
                           <div style={{ fontFamily: FONT.mono, fontSize: TYPE.xs, color: TEXT.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                             {c.matchedTitle || c.title}
@@ -3223,7 +3246,11 @@ function Dashboard({ user, setUser, onLogout, setOnboardingActive }) {
         </div>
       )}
       <StickyHeader user={user} onLogout={onLogout} onSettings={() => setShowSettings(true)}
-        nav={<a href="#/planner" style={{ fontFamily: FONT.mono, fontSize: TYPE.sm, padding: "0.3rem 0.6rem", background: "#6f42c1", color: TEXT.inverse, borderRadius: 4, textDecoration: "none" }}>plan</a>}
+        nav={<NavMenu items={[
+          { label: "dashboard", href: "#/", current: true, color: TEXT.brand },
+          { label: "planner", href: "#/planner", color: "#6f42c1" },
+          { label: "grades", href: "#/grades", color: "#22863a" },
+        ]} />}
       />
 
       {/* Content */}
