@@ -95,6 +95,13 @@ try {
   console.log("  Migrated: added grade_plan_json column to student_courses");
 } catch (e) { /* already exists */ }
 
+// Migration: add source column to track origin (transcript vs manual)
+// Default 'manual' so existing rows are NEVER auto-deleted on first re-import
+try {
+  db.prepare("ALTER TABLE student_courses ADD COLUMN source TEXT NOT NULL DEFAULT 'manual'").run();
+  console.log("  Migrated: added source column to student_courses");
+} catch (e) { /* already exists */ }
+
 // Migration: add backup_for column to plan_courses for backup/alternate course stacking
 try {
   db.prepare("ALTER TABLE plan_courses ADD COLUMN backup_for INTEGER REFERENCES plan_courses(id) ON DELETE CASCADE").run();

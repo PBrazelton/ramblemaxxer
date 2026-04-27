@@ -137,30 +137,78 @@ router.post("/confirm", (req, res) => {
         }
       }
 
-      // 3. UPSERT courses from transcript. On re-import we preserve manual
-      //    fields (grade_plan_json, note, pinned_program, satisfies_json,
-      //    section, class_number) and only refresh transcript-sourced fields
-      //    (status, grade). Pre-existing rows that aren't in the transcript
-      //    are left alone — student may have manually added them.
+      // 3. UPSERT courses from transcript. New rows are tagged
+      //    source='transcript' so we can later prune stale transcript-sourced
+      //    rows. On conflict we leave `source` untouched — a row that was
+      //    manually added before the import keeps source='manual' and is
+      //    therefore safe from auto-cleanup. Manual fields
+      //    (grade_plan_json, note, pinned_program, satisfies_json, section,
+      //    class_number, credits_override) are preserved; only
+      //    transcript-sourced fields (status, grade) refresh.
       const upsertCourse = db.prepare(`
-        INSERT INTO student_courses (user_id, course_code, semester, status, grade)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO student_courses (user_id, course_code, semester, status, grade, source)
+        VALUES (?, ?, ?, ?, ?, 'transcript')
         ON CONFLICT(user_id, course_code, semester) DO UPDATE SET
           status = excluded.status,
           grade = COALESCE(excluded.grade, student_courses.grade)
       `);
 
+      // Build set of incoming (code|semester) keys for stale-row cleanup
+      const incomingKeys = new Set();
+
       for (const c of courses) {
-        const code = (c.matchedCode || c.code).toUpperCase();
+        if (!c || typeof c !== "object") continue;
+        const rawCode = c.matchedCode || c.code;
+        if (!rawCode || typeof rawCode !== "string") continue;
+        if (!c.semester || typeof c.semester !== "string") continue;
+        if (!c.status || typeof c.status !== "string") continue;
+        const code = rawCode.toUpperCase();
         const grade = isValidGrade(c.grade) ? (c.grade || null) : null;
         upsertCourse.run(userId, code, c.semester, c.status, grade);
+        incomingKeys.add(`${code}|${c.semester}`);
       }
 
       // 4. UPSERT transfer credit items
       if (transferCredits?.items) {
         for (const t of transferCredits.items) {
-          const code = (t.matchedCode || t.code).toUpperCase();
+          if (!t || typeof t !== "object") continue;
+          const rawCode = t.matchedCode || t.code;
+          if (!rawCode || typeof rawCode !== "string") continue;
+          const code = rawCode.toUpperCase();
           upsertCourse.run(userId, code, "Transfer", "transfer", null);
+          incomingKeys.add(`${code}|Transfer`);
+        }
+      }
+
+      // 4b. Remove stale transcript-sourced rows that are no longer in the
+      //     incoming snapshot AND have no manual investment in any field.
+      //     "Manual investment" = anything the student set themselves:
+      //     syllabus calculator, note, transfer-credit mapping, pinned
+      //     program, section/class_number from picking enrollment, or
+      //     credits override. Manually added rows (source='manual') are
+      //     always preserved. Pre-migration rows defaulted to 'manual' so
+      //     they will never be auto-deleted, which is the safe behavior.
+      const transcriptRows = db.prepare(`
+        SELECT course_code, semester
+        FROM student_courses
+        WHERE user_id = ?
+          AND source = 'transcript'
+          AND grade_plan_json IS NULL
+          AND note IS NULL
+          AND satisfies_json IS NULL
+          AND pinned_program IS NULL
+          AND section IS NULL
+          AND class_number IS NULL
+          AND credits_override IS NULL
+      `).all(userId);
+
+      const deleteStale = db.prepare(
+        "DELETE FROM student_courses WHERE user_id = ? AND course_code = ? AND semester = ?"
+      );
+      for (const r of transcriptRows) {
+        const key = `${r.course_code}|${r.semester}`;
+        if (!incomingKeys.has(key)) {
+          deleteStale.run(userId, r.course_code, r.semester);
         }
       }
 

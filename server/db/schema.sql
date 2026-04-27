@@ -50,6 +50,7 @@ CREATE TABLE IF NOT EXISTS student_courses (
   class_number TEXT,
   grade       TEXT,               -- letter grade: 'A', 'A-', 'B+', ..., 'F', 'P', 'NP', 'W', 'WF', 'I', 'AU', 'NR'
   grade_plan_json TEXT,           -- JSON: { categories: [{name, weight, scoreEarned, scoreOut, scenario}], scaleOverride? }
+  source      TEXT    NOT NULL DEFAULT 'manual' CHECK(source IN ('transcript', 'manual')),  -- controls re-import cleanup
   created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
   UNIQUE(user_id, course_code, semester)
 );
