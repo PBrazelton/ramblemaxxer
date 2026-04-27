@@ -109,6 +109,7 @@
   { "code": "ENVS-MIN", "name": "Environmental Science", "degree": "Minor", "college": "College of Arts and Sciences", "department": "ENVS", "type": "minor" },
   { "code": "FREN-MIN", "name": "French", "degree": "Minor", "college": "College of Arts and Sciences", "department": "FREN", "type": "minor" },
   { "code": "HIST-MIN", "name": "History", "degree": "Minor", "college": "College of Arts and Sciences", "department": "HIST", "type": "minor" },
+  { "code": "LATN-MIN", "name": "Latin", "degree": "Minor", "college": "College of Arts and Sciences", "department": "CLST", "type": "minor" },
   { "code": "INTS-MIN", "name": "International Studies", "degree": "Minor", "college": "College of Arts and Sciences", "department": "INTS", "type": "minor" },
   { "code": "MATH-MIN", "name": "Mathematics", "degree": "Minor", "college": "College of Arts and Sciences", "department": "MATH", "type": "minor" },
   { "code": "PHIL-MIN", "name": "Philosophy", "degree": "Minor", "college": "College of Arts and Sciences", "department": "PHIL", "type": "minor" },

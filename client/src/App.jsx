@@ -3261,6 +3261,10 @@ function Dashboard({ user, setUser, onLogout, setOnboardingActive }) {
             <ProgramCard key={prog.code} prog={prog} conflicts={conflicts} slotAssignments={data.slotAssignments} onPipClick={handlePipClick} onSlotTap={handleSlotTap}
               defaultOpen={prog.type === "major"} />
           ))}
+          {declaredMinors.filter(p => p.type === "minor").map(prog => (
+            <ProgramCard key={prog.code} prog={prog} conflicts={conflicts} slotAssignments={data.slotAssignments} onPipClick={handlePipClick} onSlotTap={handleSlotTap}
+              defaultOpen={false} />
+          ))}
           <OverlapBudget overlaps={data.overlaps} programs={data.programs} conflicts={conflicts} onPipClick={handlePipClick} />
           <CASCard casGrad={data.programs["CAS-GRAD"]} spanLang={data.programs["SPAN-LANG"]} />
         </div>

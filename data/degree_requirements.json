@@ -9821,6 +9821,101 @@
           "notes": "PHYS 235L (1cr) + PHYS 338 (2cr). Note PHYS 338 is Advanced Physics Lab, 2 credits."
         }
       ]
+    },
+    {
+      "code": "LATN-MIN",
+      "name": "Latin (Minor)",
+      "type": "minor",
+      "department": "CLST",
+      "total_credits": 15,
+      "unique_credits_required": 8,
+      "double_dip_policy": "CAS_DEFAULT",
+      "categories": [
+        {
+          "name": "Latin 200/300-Level Courses",
+          "slots": 4,
+          "credits_per_slot": 3,
+          "description": "Four courses in Latin at the 200 or 300 level (beyond LATN 101/102)",
+          "eligible_courses": [
+            "LATN 271", "LATN 281", "LATN 283", "LATN 284", "LATN 286", "LATN 287", "LATN 289",
+            "LATN 303", "LATN 314", "LATN 315", "LATN 317", "LATN 325", "LATN 328",
+            "LATN 332", "LATN 335", "LATN 341", "LATN 343", "LATN 344", "LATN 345",
+            "LATN 346", "LATN 347", "LATN 351", "LATN 360", "LATN 361", "LATN 362",
+            "LATN 364", "LATN 373", "LATN 387", "LATN 388", "LATN 389"
+          ]
+        },
+        {
+          "name": "Capstone",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "description": "The Humanism of Antiquity II (senior capstone)",
+          "eligible_courses": ["CLST 384"]
+        }
+      ]
+    },
+    {
+      "code": "PHIL-MIN",
+      "name": "Philosophy (Minor)",
+      "type": "minor",
+      "department": "PHIL",
+      "total_credits": 18,
+      "unique_credits_required": 8,
+      "double_dip_policy": "CAS_DEFAULT",
+      "categories": [
+        {
+          "name": "Ethics Course",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "description": "One course in ethics",
+          "eligible_courses": [
+            "PHIL 181", "PHIL 182", "PHIL 283", "PHIL 284", "PHIL 285",
+            "PHIL 286", "PHIL 287", "PHIL 288", "PHIL 289"
+          ]
+        },
+        {
+          "name": "Epistemology/Metaphysics Course",
+          "slots": 1,
+          "credits_per_slot": 3,
+          "description": "One course in epistemology or metaphysics",
+          "eligible_courses": [
+            "PHIL 130", "PHIL 271", "PHIL 272", "PHIL 273", "PHIL 274",
+            "PHIL 275", "PHIL 276", "PHIL 277", "PHIL 279"
+          ]
+        },
+        {
+          "name": "Philosophy Electives",
+          "slots": 2,
+          "credits_per_slot": 3,
+          "description": "Two elective courses at any level",
+          "eligible_courses": [
+            "PHIL 130", "PHIL 180", "PHIL 181", "PHIL 182", "PHIL 190", "PHIL 191", "PHIL 192", "PHIL 193",
+            "PHIL 262", "PHIL 263", "PHIL 264", "PHIL 267", "PHIL 271", "PHIL 272", "PHIL 273", "PHIL 274",
+            "PHIL 275", "PHIL 276", "PHIL 277", "PHIL 279", "PHIL 283", "PHIL 284", "PHIL 285", "PHIL 286",
+            "PHIL 287", "PHIL 288", "PHIL 289", "PHIL 301", "PHIL 302", "PHIL 304", "PHIL 305", "PHIL 306",
+            "PHIL 307", "PHIL 308", "PHIL 309", "PHIL 310", "PHIL 311", "PHIL 312", "PHIL 318", "PHIL 319",
+            "PHIL 320", "PHIL 321", "PHIL 322", "PHIL 323", "PHIL 324", "PHIL 325", "PHIL 326", "PHIL 327",
+            "PHIL 328", "PHIL 329", "PHIL 330", "PHIL 333", "PHIL 335", "PHIL 340", "PHIL 342", "PHIL 344",
+            "PHIL 350", "PHIL 355", "PHIL 360", "PHIL 362", "PHIL 369", "PHIL 370", "PHIL 374", "PHIL 375",
+            "PHIL 380", "PHIL 381", "PHIL 382", "PHIL 383", "PHIL 384", "PHIL 385", "PHIL 386", "PHIL 387",
+            "PHIL 388", "PHIL 389", "PHIL 391", "PHIL 393", "PHIL 395", "PHIL 396", "PHIL 397", "PHIL 398", "PHIL 399"
+          ]
+        },
+        {
+          "name": "300-Level Electives",
+          "slots": 2,
+          "credits_per_slot": 3,
+          "description": "Two 300-level philosophy courses",
+          "eligible_courses": [
+            "PHIL 301", "PHIL 302", "PHIL 304", "PHIL 305", "PHIL 306", "PHIL 307", "PHIL 308", "PHIL 309",
+            "PHIL 310", "PHIL 311", "PHIL 312", "PHIL 318", "PHIL 319", "PHIL 320", "PHIL 321", "PHIL 322",
+            "PHIL 323", "PHIL 324", "PHIL 325", "PHIL 326", "PHIL 327", "PHIL 328", "PHIL 329", "PHIL 330",
+            "PHIL 333", "PHIL 335", "PHIL 340", "PHIL 342", "PHIL 344", "PHIL 350", "PHIL 355", "PHIL 360",
+            "PHIL 362", "PHIL 369", "PHIL 370", "PHIL 374", "PHIL 375", "PHIL 380", "PHIL 381", "PHIL 382",
+            "PHIL 383", "PHIL 384", "PHIL 385", "PHIL 386", "PHIL 387", "PHIL 388", "PHIL 389", "PHIL 391",
+            "PHIL 393", "PHIL 395", "PHIL 396", "PHIL 397", "PHIL 398", "PHIL 399"
+          ]
+        }
+      ]
     }
   ],
   "overlap_rules": {

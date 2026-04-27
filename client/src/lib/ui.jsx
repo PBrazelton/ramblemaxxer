@@ -14,6 +14,8 @@ export const COLORS = {
   "PHIL-BA": "#7a4a8a", "HIST-BA": "#8a6a2a", "ENGL-BA": "#2a6a8a",
   "SPAN-BA": "#9a4a6a", "THEO-BA": "#5a4a7a", "ANTH-BA": "#4a7a6a",
   "FNAR-BA": "#c47a2a",
+  // Minors
+  "LATN-MIN": "#6a5a4a", "PHIL-MIN": "#7a5a9a",
 };
 // Deterministic color for unknown programs based on code hash
 export const programColor = (code) => {
