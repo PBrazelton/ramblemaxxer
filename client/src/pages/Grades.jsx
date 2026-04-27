@@ -50,6 +50,9 @@ export default function Grades({ user, onLogout }) {
   const [projectionMode, setProjectionMode] = useState("quick"); // "quick" | "detailed"
   // quickGrades keyed by `${code}|${semester}` to avoid collisions across repeats
   const [quickGrades, setQuickGrades] = useState({});
+  // Hydrate quickGrades from gradePlanJson once on initial load. Subsequent
+  // user edits flow through setQuickGradeFor, which updates state + persists.
+  const hydrated = useRef(false);
 
   const currentTerm = getCurrentAcademicTerm();
   const currentTermRank = termOrderClient(currentTerm);
@@ -64,6 +67,21 @@ export default function Grades({ user, onLogout }) {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  // One-time hydration of quickGrades from saved plan blobs
+  useEffect(() => {
+    if (!courses || hydrated.current) return;
+    const next = {};
+    for (const c of courses) {
+      if (!c.gradePlanJson) continue;
+      try {
+        const plan = JSON.parse(c.gradePlanJson);
+        if (plan.quickGrade) next[`${c.code}|${c.semester}`] = plan.quickGrade;
+      } catch (e) { /* skip malformed */ }
+    }
+    if (Object.keys(next).length > 0) setQuickGrades(next);
+    hydrated.current = true;
+  }, [courses]);
 
   // Build courseMap-like for computeGPA (it expects .get(code) → {credits})
   const courseMap = useMemo(() => {
@@ -173,6 +191,27 @@ export default function Grades({ user, onLogout }) {
     Object.values(saveTimers.current).forEach(t => clearTimeout(t));
   }, []);
 
+  // Set + persist a quick-mode projection for a current-term course. Stored
+  // inside gradePlanJson so it coexists with any syllabus categories the
+  // student has set up. Kept in local state too for instant UI response.
+  const setQuickGradeFor = useCallback((code, semester, grade) => {
+    const key = `${code}|${semester}`;
+    setQuickGrades(qg => ({ ...qg, [key]: grade }));
+    const course = (courses || []).find(c => c.code === code && c.semester === semester);
+    let plan = { categories: [] };
+    if (course?.gradePlanJson) {
+      try { plan = JSON.parse(course.gradePlanJson); } catch (e) { /* fall back to empty */ }
+    }
+    const next = { ...plan };
+    if (grade) next.quickGrade = grade;
+    else delete next.quickGrade;
+    // If plan is now empty (no categories, no quickGrade, no scaleOverride), clear it
+    const isEmpty = (!next.categories || next.categories.length === 0)
+      && !next.quickGrade
+      && !next.scaleOverride;
+    updateGradePlan(code, semester, isEmpty ? null : next);
+  }, [courses, updateGradePlan]);
+
   // ── render ────────────────────────────────────────────────────────────────
   return (
     <div style={{ background: BG, minHeight: "100vh" }}>
@@ -217,7 +256,7 @@ export default function Grades({ user, onLogout }) {
                       key={key}
                       course={c}
                       quickGrade={quickGrades[key] || ""}
-                      setQuickGrade={(g) => setQuickGrades(qg => ({ ...qg, [key]: g }))}
+                      setQuickGrade={(g) => setQuickGradeFor(c.code, c.semester, g)}
                       onSavePlan={(plan) => updateGradePlan(c.code, c.semester, plan)}
                       projectionMode={projectionMode}
                     />
@@ -316,10 +355,20 @@ function CurrentTermCard({ course, quickGrade, setQuickGrade, onSavePlan, projec
   const hasSyllabus = plan.categories && plan.categories.length > 0;
   const showQuick = projectionMode === "quick" || !hasSyllabus || !summary.isComplete;
 
+  // When persisting from inside this card, merge in the latest quickGrade
+  // from props so a separately-updated quick projection isn't clobbered.
   const persistPlan = useCallback((next) => {
     setPlan(next);
-    onSavePlan(next);
-  }, [onSavePlan]);
+    let externalQuick = null;
+    if (course.gradePlanJson) {
+      try {
+        const ext = JSON.parse(course.gradePlanJson);
+        if (ext.quickGrade) externalQuick = ext.quickGrade;
+      } catch (e) { /* ignore */ }
+    }
+    const toSave = externalQuick ? { ...next, quickGrade: externalQuick } : next;
+    onSavePlan(toSave);
+  }, [onSavePlan, course.gradePlanJson]);
 
   const updateCategory = (id, patch) => {
     persistPlan({ ...plan, categories: plan.categories.map(c => c.id === id ? { ...c, ...patch } : c) });
